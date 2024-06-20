@@ -1,4 +1,5 @@
 import { AnimatedDeleteIcon } from '@affine/component';
+import { AddPageFeedButton } from '@affine/core/components/app-sidebar/add-page-feed-button';
 import { FeedList } from '@affine/core/components/pure/workspace-slider-bar/feed';
 import { getDNDId } from '@affine/core/hooks/affine/use-global-dnd-helper';
 import { useAsyncCallback } from '@affine/core/hooks/affine-async-hooks';
@@ -20,7 +21,7 @@ import { useAppSettingHelper } from '../../hooks/affine/use-app-setting-helper';
 import { useNavigateHelper } from '../../hooks/use-navigate-helper';
 import { WorkbenchService } from '../../modules/workbench';
 import {
-  AddPageButton,
+  // AddPageButton,
   // AppDownloadButton,
   AppSidebar,
   appSidebarOpenAtom,
@@ -232,7 +233,7 @@ export const RootAppSidebar = memo(
         <SidebarContainer>
           {/*{environment.isDesktop ? <UpdaterButton /> : <AppDownloadButton />}*/}
           <div style={{ height: '4px' }} />
-          <AddPageButton onClick={onClickNewPage} />
+          <AddPageFeedButton onClickNewPage={onClickNewPage} docCollection={docCollection} />
           <QuickSearchInput
             data-testid="slider-bar-quick-search-button"
             onClick={onOpenQuickSearchModal}

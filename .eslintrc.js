@@ -108,6 +108,7 @@ const config = {
     'no-self-compare': 'error',
     eqeqeq: ['error', 'always', { null: 'ignore' }],
     'react/prop-types': 'off',
+    'react/display-name': 'off',
     'react/jsx-no-useless-fragment': 'error',
     '@typescript-eslint/consistent-type-imports': 'error',
     '@typescript-eslint/no-non-null-assertion': 'error',
