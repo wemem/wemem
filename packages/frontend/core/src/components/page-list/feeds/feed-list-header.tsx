@@ -20,7 +20,7 @@ export const FeedListHeader = ({
           {t['ai.readflow.feeds.header']()}
         </div>
         <Button className={styles.newFeedButton} onClick={onCreate}>
-          {t['ai.readflow.feeds.empty.new-collection-button']()}
+          {t['ai.readflow.feeds.new-feed-button']()}
         </Button>
       </div>
       {node}

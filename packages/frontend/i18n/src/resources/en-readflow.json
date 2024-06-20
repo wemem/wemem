@@ -626,7 +626,7 @@
   "ai.readflow.feeds.empty.message": "No feeds",
   "ai.readflow.feeds.empty.new-feed-button": "New feed",
   "ai.readflow.feeds.allFeeds": "All Feeds",
-  "ai.readflow.feeds.empty.new-collection-button": "New Feed",
+  "ai.readflow.feeds.new-feed-button": "New Feed",
   "ai.readflow.feed.toolbar.selected": "<0>{{count}}</0> selected",
   "ai.readflow.feed.menu.rename": "Rename",
   "ai.readflow.editFeed.button.cancel": "Cancel",
