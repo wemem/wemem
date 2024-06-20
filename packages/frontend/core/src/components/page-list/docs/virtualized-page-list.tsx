@@ -1,4 +1,6 @@
 import { toast } from '@affine/component';
+import { FeedPageListHeader } from '@affine/core/components/page-list/docs/page-list-header-feed';
+import { FeedDocsPageListHeader } from '@affine/core/components/page-list/docs/page-list-header-feed-docs';
 import { useTrashModalHelper } from '@affine/core/hooks/affine/use-trash-modal-helper';
 import { useBlockSuiteDocMeta } from '@affine/core/hooks/use-block-suite-page-meta';
 import { CollectionService } from '@affine/core/modules/collection';
@@ -8,7 +10,7 @@ import { Trans } from '@affine/i18n';
 import { useAFFiNEI18N } from '@affine/i18n/hooks';
 import type { DocMeta } from '@blocksuite/store';
 import { useService, WorkspaceService } from '@toeverything/infra';
-import { useCallback, useMemo, useRef, useState } from 'react';
+import { type ReactNode, useCallback, useMemo, useRef, useState } from 'react';
 
 import { usePageHelper } from '../../blocksuite/block-suite-page-list/utils';
 import { ListFloatingToolbar } from '../components/list-floating-toolbar';
@@ -55,17 +57,26 @@ const usePageOperationsRenderer = () => {
 export const VirtualizedPageList = ({
   tag,
   collection,
+  feed,
+  feedDocs,
   filters,
   config,
   listItem,
   setHideHeaderCreateNewPage,
+  currentFilters,
+  onChangeCurrentFilters,
 }: {
   tag?: Tag;
   collection?: Collection;
+  feed?: Collection;
+  feedDocs?: boolean;
   filters?: Filter[];
   config?: AllPageListConfig;
   listItem?: DocMeta[];
   setHideHeaderCreateNewPage?: (hide: boolean) => void;
+  emptyComponent?: ReactNode;
+  currentFilters?: Filter[];
+  onChangeCurrentFilters?: (filters: Filter[]) => void;
 }) => {
   const listRef = useRef<ItemListHandle>(null);
   const [showFloatingToolbar, setShowFloatingToolbar] = useState(false);
@@ -126,8 +137,30 @@ export const VirtualizedPageList = ({
         />
       );
     }
-    return <PageListHeader />;
-  }, [collection, config, currentWorkspace.id, tag]);
+    if (feed) {
+      return (
+        <FeedPageListHeader
+          workspaceId={currentWorkspace.id}
+          collection={feed}
+          propertiesMeta={currentWorkspace.docCollection.meta.properties}
+          currentFilters={currentFilters!}
+          onChangeCurrentFilters={onChangeCurrentFilters!}
+        />
+      );
+    }
+    if (feedDocs) {
+      return (
+        <FeedDocsPageListHeader
+          workspaceId={currentWorkspace.id}
+          propertiesMeta={currentWorkspace.docCollection.meta.properties}
+          currentFilters={currentFilters!}
+          onChangeCurrentFilters={onChangeCurrentFilters!}
+        />
+      );
+    }
+    return <PageListHeader currentFilters={currentFilters!}
+                           onChangeCurrentFilters={onChangeCurrentFilters!}/>;
+  }, [collection, config, currentWorkspace.docCollection.meta.properties, currentWorkspace.id, feed, feedDocs, tag]);
 
   const { setTrashModal } = useTrashModalHelper(currentWorkspace.docCollection);
 

@@ -38,7 +38,6 @@ export class Workspace extends Entity {
     }
     return this._docCollection;
   }
-
   get awareness() {
     return this.docCollection.awarenessStore.awareness as Awareness;
   }

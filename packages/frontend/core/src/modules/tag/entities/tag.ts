@@ -26,6 +26,8 @@ export class Tag extends Entity<{ id: string }> {
 
   updateDate$ = this.tagOption$.map(tag => tag?.updateDate || Date.now());
 
+  ghost$ = this.tagOption$.map(tag => tag?.ghost);
+
   rename(value: string) {
     this.store.updateTagInfo(this.id, {
       id: this.id,

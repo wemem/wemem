@@ -2,7 +2,7 @@ import { cssVar } from '@toeverything/theme';
 import { style } from '@vanilla-extract/css';
 export const root = style({
   height: '100vh',
-  width: '100vw',
+  // width: '100vw',
   display: 'flex',
   flexDirection: 'column',
   fontSize: cssVar('fontBase'),

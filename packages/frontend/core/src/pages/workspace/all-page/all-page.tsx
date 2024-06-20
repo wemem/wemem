@@ -41,11 +41,13 @@ export const AllPage = () => {
             <VirtualizedPageList
               setHideHeaderCreateNewPage={setHideHeaderCreateNew}
               filters={filters}
+              currentFilters={filters}
+              onChangeCurrentFilters={setFilters}
             />
           ) : (
             <EmptyPageList
               type="all"
-              heading={<PageListHeader />}
+              heading={<PageListHeader currentFilters={filters} onChangeCurrentFilters={setFilters} />}
               docCollection={currentWorkspace.docCollection}
             />
           )}

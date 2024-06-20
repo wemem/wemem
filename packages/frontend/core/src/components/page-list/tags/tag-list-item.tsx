@@ -10,19 +10,21 @@ import { selectionStateAtom, useAtom } from '../scoped-atoms';
 import type { DraggableTitleCellData, TagListItemProps } from '../types';
 import { ColWrapper, stopPropagation } from '../utils';
 import * as styles from './tag-list-item.css';
+import { useTagI18N } from '@affine/core/modules/tag/entities/internal';
 
 const TagListTitleCell = ({
   title,
   pageCount,
 }: Pick<TagListItemProps, 'title' | 'pageCount'>) => {
   const t = useAFFiNEI18N();
+  const tt = useTagI18N();
   return (
     <div data-testid="tag-list-item-title" className={styles.titleCell}>
       <div
         data-testid="tag-list-item-title-text"
         className={styles.titleCellMain}
       >
-        {title || t['Untitled']()}
+        {tt(title)}
       </div>
       <div
         data-testid="page-list-item-preview-text"

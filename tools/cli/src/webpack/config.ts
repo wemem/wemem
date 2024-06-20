@@ -403,6 +403,7 @@ export const createConfiguration: (
           changeOrigin: true,
           secure: false,
         },
+        { context: '/api/v1/graphql', target: 'http://localhost:4010' },
         { context: '/api', target: 'http://localhost:3010' },
         { context: '/socket.io', target: 'http://localhost:3010', ws: true },
         { context: '/graphql', target: 'http://localhost:3010' },

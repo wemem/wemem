@@ -15,6 +15,7 @@ import { tagColors } from './common';
 import type { MenuItemOption } from './menu-items';
 import { renderMenuItemOptions } from './menu-items';
 import * as styles from './tags-inline-editor.css';
+import { isInternalTag } from '@affine/core/modules/tag/entities/internal';
 
 interface TagsEditorProps {
   pageId: string;
@@ -310,13 +311,14 @@ export const TagsEditor = ({ pageId, readonly }: TagsEditorProps) => {
                 >
                   <TagItem maxWidth="100%" tag={tag} mode="inline" />
                   <div className={styles.spacer} />
-                  <EditTagMenu tagId={tag.id} onTagDelete={onTagDelete}>
+                  {!isInternalTag(tag.value$.getValue()) && <EditTagMenu tagId={tag.id} onTagDelete={onTagDelete}>
                     <IconButton
                       className={styles.tagEditIcon}
                       type="plain"
                       icon={<MoreHorizontalIcon />}
                     />
                   </EditTagMenu>
+                  }
                 </div>
               );
             })}

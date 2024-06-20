@@ -19,7 +19,7 @@ export const WorkspaceModeFilterTab = ({
   const t = useAFFiNEI18N();
   const [value, setValue] = useState(activeFilter);
   const [filterMode, setFilterMode] = useAtom(allPageFilterSelectAtom);
-  const { jumpToCollections, jumpToTags, jumpToSubPath } = useNavigateHelper();
+  const { jumpToCollections, jumpToTags, jumpToSubPath, jumpToFeedDocs } = useNavigateHelper();
   const handleValueChange = useCallback(
     (value: AllPageFilterOption) => {
       switch (value) {
@@ -32,9 +32,12 @@ export const WorkspaceModeFilterTab = ({
         case 'docs':
           jumpToSubPath(workspace.id, WorkspaceSubPath.ALL);
           break;
+        case 'feeds':
+          jumpToFeedDocs(workspace.id);
+          break;
       }
     },
-    [jumpToCollections, jumpToSubPath, jumpToTags, workspace]
+    [jumpToCollections, jumpToSubPath, jumpToTags, jumpToFeedDocs, workspace],
   );
 
   useEffect(() => {
@@ -52,6 +55,13 @@ export const WorkspaceModeFilterTab = ({
         data-testid="workspace-docs-button"
       >
         {t['com.affine.docs.header']()}
+      </RadioButton>
+      <RadioButton
+        spanStyle={styles.filterTab}
+        value="feeds"
+        data-testid="workspace-feeds-button"
+      >
+        {t['ai.readflow.feeds.header']()}
       </RadioButton>
       <RadioButton
         spanStyle={styles.filterTab}

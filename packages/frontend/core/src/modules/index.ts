@@ -1,3 +1,4 @@
+import { configureFeedModule } from '@affine/core/modules/feed';
 import { configureQuotaModule } from '@affine/core/modules/quota';
 import { configureInfraModules, type Framework } from '@toeverything/infra';
 
@@ -19,6 +20,7 @@ import { configureWorkbenchModule } from './workbench';
 export function configureCommonModules(framework: Framework) {
   configureInfraModules(framework);
   configureCollectionModule(framework);
+  configureFeedModule(framework);
   configureNavigationModule(framework);
   configureRightSidebarModule(framework);
   configureTagModule(framework);

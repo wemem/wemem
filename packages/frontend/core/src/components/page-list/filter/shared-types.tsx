@@ -42,7 +42,16 @@ export const variableDefineMap = {
     icon: <FavoriteIcon />,
   },
   Tags: {
-    type: meta => tArray(tTag.create({ tags: meta.tags?.options ?? [] })),
+    type: meta => tArray(tTag.create({ tags: meta.tags?.options.filter(t=>{
+        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+        // @ts-expect-error
+        if (t.ghost === undefined) {
+          return true;
+        }
+        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+        // @ts-expect-error
+        return !t.ghost;
+      }) ?? [] })),
     icon: <TagsIcon />,
   },
   'Is Public': {

@@ -6,6 +6,7 @@ export * from './components/page-display-menu';
 export * from './docs';
 export * from './docs/page-list-item';
 export * from './docs/page-tags';
+export * from './feed';
 export * from './filter';
 export * from './group-definitions';
 export * from './header-col-def';

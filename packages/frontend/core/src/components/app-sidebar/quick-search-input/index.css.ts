@@ -4,7 +4,7 @@ export const root = style({
   display: 'inline-flex',
   background: cssVar('white10'),
   alignItems: 'center',
-  borderRadius: '8px',
+  borderRadius: '4px',
   border: `1px solid ${cssVar('black10')}`,
   fontSize: cssVar('fontSm'),
   width: '100%',

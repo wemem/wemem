@@ -1,5 +1,6 @@
 import { Menu } from '@affine/component';
 import type { Tag } from '@affine/core/modules/tag';
+import { useTagI18N } from '@affine/core/modules/tag/entities/internal';
 import { CloseIcon, MoreHorizontalIcon } from '@blocksuite/icons';
 import { LiveData, useLiveData } from '@toeverything/infra';
 import { assignInlineVars } from '@vanilla-extract/dynamic';
@@ -60,6 +61,7 @@ export const TagItem = ({
 }: TagItemProps) => {
   const value = useLiveData(tag?.value$);
   const color = useLiveData(tag?.color$);
+  const t = useTagI18N();
   const handleRemove: MouseEventHandler = useCallback(
     e => {
       e.stopPropagation();
@@ -87,7 +89,7 @@ export const TagItem = ({
             backgroundColor: color,
           }}
         />
-        <div className={styles.tagLabel}>{value}</div>
+        <div className={styles.tagLabel}>{t(value)}</div>
         {onRemoved ? (
           <div
             data-testid="remove-tag-button"

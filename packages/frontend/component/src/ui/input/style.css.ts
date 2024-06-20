@@ -8,7 +8,7 @@ export const inputWrapper = style({
   color: cssVar('textPrimaryColor'),
   border: '1px solid',
   backgroundColor: cssVar('white'),
-  borderRadius: 8,
+  borderRadius: 4,
   display: 'flex',
   justifyContent: 'center',
   alignItems: 'center',

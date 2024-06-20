@@ -8,3 +8,7 @@ export type CollectionsListProps = {
   docCollection: DocCollection;
   onCreate?: () => void;
 };
+
+export type FeedsListProps = {
+  docCollection: DocCollection;
+};

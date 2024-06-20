@@ -99,7 +99,7 @@ export const includeItem = style({
   gap: 16,
   whiteSpace: 'nowrap',
   border: `1px solid ${cssVar('borderColor')}`,
-  borderRadius: 8,
+  borderRadius: 4,
   padding: '4px 8px 4px',
 });
 export const includeTitle = style({
@@ -189,7 +189,7 @@ export const button = style({
 });
 export const bottomButton = style({
   padding: '4px 12px',
-  borderRadius: 8,
+  borderRadius: 4,
 });
 export const previewActive = style({
   backgroundColor: cssVar('hoverColorFilled'),

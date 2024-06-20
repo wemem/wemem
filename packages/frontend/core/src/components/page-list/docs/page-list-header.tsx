@@ -5,12 +5,14 @@ import {
   Scrollable,
   useConfirmModal,
 } from '@affine/component';
+import { AllPageListOperationsMenu, PageDisplayMenu } from '@affine/core/components/page-list';
 import { useAsyncCallback } from '@affine/core/hooks/affine-async-hooks';
 import { useNavigateHelper } from '@affine/core/hooks/use-navigate-helper';
 import type { Tag } from '@affine/core/modules/tag';
 import { TagService } from '@affine/core/modules/tag';
+import { useTagI18N } from '@affine/core/modules/tag/entities/internal';
 import { mixpanel } from '@affine/core/utils';
-import type { Collection } from '@affine/env/filter';
+import type { Collection, Filter } from '@affine/env/filter';
 import { useAFFiNEI18N } from '@affine/i18n/hooks';
 import {
   ArrowDownSmallIcon,
@@ -34,9 +36,11 @@ import {
   useEditCollectionName,
 } from '../view/use-edit-collection';
 import * as styles from './page-list-header.css';
+import * as feedStyles from './page-list-header-feed.css';
 import { PageListNewPageButton } from './page-list-new-page-button';
 
-export const PageListHeader = () => {
+export const PageListHeader = ({currentFilters,onChangeCurrentFilters}:{currentFilters: Filter[];
+                                 onChangeCurrentFilters: (filters: Filter[]) => void;}) => {
   const t = useAFFiNEI18N();
   const workspace = useService(WorkspaceService).workspace;
   const { importFile, createEdgeless, createPage } = usePageHelper(
@@ -71,16 +75,28 @@ export const PageListHeader = () => {
 
   return (
     <div className={styles.docListHeader}>
-      <div className={styles.docListHeaderTitle}>{title}</div>
-      <PageListNewPageButton
-        size="small"
-        testId="new-page-button-trigger"
-        onCreateEdgeless={createEdgeless}
-        onCreatePage={createPage}
-        onImportFile={onImportFile}
-      >
-        <div className={styles.buttonText}>{t['New Page']()}</div>
-      </PageListNewPageButton>
+      <div className={styles.docListHeaderTitle}>
+        <div>{title}</div>
+        <div className={feedStyles.listRightButton}>
+          <AllPageListOperationsMenu
+            filterList={currentFilters}
+            onChangeFilterList={onChangeCurrentFilters}
+            propertiesMeta={workspace.docCollection.meta.properties}
+          />
+        </div>
+      </div>
+      <div className={styles.rightButtonGroup}>
+        <PageListNewPageButton
+          size="small"
+          testId="new-page-button-trigger"
+          onCreateEdgeless={createEdgeless}
+          onCreatePage={createPage}
+          onImportFile={onImportFile}
+        >
+          <div className={styles.buttonText}>{t['New Page']()}</div>
+        </PageListNewPageButton>
+        <PageDisplayMenu />
+      </div>
     </div>
   );
 };
@@ -187,6 +203,7 @@ export const TagPageListHeader = ({
   const tagTitle = useLiveData(tag.value$);
 
   const t = useAFFiNEI18N();
+  const tt = useTagI18N();
   const { jumpToTags, jumpToCollection } = useNavigateHelper();
   const collectionService = useService(CollectionService);
   const [openMenu, setOpenMenu] = useState(false);
@@ -251,14 +268,17 @@ export const TagPageListHeader = ({
                   backgroundColor: tagColor,
                 }}
               />
-              <div className={styles.tagLabel}>{tagTitle}</div>
+              <div className={styles.tagLabel}>{tt(tagTitle)}</div>
               <ArrowDownSmallIcon className={styles.arrowDownSmallIcon} />
             </div>
           </Menu>
         </div>
-        <Button className={styles.addPageButton} onClick={handleClick}>
-          {t['com.affine.editCollection.saveCollection']()}
-        </Button>
+        <div className={feedStyles.listRightButton}>
+          <Button className={styles.addPageButton} onClick={handleClick}>
+            {t['com.affine.editCollection.saveCollection']()}
+          </Button>
+          <PageDisplayMenu />
+        </div>
       </div>
     </>
   );
@@ -325,6 +345,7 @@ export const SwitchTag = ({ onClick }: SwitchTagProps) => {
 const TagLink = ({ tag, onClick }: { tag: Tag; onClick: () => void }) => {
   const tagColor = useLiveData(tag.color$);
   const tagTitle = useLiveData(tag.value$);
+  const tt = useTagI18N();
   return (
     <Link
       key={tag.id}
@@ -335,7 +356,7 @@ const TagLink = ({ tag, onClick }: { tag: Tag; onClick: () => void }) => {
       onClick={onClick}
     >
       <div className={styles.tagIcon} style={{ background: tagColor }} />
-      <div className={styles.tagSelectorItemText}>{tagTitle}</div>
+      <div className={styles.tagSelectorItemText}>{tt(tagTitle)}</div>
     </Link>
   );
 };

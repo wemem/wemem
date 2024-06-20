@@ -30,6 +30,21 @@ export class TagStore extends Store {
     return newId;
   }
 
+  createNewTagWithId(newId: string, value: string, color: string, ghost?: boolean) {
+    this.properties.updateTagOptions([
+      ...this.properties.tagOptions$.value,
+      {
+        id: newId,
+        value,
+        color,
+        ghost,
+        createDate: Date.now(),
+        updateDate: Date.now(),
+      },
+    ]);
+    return newId;
+  }
+
   deleteTag(id: string) {
     this.properties.removeTagOption(id);
   }

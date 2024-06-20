@@ -1,4 +1,5 @@
 import type { Tag } from '@affine/core/modules/tag';
+import { isInternalTag } from '@affine/core/modules/tag/entities/internal';
 import { Trans } from '@affine/i18n';
 import { useService, WorkspaceService } from '@toeverything/infra';
 import { useCallback, useMemo, useRef, useState } from 'react';
@@ -30,7 +31,7 @@ export const VirtualizedTagList = ({
 
   const tagOperations = useCallback(
     (tag: TagMeta) => {
-      return <TagOperationCell tag={tag} onTagDelete={onTagDelete} />;
+      return isInternalTag(tag.title) ? undefined : <TagOperationCell tag={tag} onTagDelete={onTagDelete} />;
     },
     [onTagDelete]
   );

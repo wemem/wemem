@@ -1,7 +1,5 @@
 import { usePageHelper } from '@affine/core/components/blocksuite/block-suite-page-list/utils';
 import {
-  AllPageListOperationsMenu,
-  PageDisplayMenu,
   PageListNewPageButton,
 } from '@affine/core/components/page-list';
 import { Header } from '@affine/core/components/pure/header';
@@ -17,8 +15,6 @@ import * as styles from './all-page.css';
 
 export const AllPageHeader = ({
   showCreateNew,
-  filters,
-  onChangeFilters,
 }: {
   showCreateNew: boolean;
   filters: Filter[];
@@ -53,16 +49,15 @@ export const AllPageHeader = ({
 
   return (
     <Header
-      left={
-        <AllPageListOperationsMenu
-          filterList={filters}
-          onChangeFilterList={onChangeFilters}
-          propertiesMeta={workspace.docCollection.meta.properties}
-        />
-      }
+      // left={
+      //   <AllPageListOperationsMenu
+      //     filterList={filters}
+      //     onChangeFilterList={onChangeFilters}
+      //     propertiesMeta={workspace.docCollection.meta.properties}
+      //   />
+      // }
       right={
-        <>
-          <PageListNewPageButton
+        <PageListNewPageButton
             size="small"
             className={clsx(
               styles.headerCreateNewButton,
@@ -74,8 +69,6 @@ export const AllPageHeader = ({
           >
             <PlusIcon />
           </PageListNewPageButton>
-          <PageDisplayMenu />
-        </>
       }
       center={<WorkspaceModeFilterTab activeFilter={'docs'} />}
     />

@@ -44,7 +44,7 @@ export const authAtom = atom<AuthAtom>({
 
 export const openDisableCloudAlertModalAtom = atom(false);
 
-export type AllPageFilterOption = 'docs' | 'collections' | 'tags';
+export type AllPageFilterOption = 'docs' | 'collections' | 'tags' | 'feeds';
 export const allPageFilterSelectAtom = atom<AllPageFilterOption>('docs');
 
 export const openWorkspaceListModalAtom = atom(false);

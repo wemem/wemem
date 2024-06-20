@@ -10,7 +10,7 @@ export const button = style({
   outline: '0',
   border: '1px solid',
   padding: '0 8px',
-  borderRadius: '8px',
+  borderRadius: '4px',
   fontSize: cssVar('fontXs'),
   fontWeight: 500,
   transition: 'all .3s',

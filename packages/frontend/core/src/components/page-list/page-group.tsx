@@ -205,14 +205,14 @@ const requiredPropNames = [
   'draggable',
 ] as const;
 
-type RequiredProps<T> = Pick<
+export type RequiredProps<T> = Pick<
   ListProps<T>,
   (typeof requiredPropNames)[number]
 > & {
   selectable: boolean;
 };
 
-const listsPropsAtom = selectAtom(
+export const listsPropsAtom = selectAtom(
   listPropsAtom,
   props => {
     return Object.fromEntries(

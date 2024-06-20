@@ -1,3 +1,4 @@
+import { InternalTags } from '@affine/core/modules/tag/entities/internal';
 import type { DocsService } from '@toeverything/infra';
 import { Entity, LiveData } from '@toeverything/infra';
 
@@ -7,17 +8,32 @@ import type { TagStore } from '../stores/tag';
 export class TagList extends Entity {
   constructor(
     private readonly store: TagStore,
-    private readonly docs: DocsService
+    private readonly docs: DocsService,
   ) {
     super();
+    this.initInternalTags();
   }
 
   readonly tags$ = LiveData.from(this.store.watchTagIds(), []).map(ids => {
-    return ids.map(id => this.framework.createEntity(Tag, { id }));
+    return ids.map(id => this.framework.createEntity(Tag, { id })).filter(tag => {
+      return tag.ghost$.value === undefined ? true : !tag.ghost$.value;
+    });
   });
 
   createTag(value: string, color: string) {
     const newId = this.store.createNewTag(value, color);
+    const newTag = this.framework.createEntity(Tag, { id: newId });
+    return newTag;
+  }
+
+  createTagWithId(newId: string, value: string, color: string) {
+    this.store.createNewTagWithId(newId, value, color, undefined);
+    const newTag = this.framework.createEntity(Tag, { id: newId });
+    return newTag;
+  }
+
+  createGhostTagWithId(newId: string, value: string, color: string) {
+    this.store.createNewTagWithId(newId, value, color, true);
     const newTag = this.framework.createEntity(Tag, { id: newId });
     return newTag;
   }
@@ -74,6 +90,14 @@ export class TagList extends Entity {
   tagByTagValue$(value: string) {
     return LiveData.computed(get => {
       return get(this.tags$).find(tag => this.filterFn(get(tag.value$), value));
+    });
+  }
+
+  private initInternalTags() {
+    InternalTags.forEach(tag => {
+      if(!this.tagByTagId$(tag.id).getValue()){
+        this.createTagWithId(tag.id, tag.value, tag.color);
+      }
     });
   }
 }

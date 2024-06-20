@@ -12,7 +12,7 @@ export const arrowDownSmallIcon = style({
 });
 
 export const headerDisplayButton = style({
-  marginLeft: '16px',
+  // marginLeft: '16px',
   ['WebkitAppRegion' as string]: 'no-drag',
 });
 

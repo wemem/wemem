@@ -1,4 +1,5 @@
 import { AnimatedDeleteIcon } from '@affine/component';
+import { FeedList } from '@affine/core/components/pure/workspace-slider-bar/feed';
 import { getDNDId } from '@affine/core/hooks/affine/use-global-dnd-helper';
 import { useAsyncCallback } from '@affine/core/hooks/affine-async-hooks';
 import { CollectionService } from '@affine/core/modules/collection';
@@ -20,7 +21,7 @@ import { useNavigateHelper } from '../../hooks/use-navigate-helper';
 import { WorkbenchService } from '../../modules/workbench';
 import {
   AddPageButton,
-  AppDownloadButton,
+  // AppDownloadButton,
   AppSidebar,
   appSidebarOpenAtom,
   CategoryDivider,
@@ -37,8 +38,8 @@ import FavoriteList from '../pure/workspace-slider-bar/favorite/favorite-list';
 import { WorkspaceSelector } from '../workspace-selector';
 import ImportPage from './import-page';
 import { workspaceAndUserWrapper, workspaceWrapper } from './index.css';
-import { AppSidebarJournalButton } from './journal-button';
-import { UpdaterButton } from './updater-button';
+// import { AppSidebarJournalButton } from './journal-button';
+// import { UpdaterButton } from './updater-button';
 import { UserInfo } from './user-info';
 
 export type RootAppSidebarProps = {
@@ -167,16 +168,16 @@ export const RootAppSidebar = memo(
         translucentUI={appSettings.enableBlurBackground}
       >
         <SidebarContainer>
-          <div className={workspaceAndUserWrapper}>
-            <div className={workspaceWrapper}>
-              <WorkspaceSelector />
-            </div>
-            <UserInfo />
-          </div>
-          <QuickSearchInput
-            data-testid="slider-bar-quick-search-button"
-            onClick={onOpenQuickSearchModal}
-          />
+          {/*<div className={workspaceAndUserWrapper}>*/}
+          {/*  <div className={workspaceWrapper}>*/}
+          {/*    <WorkspaceSelector />*/}
+          {/*  </div>*/}
+          {/*  <UserInfo />*/}
+          {/*</div>*/}
+          {/*<QuickSearchInput*/}
+          {/*  data-testid="slider-bar-quick-search-button"*/}
+          {/*  onClick={onOpenQuickSearchModal}*/}
+          {/*/>*/}
           <RouteMenuLinkItem
             icon={<FolderIcon />}
             active={allPageActive}
@@ -186,9 +187,9 @@ export const RootAppSidebar = memo(
               {t['com.affine.workspaceSubPath.all']()}
             </span>
           </RouteMenuLinkItem>
-          <AppSidebarJournalButton
-            docCollection={currentWorkspace.docCollection}
-          />
+          {/*<AppSidebarJournalButton*/}
+          {/*  docCollection={currentWorkspace.docCollection}*/}
+          {/*/>*/}
           {runtimeConfig.enableNewSettingModal ? (
             <MenuItem
               data-testid="slider-bar-workspace-setting-button"
@@ -210,6 +211,7 @@ export const RootAppSidebar = memo(
             docCollection={docCollection}
             onCreate={handleCreateCollection}
           />
+          <FeedList docCollection={docCollection} />
           <CategoryDivider label={t['com.affine.rootAppSidebar.others']()} />
           {/* fixme: remove the following spacer */}
           <div style={{ height: '4px' }} />
@@ -228,9 +230,19 @@ export const RootAppSidebar = memo(
           </div>
         </SidebarScrollableContainer>
         <SidebarContainer>
-          {environment.isDesktop ? <UpdaterButton /> : <AppDownloadButton />}
+          {/*{environment.isDesktop ? <UpdaterButton /> : <AppDownloadButton />}*/}
           <div style={{ height: '4px' }} />
           <AddPageButton onClick={onClickNewPage} />
+          <QuickSearchInput
+            data-testid="slider-bar-quick-search-button"
+            onClick={onOpenQuickSearchModal}
+          />
+          <div className={workspaceAndUserWrapper}>
+            <div className={workspaceWrapper}>
+              <WorkspaceSelector />
+            </div>
+            <UserInfo />
+          </div>
         </SidebarContainer>
       </AppSidebar>
     );

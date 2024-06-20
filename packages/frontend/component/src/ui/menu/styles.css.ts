@@ -4,7 +4,7 @@ export const triggerWidthVar = createVar('triggerWidthVar');
 export const menuContent = style({
   minWidth: '180px',
   color: cssVar('textPrimaryColor'),
-  borderRadius: '8px',
+  borderRadius: '4px',
   padding: '8px',
   fontSize: cssVar('fontSm'),
   fontWeight: '400',
@@ -98,7 +98,7 @@ export const menuTrigger = style({
   color: cssVar('textPrimaryColor'),
   border: '1px solid',
   backgroundColor: cssVar('white'),
-  borderRadius: 8,
+  borderRadius: 4,
   display: 'inline-flex',
   justifyContent: 'space-between',
   alignItems: 'center',

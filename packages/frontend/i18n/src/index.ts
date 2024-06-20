@@ -9,7 +9,7 @@ import {
 } from 'react-i18next';
 
 import { LOCALES } from './resources';
-import type en_US from './resources/en.json';
+import type en_US from './resources/en-readflow.json';
 
 declare module 'i18next' {
   // Refs: https://www.i18next.com/overview/typescript#argument-of-type-defaulttfuncreturn-is-not-assignable-to-parameter-of-type-xyz

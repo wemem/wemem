@@ -18,6 +18,7 @@ export class GraphQLService extends Service {
   }
 
   private readonly rawGql = gqlFetcherFactory('/graphql', this.fetcher.fetch);
+  private readonly rawGqlV2 = gqlFetcherFactory('/api/v1/graphql', this.fetcher.fetch);
 
   rxGql = <Query extends GraphQLQuery>(
     options: QueryOptions<Query>
@@ -38,6 +39,24 @@ export class GraphQLService extends Service {
   ): Promise<QueryResponse<Query>> => {
     try {
       return await this.rawGql(options);
+    } catch (err) {
+      if (err instanceof Array) {
+        for (const error of err) {
+          if (error instanceof GraphQLError && error.extensions?.code === 403) {
+            this.framework.get(AuthService).session.revalidate();
+          }
+        }
+        throw new BackendError(new Error('Graphql Error'));
+      }
+      throw err;
+    }
+  };
+
+  exec = async <Query extends GraphQLQuery>(
+    options: QueryOptions<Query>
+  ): Promise<QueryResponse<Query>> => {
+    try {
+      return await this.rawGqlV2(options);
     } catch (err) {
       if (err instanceof Array) {
         for (const error of err) {
