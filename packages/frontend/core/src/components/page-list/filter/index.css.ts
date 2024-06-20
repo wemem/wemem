@@ -32,9 +32,9 @@ export const menuItemTextStyle = style({
 export const filterItemStyle = style({
   display: 'flex',
   border: `1px solid ${cssVar('borderColor')}`,
-  borderRadius: '8px',
+  borderRadius: '4px',
   background: cssVar('white'),
-  padding: '4px 8px',
+  padding: '2px 8px',
   overflow: 'hidden',
   justifyContent: 'space-between',
 });
