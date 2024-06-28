@@ -339,6 +339,7 @@ export interface FeedItem {
   feedId: Scalars['ID']['output'];
   feedItemId: Scalars['ID']['output'];
   link: Scalars['String']['output'];
+  publishedAt: Scalars['DateTime']['output'];
   title: Scalars['String']['output'];
 }
 
@@ -1807,6 +1808,7 @@ export type PullFeedItemsQuery = {
     descriptionMarkdown: string;
     contentMarkdown: string | null;
     createdAt: string;
+    publishedAt: string;
   }> | null;
 };
 

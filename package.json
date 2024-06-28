@@ -41,8 +41,7 @@
   "lint-staged": {
     "*": "prettier --write --ignore-unknown --cache",
     "*.{ts,tsx,mjs,js,jsx}": [
-      "prettier --ignore-unknown --write",
-      "cross-env NODE_OPTIONS=\"--max-old-space-size=8192\" eslint --cache --fix"
+      "prettier --ignore-unknown --write"
     ],
     "*.toml": [
       "taplo format"

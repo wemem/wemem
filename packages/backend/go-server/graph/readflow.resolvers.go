@@ -70,6 +70,14 @@ func (r *queryResolver) PullFeedItems(ctx context.Context, pullInput []model.Pul
 		}
 
 		for _, item := range dbItems {
+			var publishedAt string
+			if published, ok := item.Published(); ok {
+				publishedAt = published.String()
+			} else if updated, ok := item.Updated(); ok {
+				publishedAt = updated.String()
+			} else {
+				publishedAt = item.CreatedAt.String()
+			}
 			res = append(res, model.FeedItem{
 				FeedID:              item.FeedID,
 				FeedItemID:          item.ID,
@@ -78,6 +86,7 @@ func (r *queryResolver) PullFeedItems(ctx context.Context, pullInput []model.Pul
 				DescriptionMarkdown: *item.InnerFeedItem.DescriptionMarkdown,
 				ContentMarkdown:     item.InnerFeedItem.ContentMarkdown,
 				CreatedAt:           item.CreatedAt.String(),
+				PublishedAt:         publishedAt,
 			})
 		}
 	}

@@ -689,6 +689,7 @@ query PullFeedItems($pullInput: [PullFeedsInput!]!) {
     descriptionMarkdown
     contentMarkdown
     createdAt
+    publishedAt
   }
 }`,
 };

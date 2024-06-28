@@ -4,7 +4,12 @@ import { useDocEngineStatus } from '@affine/core/hooks/affine/use-doc-engine-sta
 import { useAsyncCallback } from '@affine/core/hooks/affine-async-hooks';
 import { i18nTime, useI18n } from '@affine/i18n';
 import type { DocMeta } from '@blocksuite/store';
-import { useLiveData, useService } from '@toeverything/infra';
+import {
+  DocsService,
+  GlobalContextService,
+  useLiveData,
+  useService,
+} from '@toeverything/infra';
 import clsx from 'clsx';
 import { Command } from 'cmdk';
 import { useDebouncedValue } from 'foxact/use-debounced-value';
@@ -12,6 +17,7 @@ import { useAtom } from 'jotai';
 import {
   type ReactNode,
   Suspense,
+  useCallback,
   useLayoutEffect,
   useMemo,
   useRef,
@@ -57,10 +63,10 @@ const categoryToI18nKey: Record<CommandCategory, i18nKey> = {
 };
 
 const QuickSearchGroup = ({
-                            category,
-                            commands,
-                            onOpenChange,
-                          }: {
+  category,
+  commands,
+  onOpenChange,
+}: {
   category: CommandCategory;
   commands: CMDKCommand[];
   onOpenChange?: (open: boolean) => void;
@@ -78,7 +84,7 @@ const QuickSearchGroup = ({
         onOpenChange?.(false);
       }
     },
-    [onOpenChange],
+    [onOpenChange]
   );
 
   return (
@@ -87,8 +93,8 @@ const QuickSearchGroup = ({
         const label =
           typeof command.label === 'string'
             ? {
-              title: command.label,
-            }
+                title: command.label,
+              }
             : command.label;
         return (
           <Command.Item
@@ -130,9 +136,9 @@ const QuickSearchGroup = ({
 };
 
 const QuickSearchCommands = ({
-                               onOpenChange,
-                               groups,
-                             }: {
+  onOpenChange,
+  groups,
+}: {
   onOpenChange?: (open: boolean) => void;
   groups: ReturnType<typeof useCMDKCommandGroups>;
 }) => {
@@ -153,14 +159,14 @@ const QuickSearchCommands = ({
 };
 
 export const CMDKContainer = ({
-                                className,
-                                onQueryChange,
-                                query,
-                                children,
-                                inputLabel,
-                                open,
-                                ...rest
-                              }: React.PropsWithChildren<{
+  className,
+  onQueryChange,
+  query,
+  children,
+  inputLabel,
+  open,
+  ...rest
+}: React.PropsWithChildren<{
   open: boolean;
   className?: string;
   query: string;
@@ -242,10 +248,10 @@ export const CMDKContainer = ({
 };
 
 const CMDKQuickSearchModalInner = ({
-                                     pageMeta,
-                                     open,
-                                     ...props
-                                   }: CMDKModalProps & { pageMeta?: Partial<DocMeta> }) => {
+  pageMeta,
+  open,
+  ...props
+}: CMDKModalProps & { pageMeta?: Partial<DocMeta> }) => {
   const quickSearch = useService(NewFeedService).newFeed;
   const query = useLiveData(quickSearch.query$);
   const groups = useCMDKCommandGroups();
@@ -265,12 +271,12 @@ const CMDKQuickSearchModalInner = ({
 };
 
 const CMDKQuickSearchCallbackModalInner = ({
-                                             open,
-                                             ...props
-                                           }: CMDKModalProps & { pageMeta?: Partial<DocMeta> }) => {
+  open,
+  ...props
+}: CMDKModalProps & { pageMeta?: Partial<DocMeta> }) => {
   const quickSearch = useService(NewFeedService).newFeed;
   const query = useLiveData(quickSearch.query$);
-  const groups =  useSearchCallbackCommandGroups();
+  const groups = useSearchCallbackCommandGroups();
   const t = useI18n();
   return (
     <CMDKContainer
@@ -287,10 +293,10 @@ const CMDKQuickSearchCallbackModalInner = ({
 };
 
 export const NewFeedModal = ({
-                               pageMeta,
-                               open,
-                               ...props
-                             }: CMDKModalProps & { pageMeta?: Partial<DocMeta> }) => {
+  pageMeta,
+  open,
+  ...props
+}: CMDKModalProps & { pageMeta?: Partial<DocMeta> }) => {
   const quickSearch = useService(NewFeedService).newFeed;
   const mode = useLiveData(quickSearch.mode$);
   const InnerComp =
@@ -344,5 +350,39 @@ const CMDKKeyBinding = ({ keyBinding }: { keyBinding: string }) => {
         );
       })}
     </div>
+  );
+};
+
+export const NewFeedModalComponent = () => {
+  const newFeed = useService(NewFeedService).newFeed;
+  const open = useLiveData(newFeed.show$);
+
+  const onToggleQuickSearch = useCallback(
+    (open: boolean) => {
+      if (open) {
+        // should never be here
+        newFeed.show();
+      } else {
+        newFeed.hide();
+      }
+    },
+    [newFeed]
+  );
+
+  const docRecordList = useService(DocsService).list;
+  const currentDocId = useLiveData(
+    useService(GlobalContextService).globalContext.docId.$
+  );
+  const currentPage = useLiveData(
+    currentDocId ? docRecordList.doc$(currentDocId) : null
+  );
+  const pageMeta = useLiveData(currentPage?.meta$);
+
+  return (
+    <NewFeedModal
+      open={open}
+      onOpenChange={onToggleQuickSearch}
+      pageMeta={pageMeta}
+    />
   );
 };
