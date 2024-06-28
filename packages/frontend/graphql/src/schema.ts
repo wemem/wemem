@@ -153,6 +153,12 @@ export enum PublicPageMode {
   Page = 'Page',
 }
 
+export interface PullFeedsInput {
+  feedId: Scalars['String']['input'];
+  latestCreatedAt: InputMaybe<Scalars['DateTime']['input']>;
+  latestFeedItemId: InputMaybe<Scalars['ID']['input']>;
+}
+
 export interface QueryChatHistoriesInput {
   action: InputMaybe<Scalars['Boolean']['input']>;
   limit: InputMaybe<Scalars['Int']['input']>;
@@ -758,6 +764,24 @@ export type PublishPageMutation = {
   };
 };
 
+export type PullFeedItemsQueryVariables = Exact<{
+  pullInput: Array<PullFeedsInput> | PullFeedsInput;
+}>;
+
+export type PullFeedItemsQuery = {
+  __typename?: 'Query';
+  pullFeedItems: Array<{
+    __typename?: 'FeedItem';
+    feedId: string;
+    feedItemId: string;
+    title: string;
+    link: string;
+    descriptionMarkdown: string;
+    contentMarkdown: string | null;
+    createdAt: string;
+  }> | null;
+};
+
 export type QuotaQueryVariables = Exact<{ [key: string]: never }>;
 
 export type QuotaQuery = {
@@ -843,6 +867,24 @@ export type RevokePublicPageMutation = {
     mode: PublicPageMode;
     public: boolean;
   };
+};
+
+export type SearchFeedsQueryVariables = Exact<{
+  keyword: Scalars['String']['input'];
+}>;
+
+export type SearchFeedsQuery = {
+  __typename?: 'Query';
+  searchFeeds: Array<{
+    __typename?: 'Feed';
+    id: string;
+    title: string;
+    description: string;
+    image: string | null;
+    feedType: string;
+    feedLink: string;
+    updated: string;
+  }> | null;
 };
 
 export type SendChangeEmailMutationVariables = Exact<{
@@ -1247,9 +1289,19 @@ export type Queries =
       response: PricesQuery;
     }
   | {
+      name: 'pullFeedItemsQuery';
+      variables: PullFeedItemsQueryVariables;
+      response: PullFeedItemsQuery;
+    }
+  | {
       name: 'quotaQuery';
       variables: QuotaQueryVariables;
       response: QuotaQuery;
+    }
+  | {
+      name: 'searchFeedsQuery';
+      variables: SearchFeedsQueryVariables;
+      response: SearchFeedsQuery;
     }
   | {
       name: 'serverConfigQuery';

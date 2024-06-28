@@ -1,9 +1,7 @@
+import { FeedAvatar } from '@affine/core/components/page-list/feed/avatar';
 import { listsPropsAtom, type RequiredProps } from '@affine/core/components/page-list/page-group';
 import type { FeedListItemProps } from '@affine/core/components/page-list/types-feed';
 import { assertExists } from '@blocksuite/global/utils';
-import {
-  ViewLayersIcon,
-} from '@blocksuite/icons';
 
 import { FeedListItem } from './feeds';
 import {
@@ -39,12 +37,13 @@ function feedMetaToListItemProp(
   const itemProps: FeedListItemProps = {
     feedId: item.id,
     title: item.title,
+    description: item.feed?.description,
     to:
       props.rowAsLink && !props.selectable
         ? `/feed/${item.id}`
         : undefined,
     onClick: toggleSelection,
-    icon: <ViewLayersIcon />,
+    icon: <FeedAvatar image={item.feed?.image} />,
     operations: props.operationsRenderer?.(item),
     selectable: props.selectable,
     selected: props.selectedIds?.includes(item.id),

@@ -1,0 +1,34 @@
+type Feed {
+  id: ID!
+  title: String!
+  description: String!
+  feedLink: String!
+  image: String
+  feedType: String!
+  updated: DateTime!
+}
+
+input PullFeedsInput{
+  feedId: String!
+  latestFeedItemId: ID
+  latestCreatedAt: DateTime
+}
+
+type FeedItem{
+  feedId: ID!
+  feedItemId: ID!
+  title: String!
+  link: String!
+  descriptionMarkdown: String!
+  contentMarkdown: String
+  createdAt: DateTime!
+}
+
+extend type Query {
+  searchFeeds(keyword: String!): [Feed!]
+  pullFeedItems(pullInput: [PullFeedsInput!]!): [FeedItem!]
+}
+
+extend type Mutation {
+  refreshFeed(feedId: String!): String
+}

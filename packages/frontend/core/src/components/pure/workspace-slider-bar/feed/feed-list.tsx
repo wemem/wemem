@@ -1,5 +1,4 @@
 import {
-  AnimatedCollectionsIcon,
   toast,
 } from '@affine/component';
 import { RenameModal } from '@affine/component/rename-modal';
@@ -7,6 +6,7 @@ import { Button, IconButton } from '@affine/component/ui/button';
 import {
   FeedOperations, filterPage, filterPageByRules, stopPropagation, useCreateFeed,
 } from '@affine/core/components/page-list';
+import { FeedAvatar } from '@affine/core/components/page-list/feed/avatar';
 import { Doc } from '@affine/core/components/pure/workspace-slider-bar/collections';
 import { AddFeedButton } from '@affine/core/components/pure/workspace-slider-bar/feed/add-feed-button';
 import { useAllPageListConfig } from '@affine/core/hooks/affine/use-all-page-list-config';
@@ -105,7 +105,7 @@ export const FeedSidebarNavItem = ({
         data-feed-id={feed.id}
         data-type="feed-list-item"
         active={currentPath.includes(path)}
-        icon={<AnimatedCollectionsIcon closed />}
+        icon={<FeedAvatar image={feed.feed?.image} />}
         to={path}
         onCollapsedChange={setCollapsed}
         linkComponent={WorkbenchLink}

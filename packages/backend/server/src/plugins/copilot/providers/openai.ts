@@ -40,6 +40,9 @@ export class OpenAIProvider
     'gpt-4-vision-preview',
     'gpt-4-turbo-preview',
     'gpt-3.5-turbo',
+    'qwen-turbo',
+    'qwen-plus',
+    'qwen-max',
     // embeddings
     'text-embedding-3-large',
     'text-embedding-3-small',
@@ -203,7 +206,7 @@ export class OpenAIProvider
         messages: this.chatToGPTMessage(messages),
         model: model,
         temperature: options.temperature || 0,
-        max_tokens: options.maxTokens || 4096,
+        max_tokens: options.maxTokens || 2000,
         user: options.user,
       },
       {

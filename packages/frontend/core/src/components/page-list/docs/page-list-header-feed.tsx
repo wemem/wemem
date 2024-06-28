@@ -5,12 +5,10 @@ import { PageDisplayMenu, useEditFeed } from '@affine/core/components/page-list'
 import {
   FeedPageListOperationsMenu,
 } from '@affine/core/components/page-list/docs/page-list-header-feed-operations-menu';
+import { FeedAvatar } from '@affine/core/components/page-list/feed/avatar';
 import { useNavigateHelper } from '@affine/core/hooks/use-navigate-helper';
 import type { Collection, Filter, PropertiesMeta } from '@affine/env/filter';
 import { useAFFiNEI18N } from '@affine/i18n/hooks';
-import {
-  ViewLayersIcon,
-} from '@blocksuite/icons';
 import { useCallback } from 'react';
 
 import * as styles from './page-list-header.css';
@@ -47,7 +45,7 @@ export const FeedPageListHeader = ({
             {t['ai.readflow.feeds.header']()} /
           </div>
           <div className={styles.titleIcon}>
-            <ViewLayersIcon />
+            <FeedAvatar image={collection.feed?.image} />
           </div>
           <div className={styles.titleCollectionName}>{collection.name}</div>
           <div className={feedStyles.listRightButton}>

@@ -1,49 +1,40 @@
-import { useCreateFeed } from '@affine/core/components/page-list';
+import { Button } from '@affine/component';
 import type { DocCollection } from '@affine/core/shared';
 import { useAFFiNEI18N } from '@affine/i18n/hooks';
-import { PlusIcon } from '@blocksuite/icons';
+import { PageIcon } from '@blocksuite/icons';
 import clsx from 'clsx';
-import type React from 'react';
+import { PiRss } from 'react-icons/pi';
 
 import { Spotlight } from '../spolight';
 import * as styles from './index.css';
 
 interface AddPageFeedButtonProps {
   onClickNewPage?: () => void;
+  onOpenNewFeedModal: () => void;
   className?: string;
-  style?: React.CSSProperties;
   docCollection: DocCollection;
 }
 
 export function AddPageFeedButton({
-  onClickNewPage,
-  className,
-  style,
-  docCollection,
-}: AddPageFeedButtonProps) {
+                                    onClickNewPage,
+                                    onOpenNewFeedModal,
+                                    className,
+                                  }: AddPageFeedButtonProps) {
   const t = useAFFiNEI18N();
-  const { node, handleCreateFeed } = useCreateFeed(docCollection);
-
   return (
     <div className={clsx(styles.root)}>
-      <button
-        data-testid="sidebar-new-page-button"
-        style={style}
+      <Button
         className={clsx([styles.button, className])}
-        onClick={onClickNewPage}
-      >
-        <PlusIcon className={styles.icon} /> {t['New Page']()}
-      </button>
-      <span>/</span>
-      {node}
-      <button
-        data-testid="sidebar-new-page-button"
-        style={style}
+        icon={<PageIcon />}
+        onClick={onClickNewPage}>
+        {t['New Page']()}
+      </Button>
+      <Button
         className={clsx([styles.button, className])}
-        onClick={handleCreateFeed}
-      >
+        icon={<PiRss />}
+        onClick={onOpenNewFeedModal}>
         {t['ai.readflow.feeds.new-feed-button']()}
-      </button>
+      </Button>
       <Spotlight />
     </div>
   );

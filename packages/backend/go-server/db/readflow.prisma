@@ -1,0 +1,102 @@
+generator client {
+  provider        = "go run github.com/steebchen/prisma-client-go"
+  binaryTargets   = ["native", "debian-openssl-3.0.x", "linux-arm64-openssl-3.0.x"]
+  previewFeatures = ["metrics", "tracing", "relationJoins", "nativeDistinct"]
+  output          = "./rdb"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL_READFLOW")
+}
+
+model Feed {
+  id            String         @id @default(uuid()) @db.VarChar
+  title         String         @db.VarChar(200)
+  description   String         @db.Text
+  link          String         @db.VarChar(500)
+  feedLink      String         @map("feed_link") @db.VarChar(500)
+  links         String[]       @db.VarChar(500)
+  updated       DateTime?      @db.Timestamptz(6)
+  published     DateTime?      @db.Timestamptz(6)
+  language      String?        @db.VarChar(50)
+  image         Json?          @db.Json
+  copyright     String?        @db.VarChar(1000)
+  generator     String?        @db.VarChar(100)
+  categories    String[]       @db.VarChar(100)
+  dublinCoreExt Json?          @map("dublin_core_ext") @db.Json
+  iTunesExt     Json?          @map("itunes_ext") @db.Json
+  extensions    Json           @db.Json
+  custom        Json           @db.Json
+  items         FeedItem[]     @relation("feed_items")
+  feedType      String         @map("feed_type") @db.VarChar(20)
+  feedVersion   String         @map("feed_version") @db.VarChar(20)
+  createdAt     DateTime       @default(now()) @map("created_at") @db.Timestamptz(6)
+  authors       FeedsAuthors[] @relation("feeds_authors")
+
+  @@index([feedLink])
+  @@map("feeds")
+}
+
+model FeedItem {
+  id                  String             @id @default(uuid()) @db.VarChar
+  title               String             @db.VarChar(200)
+  description         String             @db.Text
+  descriptionMarkdown String?            @map("description_markdown") @db.Text
+  content             String?            @db.Text
+  contentMarkdown     String?            @map("content_markdown") @db.Text
+  link                String?            @db.VarChar(500)
+  links               String[]           @db.VarChar(500)
+  updated             DateTime?          @db.Timestamptz(6)
+  published           DateTime?          @db.Timestamptz(6)
+  guid                String?            @db.VarChar(500)
+  image               Json?              @db.Json
+  categories          String[]           @db.VarChar(50)
+  enclosures          Json?              @db.Json
+  dublinCoreExt       Json?              @map("dublin_core_ext") @db.Json
+  itunesExt           Json?              @map("itunes_ext") @db.Json
+  extensions          Json?              @db.Json
+  custom              Json?              @db.Json
+  feed                Feed               @relation("feed_items", fields: [feedId], references: [id], onDelete: Cascade)
+  feedId              String             @map("feed_id")
+  createdAt           DateTime           @default(now()) @map("created_at") @db.Timestamptz(6)
+  authors             FeedItemsAuthors[] @relation("feed_items_authors")
+
+  @@map("feed_items")
+}
+
+model FeedPerson {
+  id               String             @id @default(uuid()) @db.VarChar
+  feedId           String             @map("feed_item_id") @db.VarChar(100)
+  name             String             @db.VarChar(100)
+  email            String             @db.VarChar(100)
+  createdAt        DateTime           @default(now()) @map("created_at") @db.Timestamptz(6)
+  feedsAuthors     FeedsAuthors[]     @relation("feeds_authors")
+  feedItemsAuthors FeedItemsAuthors[] @relation("feed_items_authors")
+
+  @@unique([feedId, name, email])
+  @@index([feedId, name, email])
+  @@map("feed_person")
+}
+
+model FeedsAuthors {
+  feed      Feed       @relation("feeds_authors", fields: [feedId], references: [id])
+  feedId    String     @map("feed_id") @db.VarChar(40)
+  person    FeedPerson @relation("feeds_authors", fields: [personId], references: [id])
+  personId  String     @map("person_id") @db.VarChar(40)
+  createdAt DateTime   @default(now()) @map("created_at") @db.Timestamptz(6)
+
+  @@id([feedId, personId])
+  @@map("feeds_authors")
+}
+
+model FeedItemsAuthors {
+  feedItem   FeedItem   @relation("feed_items_authors", fields: [feedItemId], references: [id])
+  feedItemId String     @map("feed_item_id") @db.VarChar(40)
+  person     FeedPerson @relation("feed_items_authors", fields: [personId], references: [id])
+  personId   String     @map("person_id") @db.VarChar(40)
+  createdAt  DateTime   @default(now()) @map("created_at") @db.Timestamptz(6)
+
+  @@id([feedItemId, personId])
+  @@map("feed_items_authors")
+}

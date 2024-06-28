@@ -1,5 +1,6 @@
 import type { DocCollection } from '@blocksuite/store';
 import { z } from 'zod';
+import { feedSchema } from '@affine/env/feed';
 
 export const literalValueSchema: z.ZodType<LiteralValue, z.ZodTypeDef> =
   z.union([
@@ -15,8 +16,8 @@ export type LiteralValue =
   | string
   | boolean
   | {
-      [K: string]: LiteralValue;
-    }
+  [K: string]: LiteralValue;
+}
   | Array<LiteralValue>;
 
 export const refSchema: z.ZodType<Ref, z.ZodTypeDef> = z.object({
@@ -30,7 +31,8 @@ export type Ref = {
 };
 
 // eslint-disable-next-line @typescript-eslint/no-empty-interface
-export interface VariableMap {}
+export interface VariableMap {
+}
 
 export const literalSchema = z.object({
   type: z.literal('literal'),
@@ -55,6 +57,7 @@ export const collectionSchema = z.object({
   allowList: z.array(z.string()),
   createDate: z.union([z.date(), z.number()]).optional(),
   updateDate: z.union([z.date(), z.number()]).optional(),
+  feed: feedSchema.optional(),
 });
 export const deletedCollectionSchema = z.object({
   userId: z.string().optional(),

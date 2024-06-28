@@ -650,6 +650,8 @@
   "ai.readflow.editFeed.editTips": "Edit the feed information.",
   "ai.readflow.editFeed.name": "Name",
   "ai.readflow.editFeed.placeholder": "Enter name",
+  "ai.readflow.feeds.new-feed.placeholder": "Start typing the name or URL of your RSS feed",
+  "ai.readflow.feeds.new-feed.cmd.import-from-wechat": "Import from WeChat",
   "com.affine.confirmModal.button.cancel": "Cancel",
   "com.affine.currentYear": "Current Year",
   "com.affine.delete-tags.confirm.description": "Deleting <1>{{tag}}</1> cannot be undone, please proceed with caution.",
@@ -1377,5 +1379,9 @@
   "ai.readflow.internal-tags.wechat": "WeChat",
   "ai.readflow.internal-tags.rss": "RSS",
   "ai.readflow.internal-tags.seen": "Seen",
-  "ai.readflow.internal-tags.unseen": "Unseen"
+  "ai.readflow.internal-tags.unseen": "Unseen",
+  "ai.readflow.notification.message.feed-added": "Feed added",
+  "ai.readflow.notification.action.feed-added": "Read newest items",
+  "ai.readflow.workspaceSubPath.later": "Later",
+  "ai.readflow.workspaceSubPath.archive": "Archive"
 }

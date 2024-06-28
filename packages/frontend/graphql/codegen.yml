@@ -20,7 +20,9 @@ config:
     Upload: File
     SafeInt: number
 overwrite: true
-schema: ../../backend/server/src/schema.gql
+schema:
+  - ../../backend/server/src/schema.gql
+  - ../../backend/go-server/graph/readflow.gql
 documents: ./src/**/*.gql
 generates:
   ./src/schema.ts:

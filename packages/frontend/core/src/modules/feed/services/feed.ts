@@ -62,6 +62,10 @@ export class FeedService extends Service {
     }
   }
 
+  hasFeed(id: string) {
+    return this.feedsYArray?.toArray().some(v => v.id === id) ?? false;
+  }
+
   deleteFeed(...ids: string[]) {
     const feedsYArray = this.feedsYArray;
     if (!feedsYArray) {

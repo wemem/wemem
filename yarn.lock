@@ -187,6 +187,7 @@ __metadata:
     postcss-loader: "npm:^8.1.1"
     raw-loader: "npm:^4.0.2"
     source-map-loader: "npm:^5.0.0"
+    string-replace-loader: "npm:^3.1.0"
     style-loader: "npm:^4.0.0"
     swc-loader: "npm:^0.2.6"
     terser-webpack-plugin: "npm:^5.3.10"
@@ -397,6 +398,7 @@ __metadata:
     react-router-dom: "npm:^6.22.3"
     react-transition-state: "npm:^2.1.1"
     react-virtuoso: "npm:^4.7.8"
+    rss-parser: "npm:^3.13.0"
     rxjs: "npm:^7.8.1"
     ses: "npm:^1.4.1"
     socket.io-client: "npm:^4.7.5"
@@ -7485,6 +7487,13 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@mixmark-io/domino@npm:^2.2.0":
+  version: 2.2.0
+  resolution: "@mixmark-io/domino@npm:2.2.0"
+  checksum: 10/839624ba6baab655c4f7393e8b8561516849926651e02f40484729b9869436b1e077906810bcac0bba4762448512d3ebd2f6d9b463d8ab0d5f54d75ca5306519
+  languageName: node
+  linkType: hard
+
 "@msgpack/msgpack@npm:^3.0.0-beta2":
   version: 3.0.0-beta2
   resolution: "@msgpack/msgpack@npm:3.0.0-beta2"
@@ -14449,7 +14458,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@types/body-parser@npm:*":
+"@types/body-parser@npm:*, @types/body-parser@npm:^1":
   version: 1.19.5
   resolution: "@types/body-parser@npm:1.19.5"
   dependencies:
@@ -17568,7 +17577,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"body-parser@npm:1.20.2":
+"body-parser@npm:1.20.2, body-parser@npm:^1.20.2":
   version: 1.20.2
   resolution: "body-parser@npm:1.20.2"
   dependencies:
@@ -20830,7 +20839,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"entities@npm:^2.0.0":
+"entities@npm:^2.0.0, entities@npm:^2.0.3":
   version: 2.2.0
   resolution: "entities@npm:2.2.0"
   checksum: 10/2c765221ee324dbe25e1b8ca5d1bf2a4d39e750548f2e85cbf7ca1d167d709689ddf1796623e66666ae747364c11ed512c03b48c5bbe70968d30f2a4009509b7
@@ -32993,6 +33002,16 @@ __metadata:
   languageName: node
   linkType: hard
 
+"rss-parser@npm:^3.13.0":
+  version: 3.13.0
+  resolution: "rss-parser@npm:3.13.0"
+  dependencies:
+    entities: "npm:^2.0.3"
+    xml2js: "npm:^0.5.0"
+  checksum: 10/c27fc0c3c2775b915d8b34d59325aadb96184a0903f566c1cb17571ea930eb8be347739ab478a17f948ed5f71b464e0b5208e6627ae16847fa7ce3783ded77ff
+  languageName: node
+  linkType: hard
+
 "run-applescript@npm:^7.0.0":
   version: 7.0.0
   resolution: "run-applescript@npm:7.0.0"
@@ -33102,7 +33121,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"sax@npm:^1.2.4":
+"sax@npm:>=0.6.0, sax@npm:^1.2.4":
   version: 1.4.1
   resolution: "sax@npm:1.4.1"
   checksum: 10/b1c784b545019187b53a0c28edb4f6314951c971e2963a69739c6ce222bfbc767e54d320e689352daba79b7d5e06d22b5d7113b99336219d6e93718e2f99d335
@@ -34302,6 +34321,18 @@ __metadata:
   languageName: node
   linkType: hard
 
+"string-replace-loader@npm:^3.1.0":
+  version: 3.1.0
+  resolution: "string-replace-loader@npm:3.1.0"
+  dependencies:
+    loader-utils: "npm:^2.0.0"
+    schema-utils: "npm:^3.0.0"
+  peerDependencies:
+    webpack: ^5
+  checksum: 10/15fec37e2ddfc83819ad6b8005b5518e4314de69b9332077d8f032292b02106000ccc5ac52ceb1285efe30a5286620aef1e51c7d3c00d08fa4571d648b32cfa9
+  languageName: node
+  linkType: hard
+
 "string-width-cjs@npm:string-width@^4.2.0, string-width@npm:^1.0.2 || 2 || 3 || 4, string-width@npm:^4.1.0, string-width@npm:^4.2.0, string-width@npm:^4.2.3":
   version: 4.2.3
   resolution: "string-width@npm:4.2.3"
@@ -35448,6 +35479,27 @@ __metadata:
   dependencies:
     safe-buffer: "npm:^5.0.1"
   checksum: 10/7f0d9ed5c22404072b2ae8edc45c071772affd2ed14a74f03b4e71b4dd1a14c3714d85aed64abcaaee5fec2efc79002ba81155c708f4df65821b444abb0cfade
+  languageName: node
+  linkType: hard
+
+"turndown-server@workspace:packages/backend/turndown-server":
+  version: 0.0.0-use.local
+  resolution: "turndown-server@workspace:packages/backend/turndown-server"
+  dependencies:
+    "@types/body-parser": "npm:^1"
+    "@types/express": "npm:^4.17.21"
+    body-parser: "npm:^1.20.2"
+    express: "npm:^4.19.2"
+    turndown: "npm:^7.2.0"
+  languageName: unknown
+  linkType: soft
+
+"turndown@npm:^7.2.0":
+  version: 7.2.0
+  resolution: "turndown@npm:7.2.0"
+  dependencies:
+    "@mixmark-io/domino": "npm:^2.2.0"
+  checksum: 10/ad373d9cff76e80196effe29c19c1a14fda428fa9f41ef7458daa9c0c8939f37bbc36d0a504940f95ba34a6db8fd4d9cafd1ae498f91d010805f8d540e9e71bb
   languageName: node
   linkType: hard
 
@@ -37436,6 +37488,16 @@ __metadata:
   languageName: node
   linkType: hard
 
+"xml2js@npm:^0.5.0":
+  version: 0.5.0
+  resolution: "xml2js@npm:0.5.0"
+  dependencies:
+    sax: "npm:>=0.6.0"
+    xmlbuilder: "npm:~11.0.0"
+  checksum: 10/27c4d759214e99be5ec87ee5cb1290add427fa43df509d3b92d10152b3806fd2f7c9609697a18b158ccf2caa01e96af067cdba93196f69ca10c90e4f79a08896
+  languageName: node
+  linkType: hard
+
 "xml@npm:^1.0.1":
   version: 1.0.1
   resolution: "xml@npm:1.0.1"
@@ -37447,6 +37509,13 @@ __metadata:
   version: 15.1.1
   resolution: "xmlbuilder@npm:15.1.1"
   checksum: 10/e6f4bab2504afdd5f80491bda948894d2146756532521dbe7db33ae0931cd3000e3b4da19b3f5b3f51bedbd9ee06582144d28136d68bd1df96579ecf4d4404a2
+  languageName: node
+  linkType: hard
+
+"xmlbuilder@npm:~11.0.0":
+  version: 11.0.1
+  resolution: "xmlbuilder@npm:11.0.1"
+  checksum: 10/c8c3d208783718db5b285101a736cd8e6b69a5c265199a0739abaa93d1a1b7de5489fd16df4e776e18b2c98cb91f421a7349e99fd8c1ebeb44ecfed72a25091a
   languageName: node
   linkType: hard
 

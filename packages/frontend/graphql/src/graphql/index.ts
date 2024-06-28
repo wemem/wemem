@@ -628,6 +628,25 @@ mutation publishPage($workspaceId: String!, $pageId: String!, $mode: PublicPageM
 }`,
 };
 
+export const pullFeedItemsQuery = {
+  id: 'pullFeedItemsQuery' as const,
+  operationName: 'PullFeedItems',
+  definitionName: 'pullFeedItems',
+  containsFile: false,
+  query: `
+query PullFeedItems($pullInput: [PullFeedsInput!]!) {
+  pullFeedItems(pullInput: $pullInput) {
+    feedId
+    feedItemId
+    title
+    link
+    descriptionMarkdown
+    contentMarkdown
+    createdAt
+  }
+}`,
+};
+
 export const quotaQuery = {
   id: 'quotaQuery' as const,
   operationName: 'quota',
@@ -721,6 +740,25 @@ mutation revokePublicPage($workspaceId: String!, $pageId: String!) {
     id
     mode
     public
+  }
+}`,
+};
+
+export const searchFeedsQuery = {
+  id: 'searchFeedsQuery' as const,
+  operationName: 'searchFeeds',
+  definitionName: 'searchFeeds',
+  containsFile: false,
+  query: `
+query searchFeeds($keyword: String!) {
+  searchFeeds(keyword: $keyword) {
+    id
+    title
+    description
+    image
+    feedType
+    feedLink
+    updated
   }
 }`,
 };

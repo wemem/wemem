@@ -322,6 +322,27 @@ export const createConfiguration: (
                 },
               ],
             },
+            {
+              test: /\.js$/, // 或其他文件类型，视您的需要而定
+              use: [
+                {
+                  loader: 'string-replace-loader',
+                  options: {
+                    search:  /(['"])AFFiNE\1/g,  // 要查找的字符串
+                    replace: 'Readflow', // 替换成的字符串
+                    flags: 'gi' // 全局替换的标志。如果需要区分大小写可添加 'i' （如 'gi'）
+                  }
+                },
+                {
+                  loader: 'string-replace-loader',
+                  options: {
+                    search: 'affine.pro',  // 要查找的字符串
+                    replace: 'readflow.ai', // 替换成的字符串
+                    flags: 'gi' // 全局替换的标志。如果需要区分大小写可添加 'i' （如 'gi'）
+                  }
+                }
+              ]
+            },
           ],
         },
       ],

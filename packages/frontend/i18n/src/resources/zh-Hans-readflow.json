@@ -1324,5 +1324,7 @@
   "will delete member": "将删除成员",
   "ai.readflow.internal-tags.feed": "订阅",
   "ai.readflow.internal-tags.wechat": "微信",
-  "ai.readflow.internal-tags.rss": "RSS"
+  "ai.readflow.internal-tags.rss": "RSS",
+  "ai.readflow.workspaceSubPath.later": "稍后读",
+  "ai.readflow.workspaceSubPath.archive": "归档"
 }

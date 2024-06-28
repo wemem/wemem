@@ -5,6 +5,7 @@ export type FeedListItemProps = {
   feedId: string;
   icon: JSX.Element;
   title: ReactNode; // using ReactNode to allow for rich content rendering
+  description: ReactNode; // using ReactNode to allow for rich content rendering
   createDate?: Date;
   updatedDate?: Date;
   to?: To; // whether or not to render this item as a Link

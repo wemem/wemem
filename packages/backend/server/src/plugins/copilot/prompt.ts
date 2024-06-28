@@ -27,6 +27,11 @@ function extractMustacheParams(template: string) {
 
 const EXCLUDE_MISSING_WARN_PARAMS = ['lora'];
 
+const modelChanges = new Map<string, string>([
+  ['gpt-4o', 'qwen-plus'],
+  ['gpt-3.5-turbo', 'qwen-plus'],
+]);
+
 export class ChatPrompt {
   private readonly logger = new Logger(ChatPrompt.name);
   public readonly encoder: Tokenizer | null;
@@ -42,8 +47,8 @@ export class ChatPrompt {
     return new ChatPrompt(
       options.name,
       options.action || undefined,
-      options.model,
-      options.messages
+      modelChanges.get(options.model) ?? options.model,
+      options.messages,
     );
   }
 
@@ -104,7 +109,7 @@ export class ChatPrompt {
             ? `Invalid param value: ${key}=${income}`
             : `Missing param value: ${key}`;
           this.logger.warn(
-            `${prefix} in session ${sessionId}, use default options: ${options[0]}`
+            `${prefix} in session ${sessionId}, use default options: ${options[0]}`,
           );
         }
         if (Array.isArray(options)) {
@@ -136,7 +141,8 @@ export class ChatPrompt {
 export class PromptService {
   private readonly cache = new Map<string, ChatPrompt>();
 
-  constructor(private readonly db: PrismaClient) {}
+  constructor(private readonly db: PrismaClient) {
+  }
 
   /**
    * list prompt names

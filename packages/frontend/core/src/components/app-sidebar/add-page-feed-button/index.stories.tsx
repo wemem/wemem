@@ -15,7 +15,7 @@ export const Default: StoryFn = () => {
       <AddPageFeedButton
         docCollection={currentWorkspace.docCollection}
         onClickNewPage={() => alert('opened')}
-      />
+        onOpenNewFeedModal={() => alert('opened')} />
     </main>
   );
 };

@@ -24,6 +24,7 @@ AFFiNE.ENV_MAP = {
   OAUTH_OIDC_CLAIM_MAP_NAME: 'plugins.oauth.providers.oidc.args.claim_name',
   METRICS_CUSTOMER_IO_TOKEN: ['metrics.customerIo.token', 'string'],
   COPILOT_OPENAI_API_KEY: 'plugins.copilot.openai.apiKey',
+  COPILOT_OPENAI_BASE_URL: 'plugins.copilot.openai.baseURL',
   COPILOT_FAL_API_KEY: 'plugins.copilot.fal.apiKey',
   COPILOT_UNSPLASH_API_KEY: 'plugins.copilot.unsplashKey',
   REDIS_SERVER_HOST: 'plugins.redis.host',

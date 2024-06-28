@@ -1,0 +1,11 @@
+query PullFeedItems($pullInput: [PullFeedsInput!]!) {
+  pullFeedItems(pullInput: $pullInput) {
+    feedId
+    feedItemId
+    title
+    link
+    descriptionMarkdown
+    contentMarkdown
+    createdAt
+  }
+}

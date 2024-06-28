@@ -21,6 +21,7 @@ const ListTitleCell = ({
                          preview,
                        }: Pick<PageListItemProps, 'title' | 'preview'>) => {
   const t = useAFFiNEI18N();
+  console.log('preview',preview);
   return (
     <div data-testid="page-list-item-title" className={styles.titleCell}>
       <div
@@ -99,7 +100,7 @@ export const FeedListItem = (props: FeedListItemProps) => {
           />
           <ListIconCell icon={props.icon} />
         </div>
-        <ListTitleCell title={props.title} />
+        <ListTitleCell title={props.title} preview={props.description} />
       </div>
     );
   }, [
@@ -143,13 +144,8 @@ export const FeedListItem = (props: FeedListItemProps) => {
             />
             <ListIconCell icon={props.icon} />
           </div>
-          <ListTitleCell title={props.title} />
+          <ListTitleCell title={props.title} preview={props.description}/>
         </ColWrapper>
-        <ColWrapper
-          flex={4}
-          alignment="end"
-          style={{ overflow: 'visible' }}
-        ></ColWrapper>
       </ColWrapper>
       {props.operations ? (
         <ColWrapper

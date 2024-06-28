@@ -16,12 +16,14 @@ import { configureStorageImpls } from './storage';
 import { configureTagModule } from './tag';
 import { configureTelemetryModule } from './telemetry';
 import { configureWorkbenchModule } from './workbench';
+import { configureNewFeedModule } from './feed/new-feed';
 
 export function configureCommonModules(framework: Framework) {
   configureInfraModules(framework);
   configureCollectionModule(framework);
   configureFeedModule(framework);
   configureNavigationModule(framework);
+  configureNewFeedModule(framework);
   configureRightSidebarModule(framework);
   configureTagModule(framework);
   configureWorkbenchModule(framework);

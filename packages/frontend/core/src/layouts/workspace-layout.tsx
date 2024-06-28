@@ -1,3 +1,6 @@
+import { usePullFeedItemsInterval } from '@affine/core/hooks/use-pull-feed-items-interval';
+import { useRegisterNewFeedCommands } from '@affine/core/hooks/use-register-new-feed-commands';
+import { NewFeedModalComponent } from '@affine/core/modules/feed/new-feed/views';
 import { assertExists } from '@blocksuite/global/utils';
 import {
   DndContext,
@@ -39,6 +42,7 @@ import { useRegisterFindInPageCommands } from '../hooks/affine/use-register-find
 import { useNavigateHelper } from '../hooks/use-navigate-helper';
 import { useRegisterWorkspaceCommands } from '../hooks/use-register-workspace-commands';
 import { QuickSearchService } from '../modules/cmdk';
+import { NewFeedService } from '../modules/feed/new-feed';
 import { useRegisterNavigationCommands } from '../modules/navigation/view/use-register-navigation-commands';
 import { WorkbenchService } from '../modules/workbench';
 import {
@@ -124,6 +128,8 @@ export const WorkspaceLayoutInner = ({ children }: PropsWithChildren) => {
   useRegisterWorkspaceCommands();
   useRegisterNavigationCommands();
   useRegisterFindInPageCommands();
+  useRegisterNewFeedCommands();
+  usePullFeedItemsInterval();
 
   useEffect(() => {
     // hotfix for blockVersions
@@ -158,6 +164,15 @@ export const WorkspaceLayoutInner = ({ children }: PropsWithChildren) => {
       control: 'search button',
     });
   }, [quickSearch]);
+
+  const newFeed = useService(NewFeedService).newFeed;
+  const handleOpenNewFeedModal = useCallback(() => {
+    newFeed.show();
+    mixpanel.track('NewOpened', {
+      segment: 'navigation panel',
+      control: 'new feed button',
+    });
+  }, [newFeed]);
 
   const setOpenSettingModalAtom = useSetAtom(openSettingModalAtom);
 
@@ -202,6 +217,7 @@ export const WorkspaceLayoutInner = ({ children }: PropsWithChildren) => {
           <RootAppSidebar
             isPublicWorkspace={false}
             onOpenQuickSearchModal={handleOpenQuickSearchModal}
+            onOpenNewFeedModal={handleOpenNewFeedModal}
             onOpenSettingModal={handleOpenSettingModal}
             currentWorkspace={currentWorkspace}
             openPage={useCallback(
@@ -221,6 +237,7 @@ export const WorkspaceLayoutInner = ({ children }: PropsWithChildren) => {
         <GlobalDragOverlay />
       </DndContext>
       <QuickSearch />
+      <NewFeedModalComponent/>
       <SyncAwareness />
     </>
   );
