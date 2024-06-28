@@ -1,4 +1,3 @@
-import { BadRequestException } from '@nestjs/common';
 import {
   Args,
   Field,
@@ -18,6 +17,7 @@ import {
   CryptoHelper,
   type FileUpload,
   Throttle,
+  UserNotFound,
 } from '../../fundamentals';
 import { CurrentUser } from '../auth/current-user';
 import { Public } from '../auth/guard';
@@ -55,7 +55,7 @@ export class UserResolver {
   ): Promise<typeof UserOrLimitedUser | null> {
     validators.assertValidEmail(email);
 
-    // TODO: need to limit a user can only get another user witch is in the same workspace
+    // TODO(@forehalo): need to limit a user can only get another user witch is in the same workspace
     const user = await this.users.findUserWithHashedPasswordByEmail(email);
 
     // return empty response when user not exists
@@ -91,17 +91,25 @@ export class UserResolver {
     @Args({ name: 'avatar', type: () => GraphQLUpload })
     avatar: FileUpload
   ) {
+    if (!avatar.mimetype.startsWith('image/')) {
+      throw new Error('Invalid file type');
+    }
+
     if (!user) {
-      throw new BadRequestException(`User not found`);
+      throw new UserNotFound();
     }
 
     const avatarUrl = await this.storage.put(
-      `${user.id}-avatar`,
+      `${user.id}-avatar-${Date.now()}`,
       avatar.createReadStream(),
       {
         contentType: avatar.mimetype,
       }
     );
+
+    if (user.avatarUrl) {
+      await this.storage.delete(user.avatarUrl);
+    }
 
     return this.users.updateUser(user.id, { avatarUrl });
   }
@@ -128,7 +136,7 @@ export class UserResolver {
   })
   async removeAvatar(@CurrentUser() user: CurrentUser) {
     if (!user) {
-      throw new BadRequestException(`User not found`);
+      throw new UserNotFound();
     }
     await this.users.updateUser(user.id, { avatarUrl: null });
     return { success: true };

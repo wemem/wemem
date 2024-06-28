@@ -14,8 +14,7 @@ import type {
   PageInfoCustomPropertyMeta,
   PagePropertyType,
 } from '@affine/core/modules/properties/services/schema';
-import { timestampToLocalDate } from '@affine/core/utils';
-import { useAFFiNEI18N } from '@affine/i18n/hooks';
+import { i18nTime, useI18n } from '@affine/i18n';
 import { assertExists } from '@blocksuite/global/utils';
 import {
   ArrowDownSmallIcon,
@@ -26,7 +25,7 @@ import {
   TagsIcon,
   ToggleExpandIcon,
   ViewIcon,
-} from '@blocksuite/icons';
+} from '@blocksuite/icons/rc';
 import type { Doc } from '@blocksuite/store';
 import type { DragEndEvent, DraggableAttributes } from '@dnd-kit/core';
 import {
@@ -41,8 +40,15 @@ import {
 } from '@dnd-kit/modifiers';
 import { SortableContext, useSortable } from '@dnd-kit/sortable';
 import * as Collapsible from '@radix-ui/react-collapsible';
+import {
+  DocService,
+  useLiveData,
+  useServices,
+  WorkspaceService,
+} from '@toeverything/infra';
 import clsx from 'clsx';
 import { use } from 'foxact/use';
+import { useDebouncedValue } from 'foxact/use-debounced-value';
 import { atom, useAtomValue, useSetAtom } from 'jotai';
 import type React from 'react';
 import type {
@@ -248,7 +254,7 @@ const VisibilityModeSelector = ({
   property: PageInfoCustomProperty;
 }) => {
   const manager = useContext(managerContext);
-  const t = useAFFiNEI18N();
+  const t = useI18n();
   const meta = manager.getCustomPropertyMeta(property.id);
   const visibility = property.visibility || 'visible';
 
@@ -311,7 +317,7 @@ export const PagePropertiesSettingsPopup = ({
   children,
 }: PagePropertiesSettingsPopupProps) => {
   const manager = useContext(managerContext);
-  const t = useAFFiNEI18N();
+  const t = useI18n();
 
   const menuItems = useMemo(() => {
     const options: MenuItemOption[] = [];
@@ -451,7 +457,7 @@ export const PagePropertyRowNameMenu = ({
     onFinishEditing,
     property.id,
   ]);
-  const t = useAFFiNEI18N();
+  const t = useI18n();
   const handleNameBlur = useCallback(
     (v: string) => {
       manager.updateCustomPropertyMeta(meta.id, {
@@ -590,26 +596,25 @@ export const PagePropertiesTableHeader = ({
 }: PagePropertiesTableHeaderProps) => {
   const manager = useContext(managerContext);
 
-  const t = useAFFiNEI18N();
+  const t = useI18n();
   const backlinks = useBlockSuitePageBacklinks(
     manager.workspace.docCollection,
     manager.pageId
   );
 
+  const { docService, workspaceService } = useServices({
+    DocService,
+    WorkspaceService,
+  });
+
+  const { syncing, retrying, serverClock } = useLiveData(
+    workspaceService.workspace.engine.doc.docState$(docService.doc.id)
+  );
+
   const timestampElement = useMemo(() => {
-    const localizedUpdateTime = manager.updatedDate
-      ? timestampToLocalDate(manager.updatedDate)
-      : null;
-
     const localizedCreateTime = manager.createDate
-      ? timestampToLocalDate(manager.createDate)
+      ? i18nTime(manager.createDate)
       : null;
-
-    const updateTimeElement = (
-      <div className={styles.tableHeaderTimestamp}>
-        {t['Updated']()} {localizedUpdateTime}
-      </div>
-    );
 
     const createTimeElement = (
       <div className={styles.tableHeaderTimestamp}>
@@ -617,14 +622,60 @@ export const PagePropertiesTableHeader = ({
       </div>
     );
 
-    return localizedUpdateTime ? (
+    return serverClock ? (
+      <Tooltip
+        side="right"
+        content={
+          <>
+            <div className={styles.tableHeaderTimestamp}>
+              {t['Updated']()} {i18nTime(serverClock)}
+            </div>
+            {manager.createDate && (
+              <div className={styles.tableHeaderTimestamp}>
+                {t['Created']()} {i18nTime(manager.createDate)}
+              </div>
+            )}
+          </>
+        }
+      >
+        <div className={styles.tableHeaderTimestamp}>
+          {!syncing && !retrying ? (
+            <>
+              {t['Updated']()}{' '}
+              {i18nTime(serverClock, {
+                relative: {
+                  max: [1, 'day'],
+                  accuracy: 'minute',
+                },
+                absolute: {
+                  accuracy: 'day',
+                },
+              })}
+            </>
+          ) : (
+            <>{t['com.affine.syncing']()}</>
+          )}
+        </div>
+      </Tooltip>
+    ) : manager.updatedDate ? (
       <Tooltip side="right" content={createTimeElement}>
-        {updateTimeElement}
+        <div className={styles.tableHeaderTimestamp}>
+          {t['Updated']()} {i18nTime(manager.updatedDate)}
+        </div>
       </Tooltip>
     ) : (
       createTimeElement
     );
-  }, [manager.createDate, manager.updatedDate, t]);
+  }, [
+    manager.createDate,
+    manager.updatedDate,
+    retrying,
+    serverClock,
+    syncing,
+    t,
+  ]);
+
+  const dTimestampElement = useDebouncedValue(timestampElement, 500);
 
   const handleCollapse = useCallback(() => {
     onOpenChange(!open);
@@ -634,7 +685,7 @@ export const PagePropertiesTableHeader = ({
 
   return (
     <div className={clsx(styles.tableHeader, className)} style={style}>
-      {/* todo: add click handler to backlinks */}
+      {/* TODO(@Peng): add click handler to backlinks */}
       <div className={styles.tableHeaderInfoRow}>
         {backlinks.length > 0 ? (
           <PageBacklinksPopup backlinks={backlinks}>
@@ -643,7 +694,7 @@ export const PagePropertiesTableHeader = ({
             </div>
           </PageBacklinksPopup>
         ) : null}
-        {timestampElement}
+        {dTimestampElement}
       </div>
       <Divider />
       <div className={styles.tableHeaderSecondaryRow}>
@@ -739,7 +790,7 @@ const PagePropertyRow = ({ property }: PagePropertyRowProps) => {
 };
 
 const PageTagsRow = () => {
-  const t = useAFFiNEI18N();
+  const t = useI18n();
   return (
     <div
       className={styles.tagsPropertyRow}
@@ -833,7 +884,7 @@ export const PagePropertiesCreatePropertyMenuItems = ({
   onCreated,
   metaManager,
 }: PagePropertiesCreatePropertyMenuItemsProps) => {
-  const t = useAFFiNEI18N();
+  const t = useI18n();
   const onAddProperty = useCallback(
     (
       e: React.MouseEvent,
@@ -894,7 +945,7 @@ const PagePropertiesAddPropertyMenuItems = ({
 }: PagePropertiesAddPropertyMenuItemsProps) => {
   const manager = useContext(managerContext);
 
-  const t = useAFFiNEI18N();
+  const t = useI18n();
   const metaList = manager.metaManager.getOrderedPropertiesSchema();
   const nonRequiredMetaList = metaList.filter(meta => !meta.required);
   const isChecked = useCallback(
@@ -955,7 +1006,7 @@ const PagePropertiesAddPropertyMenuItems = ({
 };
 
 export const PagePropertiesAddProperty = () => {
-  const t = useAFFiNEI18N();
+  const t = useI18n();
   const [adding, setAdding] = useState(true);
   const manager = useContext(managerContext);
   const toggleAdding: MouseEventHandler = useCallback(e => {

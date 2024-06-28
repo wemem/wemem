@@ -1,7 +1,8 @@
+import { notify } from '@affine/component';
 import { updateReadyAtom } from '@affine/core/hooks/use-app-updater';
 import { apis } from '@affine/electron-api';
-import type { useAFFiNEI18N } from '@affine/i18n/hooks';
-import { ResetIcon } from '@blocksuite/icons';
+import type { useI18n } from '@affine/i18n';
+import { ResetIcon } from '@blocksuite/icons/rc';
 import type { createStore } from 'jotai';
 
 import { registerAffineCommand } from './registry';
@@ -10,7 +11,7 @@ export function registerAffineUpdatesCommands({
   t,
   store,
 }: {
-  t: ReturnType<typeof useAFFiNEI18N>;
+  t: ReturnType<typeof useI18n>;
   store: ReturnType<typeof createStore>;
 }) {
   const unsubs: Array<() => void> = [];
@@ -24,7 +25,10 @@ export function registerAffineUpdatesCommands({
       preconditionStrategy: () => !!store.get(updateReadyAtom),
       run() {
         apis?.updater.quitAndInstall().catch(err => {
-          // TODO: add error toast here
+          notify.error({
+            title: 'Failed to restart to upgrade',
+            message: 'Please restart the app manually to upgrade.',
+          });
           console.error(err);
         });
       },

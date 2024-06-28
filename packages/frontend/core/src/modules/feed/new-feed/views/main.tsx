@@ -1,9 +1,8 @@
 import { Loading } from '@affine/component/ui/loading';
 import type { CommandCategory } from '@affine/core/commands';
-import { formatDate } from '@affine/core/components/page-list';
 import { useDocEngineStatus } from '@affine/core/hooks/affine/use-doc-engine-status';
 import { useAsyncCallback } from '@affine/core/hooks/affine-async-hooks';
-import { useAFFiNEI18N } from '@affine/i18n/hooks';
+import { i18nTime, useI18n } from '@affine/i18n';
 import type { DocMeta } from '@blocksuite/store';
 import { useLiveData, useService } from '@toeverything/infra';
 import clsx from 'clsx';
@@ -36,7 +35,7 @@ type NoParametersKeys<T> = {
   [K in keyof T]: T[K] extends () => any ? K : never;
 }[keyof T];
 
-type i18nKey = NoParametersKeys<ReturnType<typeof useAFFiNEI18N>>;
+type i18nKey = NoParametersKeys<ReturnType<typeof useI18n>>;
 
 const categoryToI18nKey: Record<CommandCategory, i18nKey> = {
   'affine:recent': 'com.affine.cmdk.affine.category.affine.recent',
@@ -66,7 +65,7 @@ const QuickSearchGroup = ({
   commands: CMDKCommand[];
   onOpenChange?: (open: boolean) => void;
 }) => {
-  const t = useAFFiNEI18N();
+  const t = useI18n();
   const i18nKey = categoryToI18nKey[category];
   const quickSearch = useService(NewFeedService).newFeed;
   const query = useLiveData(quickSearch.query$);
@@ -111,7 +110,7 @@ const QuickSearchGroup = ({
             </div>
             {command.timestamp ? (
               <div className={styles.timestamp}>
-                {formatDate(new Date(command.timestamp))}
+                {i18nTime(new Date(command.timestamp))}
               </div>
             ) : null}
             {command.keyBinding ? (
@@ -169,7 +168,7 @@ export const CMDKContainer = ({
   groups: ReturnType<typeof useCMDKCommandGroups>;
   onQueryChange: (query: string) => void;
 }>) => {
-  const t = useAFFiNEI18N();
+  const t = useI18n();
   const [value, setValue] = useAtom(cmdkValueAtom);
   const [opening, setOpening] = useState(open);
   const { syncing, progress } = useDocEngineStatus();
@@ -250,7 +249,7 @@ const CMDKQuickSearchModalInner = ({
   const quickSearch = useService(NewFeedService).newFeed;
   const query = useLiveData(quickSearch.query$);
   const groups = useCMDKCommandGroups();
-  const t = useAFFiNEI18N();
+  const t = useI18n();
   return (
     <CMDKContainer
       className={styles.root}
@@ -272,7 +271,7 @@ const CMDKQuickSearchCallbackModalInner = ({
   const quickSearch = useService(NewFeedService).newFeed;
   const query = useLiveData(quickSearch.query$);
   const groups =  useSearchCallbackCommandGroups();
-  const t = useAFFiNEI18N();
+  const t = useI18n();
   return (
     <CMDKContainer
       className={styles.root}

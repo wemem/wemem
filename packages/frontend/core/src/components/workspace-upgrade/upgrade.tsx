@@ -1,9 +1,9 @@
 import { Button } from '@affine/component/ui/button';
-import { AffineShapeIcon } from '@affine/core/components/page-list'; // TODO: import from page-list temporarily, need to defined common svg icon/images management.
+import { AffineShapeIcon } from '@affine/core/components/page-list'; // TODO(@eyhn): import from page-list temporarily, need to defined common svg icon/images management.
 import { useAsyncCallback } from '@affine/core/hooks/affine-async-hooks';
 import { useNavigateHelper } from '@affine/core/hooks/use-navigate-helper';
 import { WorkspaceSubPath } from '@affine/core/shared';
-import { useAFFiNEI18N } from '@affine/i18n/hooks';
+import { useI18n } from '@affine/i18n';
 import { useLiveData, useService, WorkspaceService } from '@toeverything/infra';
 import { useState } from 'react';
 
@@ -12,13 +12,13 @@ import * as styles from './upgrade.css';
 import { ArrowCircleIcon, HeartBreakIcon } from './upgrade-icon';
 
 /**
- * TODO: Help info is not implemented yet.
+ * TODO(@eyhn): Help info is not implemented yet.
  */
 export const WorkspaceUpgrade = function WorkspaceUpgrade() {
   const [error, setError] = useState<string | null>(null);
   const currentWorkspace = useService(WorkspaceService).workspace;
   const upgrading = useLiveData(currentWorkspace.upgrade.upgrading$);
-  const t = useAFFiNEI18N();
+  const t = useI18n();
   const { openPage } = useNavigateHelper();
 
   const onButtonClick = useAsyncCallback(async () => {

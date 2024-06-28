@@ -58,7 +58,7 @@ export const AllPage = () => {
 };
 
 export const Component = () => {
-  performanceRenderLogger.info('AllPage');
+  performanceRenderLogger.debug('AllPage');
 
   return <AllPage />;
 };

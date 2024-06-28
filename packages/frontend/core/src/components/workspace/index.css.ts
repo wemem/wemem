@@ -22,7 +22,7 @@ export const appStyle = style({
       opacity: `var(--affine-noise-opacity, 0)`,
       backgroundRepeat: 'repeat',
       backgroundSize: '50px',
-      // todo: figure out how to use vanilla-extract webpack plugin to inject img url
+      // TODO(@Peng): figure out how to use vanilla-extract webpack plugin to inject img url
       backgroundImage: `var(--noise-background)`,
     },
   },
@@ -57,8 +57,8 @@ export const mainContainerStyle = style({
       borderRadius: 6,
       margin: '8px',
       overflow: 'hidden',
-      // todo: is this performance intensive?
-      // TODO: not match with design's shadow, theme missing
+      // TODO(@Peng): is this performance intensive?
+      // TODO(@catsjuice): not match with design's shadow, theme missing
       filter: 'drop-shadow(0px 0px 4px rgba(66,65,73,.14))',
       '@media': {
         print: {
@@ -87,27 +87,16 @@ export const mainContainerStyle = style({
 });
 export const toolStyle = style({
   position: 'absolute',
-  right: '30px',
-  bottom: '30px',
+  right: 16,
+  bottom: 16,
   zIndex: 1,
   display: 'flex',
   flexDirection: 'column',
+  alignItems: 'center',
   gap: '12px',
   selectors: {
     '&.trash': {
       bottom: '78px',
-    },
-  },
-  '@media': {
-    'screen and (max-width: 960px)': {
-      right: 'calc((100vw - 640px) * 3 / 19 + 14px)',
-    },
-    'screen and (max-width: 640px)': {
-      right: '5px',
-      bottom: '5px',
-    },
-    print: {
-      display: 'none',
     },
   },
 });

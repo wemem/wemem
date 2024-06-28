@@ -1,7 +1,7 @@
 import { Button, FlexWrapper, Menu } from '@affine/component';
 import type { Filter, PropertiesMeta } from '@affine/env/filter';
-import { useAFFiNEI18N } from '@affine/i18n/hooks';
-import { FilterIcon } from '@blocksuite/icons';
+import { useI18n } from '@affine/i18n';
+import { FilterIcon } from '@blocksuite/icons/rc';
 
 import { CreateFilterMenu } from '../filter/vars';
 import * as styles from './page-list-header-feed-operations-menu.css';
@@ -15,7 +15,7 @@ export const FeedPageListOperationsMenu = ({
   filterList: Filter[];
   onChangeFilterList: (filterList: Filter[]) => void;
 }) => {
-  const t = useAFFiNEI18N();
+  const t = useI18n();
 
   return (
     <FlexWrapper alignItems="center">

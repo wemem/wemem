@@ -31,7 +31,7 @@ export const Component = () => {
       switchMap(() => {
         return fromPromise(async signal => {
           retryKey;
-          // TODO: i18n
+          // TODO(@eyhn): i18n
           setMessage('Checking account status...');
           setError('');
           await authService.session.waitForRevalidation(signal);
@@ -53,6 +53,10 @@ export const Component = () => {
               : !!subscriptionService.subscription.pro$.value;
           if (!subscribed) {
             setMessage('Creating checkout...');
+            mixpanel.track('PlanUpgradeStarted', {
+              type: plan,
+              category: recurring,
+            });
             try {
               const checkout = await subscriptionService.createCheckoutSession({
                 idempotencyKey,

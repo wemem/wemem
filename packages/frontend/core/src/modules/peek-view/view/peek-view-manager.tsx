@@ -1,59 +1,92 @@
+import { toReactNode } from '@affine/component';
 import { BlockElement } from '@blocksuite/block-std';
 import { useLiveData, useService } from '@toeverything/infra';
-import { useEffect, useMemo, useRef } from 'react';
+import { useEffect, useMemo } from 'react';
 
 import type { ActivePeekView } from '../entities/peek-view';
 import { PeekViewService } from '../services/peek-view';
-import { DocPeekViewControls } from './doc-peek-controls';
-import type { SurfaceRefPeekViewRef } from './doc-peek-view';
-import { DocPeekView, SurfaceRefPeekView } from './doc-peek-view';
-import { PeekViewModalContainer } from './modal-container';
+import { DocPeekPreview } from './doc-preview';
+import { ImagePreviewPeekView } from './image-preview';
+import {
+  PeekViewModalContainer,
+  type PeekViewModalContainerProps,
+} from './modal-container';
+import {
+  DefaultPeekViewControls,
+  DocPeekViewControls,
+} from './peek-view-controls';
 
-function renderPeekView(
-  { info }: ActivePeekView,
-  refCallback: (editor: SurfaceRefPeekViewRef) => void
-) {
-  if (info.mode === 'edgeless' && info.xywh) {
+function renderPeekView({ info }: ActivePeekView) {
+  if (info.type === 'template') {
+    return toReactNode(info.template);
+  }
+  if (info.type === 'doc') {
     return (
-      <SurfaceRefPeekView
-        ref={refCallback}
-        docId={info.docId}
+      <DocPeekPreview
+        mode={info.mode}
         xywh={info.xywh}
+        docId={info.docId}
+        blockId={info.blockId}
       />
     );
   }
 
-  return (
-    <DocPeekView mode={info.mode} docId={info.docId} blockId={info.blockId} />
-  );
+  if (info.type === 'image') {
+    return <ImagePreviewPeekView docId={info.docId} blockId={info.blockId} />;
+  }
+
+  return null; // unreachable
 }
 
 const renderControls = ({ info }: ActivePeekView) => {
-  return (
-    <DocPeekViewControls
-      mode={info.mode}
-      docId={info.docId}
-      blockId={info.docId}
-    />
-  );
+  if (info.type === 'doc') {
+    return (
+      <DocPeekViewControls
+        mode={info.mode}
+        docId={info.docId}
+        blockId={info.docId}
+      />
+    );
+  }
+
+  if (info.type === 'image') {
+    return null; // image controls are rendered in the image preview
+  }
+
+  return <DefaultPeekViewControls />;
+};
+
+const getRendererProps = (
+  activePeekView?: ActivePeekView
+): Partial<PeekViewModalContainerProps> | undefined => {
+  if (!activePeekView) {
+    return;
+  }
+
+  const preview = renderPeekView(activePeekView);
+  const controls = renderControls(activePeekView);
+  return {
+    children: preview,
+    controls,
+    target:
+      activePeekView?.target instanceof HTMLElement
+        ? activePeekView.target
+        : undefined,
+    padding: activePeekView.info.type === 'doc',
+    animation: activePeekView.info.type === 'image' ? 'fade' : 'zoom',
+  };
 };
 
 export const PeekViewManagerModal = () => {
   const peekViewEntity = useService(PeekViewService).peekView;
   const activePeekView = useLiveData(peekViewEntity.active$);
   const show = useLiveData(peekViewEntity.show$);
-  const peekViewRef = useRef<SurfaceRefPeekViewRef | null>(null);
 
-  const preview = useMemo(() => {
-    return activePeekView
-      ? renderPeekView(activePeekView, editor => {
-          peekViewRef.current = editor;
-        })
-      : null;
-  }, [activePeekView]);
-
-  const controls = useMemo(() => {
-    return activePeekView ? renderControls(activePeekView) : null;
+  const renderProps = useMemo(() => {
+    if (!activePeekView) {
+      return;
+    }
+    return getRendererProps(activePeekView);
   }, [activePeekView]);
 
   useEffect(() => {
@@ -70,23 +103,15 @@ export const PeekViewManagerModal = () => {
 
   return (
     <PeekViewModalContainer
-      open={show && !!preview}
-      target={
-        activePeekView?.target instanceof HTMLElement
-          ? activePeekView.target
-          : undefined
-      }
-      controls={controls}
+      {...renderProps}
+      open={show && !!renderProps}
       onOpenChange={open => {
         if (!open) {
           peekViewEntity.close();
         }
       }}
-      onAnimateEnd={() => {
-        peekViewRef.current?.fitViewportToTarget();
-      }}
     >
-      {preview}
+      {renderProps?.children}
     </PeekViewModalContainer>
   );
 };

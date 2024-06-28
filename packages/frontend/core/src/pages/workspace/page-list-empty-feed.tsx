@@ -1,12 +1,12 @@
 import { Empty } from '@affine/component';
-import { useAFFiNEI18N } from '@affine/i18n/hooks';
+import { useI18n } from '@affine/i18n';
 import type { ReactNode } from 'react';
 
 import * as styles from './page-list-empty.css';
 
 // eslint-disable-next-line sonarjs/no-identical-functions
 export const EmptyFeedList = ({ heading }: { heading: ReactNode }) => {
-  const t = useAFFiNEI18N();
+  const t = useI18n();
   return (
     <div className={styles.pageListEmptyStyle}>
       {heading && <div>{heading}</div>}
@@ -18,7 +18,7 @@ export const EmptyFeedList = ({ heading }: { heading: ReactNode }) => {
 
 // eslint-disable-next-line sonarjs/no-identical-functions
 export const EmptyFeedDocsList = ({ heading }: { heading: ReactNode }) => {
-  const t = useAFFiNEI18N();
+  const t = useI18n();
   return (
     <div className={styles.pageListEmptyStyle}>
       {heading && <div>{heading}</div>}

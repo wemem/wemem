@@ -1,11 +1,4 @@
-import {
-  Input,
-  notify,
-  RadioButton,
-  RadioButtonGroup,
-  Skeleton,
-  Switch,
-} from '@affine/component';
+import { Input, notify, RadioGroup, Skeleton, Switch } from '@affine/component';
 import { PublicLinkDisableModal } from '@affine/component/disable-public-link';
 import { Button } from '@affine/component/ui/button';
 import { Menu, MenuItem, MenuTrigger } from '@affine/component/ui/menu';
@@ -16,11 +9,11 @@ import { ShareService } from '@affine/core/modules/share-doc';
 import { mixpanel } from '@affine/core/utils';
 import { WorkspaceFlavour } from '@affine/env/workspace';
 import { PublicPageMode } from '@affine/graphql';
-import { useAFFiNEI18N } from '@affine/i18n/hooks';
+import { useI18n } from '@affine/i18n';
 import {
   ArrowRightSmallIcon,
   SingleSelectSelectSolidIcon,
-} from '@blocksuite/icons';
+} from '@blocksuite/icons/rc';
 import {
   type DocMode,
   DocService,
@@ -36,7 +29,7 @@ import * as styles from './index.css';
 import type { ShareMenuProps } from './share-menu';
 
 export const LocalSharePage = (props: ShareMenuProps) => {
-  const t = useAFFiNEI18N();
+  const t = useI18n();
 
   return (
     <div className={styles.localSharePage}>
@@ -95,7 +88,18 @@ export const AffineSharePage = (props: ShareMenuProps) => {
     urlType: 'share',
   });
 
-  const t = useAFFiNEI18N();
+  const t = useI18n();
+
+  const modeOptions = useMemo(
+    () => [
+      { value: 'page', label: t['com.affine.pageMode.page']() },
+      {
+        value: 'edgeless',
+        label: t['com.affine.pageMode.edgeless'](),
+      },
+    ],
+    [t]
+  );
 
   const onClickCreateLink = useAsyncCallback(async () => {
     try {
@@ -211,7 +215,7 @@ export const AffineSharePage = (props: ShareMenuProps) => {
   );
 
   if (isLoading) {
-    // TODO: loading and error UI
+    // TODO(@eyhn): loading and error UI
     return (
       <>
         <Skeleton height={100} />
@@ -265,18 +269,12 @@ export const AffineSharePage = (props: ShareMenuProps) => {
           {t['com.affine.share-menu.ShareMode']()}
         </div>
         <div>
-          <RadioButtonGroup
+          <RadioGroup
             className={styles.radioButtonGroup}
             value={mode}
-            onValueChange={onShareModeChange}
-          >
-            <RadioButton className={styles.radioButton} value={'page'}>
-              {t['com.affine.pageMode.page']()}
-            </RadioButton>
-            <RadioButton className={styles.radioButton} value={'edgeless'}>
-              {t['com.affine.pageMode.edgeless']()}
-            </RadioButton>
-          </RadioButtonGroup>
+            onChange={onShareModeChange}
+            items={modeOptions}
+          />
         </div>
       </div>
       {isSharedPage ? (
@@ -341,7 +339,7 @@ export const SharePage = (props: ShareMenuProps) => {
     props.workspaceMetadata.flavour === WorkspaceFlavour.AFFINE_CLOUD
   ) {
     return (
-      // TODO: refactor this part
+      // TODO(@eyhn): refactor this part
       <ErrorBoundary fallback={null}>
         <Suspense>
           <AffineSharePage {...props} />

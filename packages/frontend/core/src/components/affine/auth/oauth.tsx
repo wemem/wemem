@@ -2,7 +2,7 @@ import { notify, Skeleton } from '@affine/component';
 import { Button } from '@affine/component/ui/button';
 import { useAsyncCallback } from '@affine/core/hooks/affine-async-hooks';
 import { OAuthProviderType } from '@affine/graphql';
-import { GithubIcon, GoogleDuotoneIcon } from '@blocksuite/icons';
+import { GithubIcon, GoogleDuotoneIcon } from '@blocksuite/icons/rc';
 import { useLiveData, useService } from '@toeverything/infra';
 import type { ReactElement } from 'react';
 import { useState } from 'react';
@@ -25,7 +25,7 @@ const OAuthProviderMap: Record<
   },
 
   [OAuthProviderType.OIDC]: {
-    // TODO: Add OIDC icon
+    // TODO(@catsjuice): Add OIDC icon
     icon: <GoogleDuotoneIcon />,
   },
 };

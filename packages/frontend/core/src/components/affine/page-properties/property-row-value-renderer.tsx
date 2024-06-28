@@ -4,8 +4,7 @@ import type {
   PageInfoCustomPropertyMeta,
   PagePropertyType,
 } from '@affine/core/modules/properties/services/schema';
-import { timestampToLocalDate } from '@affine/core/utils';
-import { useAFFiNEI18N } from '@affine/i18n/hooks';
+import { i18nTime, useI18n } from '@affine/i18n';
 import { DocService, useService } from '@toeverything/infra';
 import { noop } from 'lodash-es';
 import type { ChangeEventHandler } from 'react';
@@ -22,7 +21,7 @@ interface PropertyRowValueProps {
 
 export const DateValue = ({ property }: PropertyRowValueProps) => {
   const displayValue = property.value
-    ? timestampToLocalDate(property.value)
+    ? i18nTime(property.value, { absolute: { accuracy: 'day' } })
     : undefined;
   const manager = useContext(managerContext);
 
@@ -40,7 +39,7 @@ export const DateValue = ({ property }: PropertyRowValueProps) => {
     [manager, property.id]
   );
 
-  const t = useAFFiNEI18N();
+  const t = useI18n();
 
   return (
     <Menu items={<DatePicker value={property.value} onChange={handleChange} />}>
@@ -102,7 +101,7 @@ export const TextValue = ({ property }: PropertyRowValueProps) => {
     },
     []
   );
-  const t = useAFFiNEI18N();
+  const t = useI18n();
   useEffect(() => {
     setValue(property.value);
   }, [property.value]);
@@ -148,7 +147,7 @@ export const NumberValue = ({ property }: PropertyRowValueProps) => {
     },
     []
   );
-  const t = useAFFiNEI18N();
+  const t = useI18n();
   useEffect(() => {
     setValue(property.value);
   }, [property.value]);
@@ -169,7 +168,7 @@ export const NumberValue = ({ property }: PropertyRowValueProps) => {
 export const TagsValue = () => {
   const doc = useService(DocService).doc;
 
-  const t = useAFFiNEI18N();
+  const t = useI18n();
 
   return (
     <TagsInlineEditor
@@ -189,7 +188,7 @@ export const propertyValueRenderers: Record<
   checkbox: CheckboxValue,
   text: TextValue,
   number: NumberValue,
-  // todo: fix following
+  // TODO(@Peng): fix following
   tags: TagsValue,
   progress: TextValue,
 };

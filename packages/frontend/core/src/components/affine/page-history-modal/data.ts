@@ -1,12 +1,9 @@
 import { useDocMetaHelper } from '@affine/core/hooks/use-block-suite-page-meta';
 import { useDocCollectionPage } from '@affine/core/hooks/use-block-suite-workspace-page';
-import {
-  type CalendarTranslation,
-  timestampToCalendarDate,
-} from '@affine/core/utils';
 import { DebugLogger } from '@affine/debug';
 import type { ListHistoryQuery } from '@affine/graphql';
 import { listHistoryQuery, recoverDocMutation } from '@affine/graphql';
+import { i18nTime } from '@affine/i18n';
 import { assertEquals } from '@blocksuite/global/utils';
 import { DocCollection } from '@blocksuite/store';
 import { globalBlockSuiteSchema } from '@toeverything/infra';
@@ -97,7 +94,7 @@ const snapshotFetcher = async (
 
 // attach the Page shown in the modal to a temporary workspace
 // so that we do not need to worry about providers etc
-// todo: fix references to the page (the referenced page will shown as deleted)
+// TODO(@Peng): fix references to the page (the referenced page will shown as deleted)
 // if we simply clone the current workspace, it maybe time consuming right?
 const docCollectionMap = new Map<string, DocCollection>();
 
@@ -175,13 +172,20 @@ export const useSnapshotPage = (
   return page;
 };
 
-export const historyListGroupByDay = (
-  histories: DocHistory[],
-  translation: CalendarTranslation
-) => {
+export const historyListGroupByDay = (histories: DocHistory[]) => {
   const map = new Map<string, DocHistory[]>();
   for (const history of histories) {
-    const day = timestampToCalendarDate(history.timestamp, translation);
+    const day = i18nTime(history.timestamp, {
+      relative: {
+        max: [1, 'week'],
+        accuracy: 'day',
+        weekday: true,
+      },
+      absolute: {
+        accuracy: 'day',
+        noYear: true,
+      },
+    });
     const list = map.get(day) ?? [];
     list.push(history);
     map.set(day, list);

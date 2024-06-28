@@ -1,7 +1,7 @@
 import type { MenuItemProps } from '@affine/component';
 import { MenuIcon, MenuItem, MenuSeparator } from '@affine/component';
 import { useAppSettingHelper } from '@affine/core/hooks/affine/use-app-setting-helper';
-import { useAFFiNEI18N } from '@affine/i18n/hooks';
+import { useI18n } from '@affine/i18n';
 import {
   DeleteIcon,
   EditIcon,
@@ -9,7 +9,7 @@ import {
   FilterMinusIcon,
   LinkedPageIcon,
   SplitViewIcon,
-} from '@blocksuite/icons';
+} from '@blocksuite/icons/rc';
 import type { ReactElement } from 'react';
 import { useMemo } from 'react';
 
@@ -38,7 +38,7 @@ export const OperationItems = ({
   onOpenInSplitView,
 }: OperationItemsProps) => {
   const { appSettings } = useAppSettingHelper();
-  const t = useAFFiNEI18N();
+  const t = useI18n();
   const actions = useMemo<
     Array<
       | {

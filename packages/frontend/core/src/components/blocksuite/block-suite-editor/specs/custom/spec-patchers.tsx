@@ -1,10 +1,10 @@
 import {
-  createReactComponentFromLit,
   type ElementOrFactory,
   Input,
   notify,
   toast,
   type ToastOptions,
+  toReactNode,
   type useConfirmModal,
 } from '@affine/component';
 import type {
@@ -13,60 +13,26 @@ import type {
 } from '@affine/core/modules/cmdk';
 import type { PeekViewService } from '@affine/core/modules/peek-view';
 import type { ActivePeekView } from '@affine/core/modules/peek-view/entities/peek-view';
+import { mixpanel } from '@affine/core/utils';
 import { DebugLogger } from '@affine/debug';
 import type { BlockSpec, WidgetElement } from '@blocksuite/block-std';
 import {
   type AffineReference,
   AffineSlashMenuWidget,
-  EmbedBlockElement,
-  type EmbedLinkedDocBlockService,
-  type EmbedLinkedDocModel,
+  EmbedLinkedDocBlockComponent,
   type ParagraphBlockService,
-  ReferenceNodeConfig,
   type RootService,
 } from '@blocksuite/blocks';
 import type { DocMode, DocService, DocsService } from '@toeverything/infra';
-import { html, LitElement, type TemplateResult } from 'lit';
+import { type TemplateResult } from 'lit';
 import { customElement } from 'lit/decorators.js';
 import { literal } from 'lit/static-html.js';
-import React, { createElement, type ReactNode } from 'react';
-
-const logger = new DebugLogger('affine::spec-patchers');
 
 export type ReferenceReactRenderer = (
   reference: AffineReference
 ) => React.ReactElement;
 
-export class LitTemplateWrapper extends LitElement {
-  static override get properties() {
-    return {
-      template: { type: Object },
-    };
-  }
-  template: TemplateResult | null = null;
-  // do not enable shadow root
-  override createRenderRoot() {
-    return this;
-  }
-
-  override render() {
-    return this.template;
-  }
-}
-
-window.customElements.define('affine-lit-template-wrapper', LitTemplateWrapper);
-
-const TemplateWrapper = createReactComponentFromLit({
-  elementClass: LitTemplateWrapper,
-  react: React,
-});
-
-const toReactNode = (template?: TemplateResult | string): ReactNode => {
-  if (!template) return null;
-  return typeof template === 'string'
-    ? template
-    : createElement(TemplateWrapper, { template });
-};
+const logger = new DebugLogger('affine::spec-patchers');
 
 function patchSpecService<Spec extends BlockSpec>(
   spec: Spec,
@@ -188,6 +154,7 @@ export function patchNotificationService(
                 placeholder={placeholder}
                 defaultValue={value}
                 onChange={e => (value = e)}
+                ref={input => input?.select()}
               />
             </div>
           );
@@ -272,9 +239,9 @@ export function patchPeekViewService(
 
   patchSpecService(rootSpec, pageService => {
     pageService.peekViewService = {
-      peek: (target: ActivePeekView['target']) => {
-        logger.debug('center peek', target);
-        service.peekView.open(target);
+      peek: (target: ActivePeekView['target'], template?: TemplateResult) => {
+        logger.debug('center peek', target, template);
+        return service.peekView.open(target, template);
       },
     };
   });
@@ -413,6 +380,25 @@ export function patchQuickSearchService(
                     pageId: linkedDoc.id,
                   },
                 ]);
+                if (result.isNewDoc) {
+                  mixpanel.track('DocCreated', {
+                    control: 'linked doc',
+                    module: 'slash commands',
+                    type: 'linked doc',
+                    category: 'doc',
+                  });
+                  mixpanel.track('LinkedDocCreated', {
+                    control: 'new doc',
+                    module: 'slash commands',
+                    type: 'doc',
+                  });
+                } else {
+                  mixpanel.track('LinkedDocCreated', {
+                    control: 'linked doc',
+                    module: 'slash commands',
+                    type: 'doc',
+                  });
+                }
               } else if ('userInput' in result) {
                 const embedOptions = service.getEmbedBlockOptions(
                   result.userInput
@@ -437,25 +423,10 @@ export function patchQuickSearchService(
 }
 
 @customElement('affine-linked-doc-ref-block')
-export class LinkedDocBlockComponent extends EmbedBlockElement<
-  EmbedLinkedDocModel,
-  EmbedLinkedDocBlockService
-> {
-  referenceNodeConfig = new ReferenceNodeConfig();
-  override render() {
-    this.referenceNodeConfig.setDoc(this.model.doc);
-    return html`<affine-reference
-      .delta=${{
-        insert: '',
-        attributes: {
-          reference: {
-            type: 'LinkedPage',
-            pageId: this.model.pageId,
-          },
-        },
-      } as const}
-      .config=${this.referenceNodeConfig}
-    ></affine-reference>`;
+// @ts-expect-error ignore private warning for overriding _load
+export class LinkedDocBlockComponent extends EmbedLinkedDocBlockComponent {
+  override _load() {
+    this.isBannerEmpty = true;
   }
 }
 

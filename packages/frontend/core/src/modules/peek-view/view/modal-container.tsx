@@ -1,14 +1,14 @@
 import * as Dialog from '@radix-ui/react-dialog';
-import { cssVar } from '@toeverything/theme';
-import { assignInlineVars } from '@vanilla-extract/dynamic';
+import clsx from 'clsx';
 import {
   createContext,
+  forwardRef,
   type PropsWithChildren,
   useContext,
   useEffect,
   useState,
 } from 'react';
-import useTransition from 'react-transition-state';
+import { flushSync } from 'react-dom';
 
 import * as styles from './modal-container.css';
 
@@ -22,9 +22,14 @@ const contentOptions: Dialog.DialogContentProps = {
       e.preventDefault();
     }
   },
+  onEscapeKeyDown: e => {
+    // prevent closing the modal when pressing escape key by default
+    // this is because radix-ui register the escape key event on the document using capture, which is not possible to prevent in blocksuite
+    e.preventDefault();
+  },
   style: {
     padding: 0,
-    backgroundColor: cssVar('backgroundPrimaryColor'),
+    backgroundColor: 'transparent',
     overflow: 'hidden',
   },
 };
@@ -40,6 +45,15 @@ export const useInsidePeekView = () => {
   const context = useContext(PeekViewContext);
   return !!context;
 };
+
+/**
+ * Convert var(--xxx) to --xxx
+ * @param fullName
+ * @returns
+ */
+function toCssVarName(fullName: string) {
+  return fullName.slice(4, -1);
+}
 
 function getElementScreenPositionCenter(target: HTMLElement) {
   const rect = target.getBoundingClientRect();
@@ -57,75 +71,118 @@ function getElementScreenPositionCenter(target: HTMLElement) {
   };
 }
 
-export const PeekViewModalContainer = ({
-  onOpenChange,
-  open,
-  target,
-  controls,
-  children,
-  hideOnEntering,
-  onAnimateEnd,
-}: PropsWithChildren<{
-  open: boolean;
-  hideOnEntering?: boolean;
-  target?: HTMLElement;
+export type PeekViewModalContainerProps = PropsWithChildren<{
   onOpenChange: (open: boolean) => void;
-  controls: React.ReactNode;
+  open: boolean;
+  target?: HTMLElement;
+  controls?: React.ReactNode;
+  onAnimationStart?: () => void;
   onAnimateEnd?: () => void;
-}>) => {
-  const [{ status }, toggle] = useTransition({
-    timeout: animationTimeout,
-  });
-  const [transformOrigin, setTransformOrigin] = useState<string | null>(null);
+  padding?: boolean;
+  animation?: 'fade' | 'zoom';
+  testId?: string;
+}>;
+
+export const PeekViewModalContainer = forwardRef<
+  HTMLDivElement,
+  PeekViewModalContainerProps
+>(function PeekViewModalContainer(
+  {
+    onOpenChange,
+    open,
+    target,
+    controls,
+    children,
+    onAnimationStart,
+    onAnimateEnd,
+    animation = 'zoom',
+    padding = true,
+    testId,
+  },
+  ref
+) {
+  const [vtOpen, setVtOpen] = useState(open);
   useEffect(() => {
-    toggle(open);
+    if (document.startViewTransition) {
+      document.startViewTransition(() => {
+        flushSync(() => {
+          setVtOpen(open);
+        });
+      });
+    } else {
+      setVtOpen(open);
+    }
+  }, [open]);
+
+  useEffect(() => {
+    const onKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') {
+        onOpenChange(false);
+      }
+    };
+    document.addEventListener('keydown', onKeyDown);
+    return () => {
+      document.removeEventListener('keydown', onKeyDown);
+    };
+  }, [onOpenChange]);
+
+  useEffect(() => {
     const bondingBox = target ? getElementScreenPositionCenter(target) : null;
     const offsetLeft =
       (window.innerWidth - Math.min(window.innerWidth * 0.9, 1200)) / 2;
     const modalHeight = window.innerHeight * 0.05;
-    setTransformOrigin(
-      bondingBox
-        ? `${bondingBox.x - offsetLeft}px ${bondingBox.y - modalHeight}px`
-        : null
+    const transformOrigin = bondingBox
+      ? `${bondingBox.x - offsetLeft}px ${bondingBox.y - modalHeight}px`
+      : null;
+
+    document.documentElement.style.setProperty(
+      toCssVarName(styles.transformOrigin),
+      transformOrigin
+    );
+
+    document.documentElement.style.setProperty(
+      toCssVarName(styles.animationTimeout),
+      animationTimeout + 'ms'
     );
   }, [open, target]);
   return (
     <PeekViewContext.Provider value={emptyContext}>
-      <Dialog.Root modal open={status !== 'exited'} onOpenChange={onOpenChange}>
+      <Dialog.Root modal open={vtOpen} onOpenChange={onOpenChange}>
         <Dialog.Portal>
           <Dialog.Overlay
             className={styles.modalOverlay}
-            data-state={status}
-            style={assignInlineVars({
-              [styles.transformOrigin]: transformOrigin,
-              [styles.animationTimeout]: `${animationTimeout}ms`,
-            })}
-            onAnimationEnd={() => {
-              onAnimateEnd?.();
-            }}
+            onAnimationStart={onAnimationStart}
+            onAnimationEnd={onAnimateEnd}
           />
           <div
+            ref={ref}
+            data-testid={testId}
             data-peek-view-wrapper
             className={styles.modalContentWrapper}
-            style={assignInlineVars({
-              [styles.transformOrigin]: transformOrigin,
-              [styles.animationTimeout]: `${animationTimeout}ms`,
-            })}
           >
-            <div className={styles.modalContentContainer} data-state={status}>
+            <div
+              className={clsx(
+                styles.modalContentContainer,
+                padding && styles.containerPadding,
+                animation === 'fade'
+                  ? styles.modalContentContainerWithFade
+                  : styles.modalContentContainerWithZoom
+              )}
+              data-testid="peek-view-modal-animation-container"
+            >
               <Dialog.Content
                 {...contentOptions}
                 className={styles.modalContent}
               >
-                {hideOnEntering && status === 'entering' ? null : children}
+                {children}
               </Dialog.Content>
-              <div data-state={status} className={styles.modalControls}>
-                {controls}
-              </div>
+              {controls ? (
+                <div className={styles.modalControls}>{controls}</div>
+              ) : null}
             </div>
           </div>
         </Dialog.Portal>
       </Dialog.Root>
     </PeekViewContext.Provider>
   );
-};
+});

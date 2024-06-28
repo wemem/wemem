@@ -1,5 +1,5 @@
-import type { useAFFiNEI18N } from '@affine/i18n/hooks';
-import { ContactWithUsIcon, NewIcon } from '@blocksuite/icons';
+import type { useI18n } from '@affine/i18n';
+import { ContactWithUsIcon, NewIcon } from '@blocksuite/icons/rc';
 import type { createStore } from 'jotai';
 
 import { openSettingModalAtom } from '../atoms';
@@ -10,7 +10,7 @@ export function registerAffineHelpCommands({
   t,
   store,
 }: {
-  t: ReturnType<typeof useAFFiNEI18N>;
+  t: ReturnType<typeof useI18n>;
   store: ReturnType<typeof createStore>;
 }) {
   const unsubs: Array<() => void> = [];

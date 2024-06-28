@@ -18,9 +18,8 @@ import {
   SubscriptionRecurring,
   SubscriptionStatus,
 } from '@affine/graphql';
-import { Trans } from '@affine/i18n';
-import { useAFFiNEI18N } from '@affine/i18n/hooks';
-import { ArrowRightSmallIcon } from '@blocksuite/icons';
+import { i18nTime, Trans, useI18n } from '@affine/i18n';
+import { ArrowRightSmallIcon } from '@blocksuite/icons/rc';
 import { useLiveData, useService } from '@toeverything/infra';
 import { useSetAtom } from 'jotai';
 import { Suspense, useCallback, useEffect, useState } from 'react';
@@ -29,11 +28,7 @@ import { openSettingModalAtom } from '../../../../../atoms';
 import { useMutation } from '../../../../../hooks/use-mutation';
 import { useQuery } from '../../../../../hooks/use-query';
 import { SubscriptionService } from '../../../../../modules/cloud';
-import {
-  mixpanel,
-  popupWindow,
-  timestampToLocalDate,
-} from '../../../../../utils';
+import { mixpanel, popupWindow } from '../../../../../utils';
 import { SWRErrorBoundary } from '../../../../pure/swr-error-bundary';
 import { CancelAction, ResumeAction } from '../plans/actions';
 import { AICancel, AIResume, AISubscribe } from '../plans/ai/actions';
@@ -58,7 +53,7 @@ const getMessageKey = (
 };
 
 export const BillingSettings = () => {
-  const t = useAFFiNEI18N();
+  const t = useI18n();
 
   return (
     <>
@@ -89,7 +84,7 @@ export const BillingSettings = () => {
 };
 
 const SubscriptionSettings = () => {
-  const t = useAFFiNEI18N();
+  const t = useI18n();
   const subscriptionService = useService(SubscriptionService);
   useEffect(() => {
     subscriptionService.subscription.revalidate();
@@ -229,7 +224,16 @@ const SubscriptionSettings = () => {
               >
                 <SettingRow
                   style={{ cursor: 'pointer' }}
-                  onClick={() => setOpenCancelModal(true)}
+                  onClick={() => {
+                    mixpanel.track('PlanChangeStarted', {
+                      segment: 'settings panel',
+                      module: 'billing subscription list',
+                      control: 'plan cancel action',
+                      type: proSubscription.plan,
+                      category: proSubscription.recurring,
+                    });
+                    setOpenCancelModal(true);
+                  }}
                   className="dangerous-setting"
                   name={t[
                     'com.affine.payment.billing-setting.cancel-subscription'
@@ -252,7 +256,7 @@ const SubscriptionSettings = () => {
 };
 
 const AIPlanCard = ({ onClick }: { onClick: () => void }) => {
-  const t = useAFFiNEI18N();
+  const t = useI18n();
   const subscriptionService = useService(SubscriptionService);
   useEffect(() => {
     subscriptionService.subscription.revalidate();
@@ -282,11 +286,13 @@ const AIPlanCard = ({ onClick }: { onClick: () => void }) => {
       />
     ) : subscription?.nextBillAt ? (
       t['com.affine.payment.ai.billing-tip.next-bill-at']({
-        due: timestampToLocalDate(subscription.nextBillAt),
+        due: i18nTime(subscription.nextBillAt, {
+          absolute: { accuracy: 'day' },
+        }),
       })
     ) : subscription?.canceledAt && subscription.end ? (
       t['com.affine.payment.ai.billing-tip.end-at']({
-        end: timestampToLocalDate(subscription.end),
+        end: i18nTime(subscription.end, { absolute: { accuracy: 'day' } }),
       })
     ) : null;
 
@@ -327,7 +333,7 @@ const PlanAction = ({
   plan: string;
   gotoPlansSetting: () => void;
 }) => {
-  const t = useAFFiNEI18N();
+  const t = useI18n();
 
   return (
     <Button
@@ -343,11 +349,10 @@ const PlanAction = ({
 };
 
 const PaymentMethodUpdater = () => {
-  // TODO: open stripe customer portal
   const { isMutating, trigger } = useMutation({
     mutation: createCustomerPortalMutation,
   });
-  const t = useAFFiNEI18N();
+  const t = useI18n();
 
   const update = useAsyncCallback(async () => {
     await trigger(null, {
@@ -370,12 +375,23 @@ const PaymentMethodUpdater = () => {
 };
 
 const ResumeSubscription = () => {
-  const t = useAFFiNEI18N();
+  const t = useI18n();
   const [open, setOpen] = useState(false);
+  const subscription = useService(SubscriptionService).subscription;
+  const handleClick = useCallback(() => {
+    setOpen(true);
+    mixpanel.track('PlanChangeStarted', {
+      segment: 'settings panel',
+      module: 'pricing plan list',
+      control: 'plan resume action',
+      type: subscription.pro$.value?.plan,
+      category: subscription.pro$.value?.recurring,
+    });
+  }, [subscription.pro$.value?.plan, subscription.pro$.value?.recurring]);
 
   return (
     <ResumeAction open={open} onOpenChange={setOpen}>
-      <Button className={styles.button} onClick={() => setOpen(true)}>
+      <Button className={styles.button} onClick={handleClick}>
         {t['com.affine.payment.billing-setting.resume-subscription']()}
       </Button>
     </ResumeAction>
@@ -394,7 +410,7 @@ const CancelSubscription = ({ loading }: { loading?: boolean }) => {
 };
 
 const BillingHistory = () => {
-  const t = useAFFiNEI18N();
+  const t = useI18n();
   const { data: invoicesCountQueryResult } = useQuery({
     query: getInvoicesCountQuery,
   });
@@ -439,7 +455,7 @@ const InvoiceLine = ({
 }: {
   invoice: NonNullable<InvoicesQuery['currentUser']>['invoices'][0];
 }) => {
-  const t = useAFFiNEI18N();
+  const t = useI18n();
 
   const open = useCallback(() => {
     if (invoice.link) {
@@ -458,7 +474,6 @@ const InvoiceLine = ({
     <SettingRow
       key={invoice.id}
       name={new Date(invoice.createdAt).toLocaleDateString()}
-      // TODO: currency to format: usd => $, cny => ¥
       desc={`${
         invoice.status === InvoiceStatus.Paid
           ? t['com.affine.payment.billing-setting.paid']()
@@ -473,7 +488,7 @@ const InvoiceLine = ({
 };
 
 const SubscriptionSettingSkeleton = () => {
-  const t = useAFFiNEI18N();
+  const t = useI18n();
   return (
     <SettingWrapper
       title={t['com.affine.payment.billing-setting.information']()}
@@ -487,7 +502,7 @@ const SubscriptionSettingSkeleton = () => {
 };
 
 const BillingHistorySkeleton = () => {
-  const t = useAFFiNEI18N();
+  const t = useI18n();
   return (
     <SettingWrapper title={t['com.affine.payment.billing-setting.history']()}>
       <div className={styles.billingHistorySkeleton}>

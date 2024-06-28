@@ -2,9 +2,12 @@ import { Button, IconButton, Menu } from '@affine/component';
 import { SettingHeader } from '@affine/component/setting-components';
 import { useWorkspaceInfo } from '@affine/core/hooks/use-workspace-info';
 import type { PageInfoCustomPropertyMeta } from '@affine/core/modules/properties/services/schema';
-import { Trans } from '@affine/i18n';
-import { useAFFiNEI18N } from '@affine/i18n/hooks';
-import { DeleteIcon, FilterIcon, MoreHorizontalIcon } from '@blocksuite/icons';
+import { Trans, useI18n } from '@affine/i18n';
+import {
+  DeleteIcon,
+  FilterIcon,
+  MoreHorizontalIcon,
+} from '@blocksuite/icons/rc';
 import { FrameworkScope, type WorkspaceMetadata } from '@toeverything/infra';
 import type { MouseEvent } from 'react';
 import {
@@ -57,7 +60,7 @@ const EditPropertyButton = ({
 }: {
   property: PageInfoCustomPropertyMeta;
 }) => {
-  const t = useAFFiNEI18N();
+  const t = useI18n();
   const manager = useContext(managerContext);
   const [localPropertyMeta, setLocalPropertyMeta] = useState(() => ({
     ...property,
@@ -198,7 +201,7 @@ const CustomPropertyRow = ({
 }) => {
   const Icon = nameToIcon(property.icon, property.type);
   const required = property.required;
-  const t = useAFFiNEI18N();
+  const t = useI18n();
   return (
     <div
       className={styles.propertyRow}
@@ -268,7 +271,7 @@ const CustomPropertyRowsList = ({
   const manager = useContext(managerContext);
   const properties = manager.getOrderedPropertiesSchema();
   const statistics = manager.getPropertyStatistics();
-  const t = useAFFiNEI18N();
+  const t = useI18n();
 
   if (filterMode !== 'all') {
     const filtered = properties.filter(property => {
@@ -309,7 +312,7 @@ const CustomPropertyRowsList = ({
 };
 
 const WorkspaceSettingPropertiesMain = () => {
-  const t = useAFFiNEI18N();
+  const t = useI18n();
   const manager = useContext(managerContext);
   const [filterMode, setFilterMode] = useState<PropertyFilterMode>('all');
   const properties = manager.getOrderedPropertiesSchema();
@@ -386,7 +389,7 @@ export const WorkspaceSettingProperties = ({
 }: {
   workspaceMetadata: WorkspaceMetadata;
 }) => {
-  const t = useAFFiNEI18N();
+  const t = useI18n();
   const workspace = useWorkspace(workspaceMetadata);
   const workspaceInfo = useWorkspaceInfo(workspaceMetadata);
   const title = workspaceInfo?.name || 'untitled';

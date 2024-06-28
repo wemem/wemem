@@ -8,13 +8,13 @@ import {
   useJournalRouteHelper,
 } from '@affine/core/hooks/use-journal';
 import { useNavigateHelper } from '@affine/core/hooks/use-navigate-helper';
-import { useAFFiNEI18N } from '@affine/i18n/hooks';
+import { useI18n } from '@affine/i18n';
 import {
   EdgelessIcon,
   MoreHorizontalIcon,
   PageIcon,
   TodayIcon,
-} from '@blocksuite/icons';
+} from '@blocksuite/icons/rc';
 import type { DocRecord } from '@toeverything/infra';
 import {
   DocService,
@@ -86,7 +86,7 @@ interface JournalBlockProps {
 }
 
 const EditorJournalPanel = () => {
-  const t = useAFFiNEI18N();
+  const t = useI18n();
   const doc = useService(DocService).doc;
   const workspace = useService(WorkspaceService).workspace;
   const { journalDate, isJournal } = useJournalInfoHelper(
@@ -110,7 +110,7 @@ const EditorJournalPanel = () => {
 
   const customDayRenderer = useCallback(
     (cell: DateCell) => {
-      // TODO: add a dot to indicate journal
+      // TODO(@catsjuice): add a dot to indicate journal
       // has performance issue for now, better to calculate it in advance
       // const hasJournal = !!getJournalsByDate(cell.date.format('YYYY-MM-DD'))?.length;
       const hasJournal = false;
@@ -167,7 +167,7 @@ const sortPagesByDate = (
 };
 
 const DailyCountEmptyFallback = ({ name }: { name: NavItemName }) => {
-  const t = useAFFiNEI18N();
+  const t = useI18n();
 
   return (
     <div className={styles.dailyCountEmpty}>
@@ -180,7 +180,7 @@ const DailyCountEmptyFallback = ({ name }: { name: NavItemName }) => {
 const JournalDailyCountBlock = ({ date }: JournalBlockProps) => {
   const workspace = useService(WorkspaceService).workspace;
   const nodeRef = useRef<HTMLDivElement>(null);
-  const t = useAFFiNEI18N();
+  const t = useI18n();
   const [activeItem, setActiveItem] = useState<NavItemName>('createdToday');
   const docRecords = useLiveData(useService(DocsService).list.docs$);
 
@@ -345,7 +345,7 @@ const ConflictList = ({
   );
 };
 const JournalConflictBlock = ({ date }: JournalBlockProps) => {
-  const t = useAFFiNEI18N();
+  const t = useI18n();
   const workspace = useService(WorkspaceService).workspace;
   const docRecordList = useService(DocsService).list;
   const journalHelper = useJournalHelper(workspace.docCollection);

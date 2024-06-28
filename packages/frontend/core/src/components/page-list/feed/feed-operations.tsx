@@ -1,15 +1,16 @@
 import type { MenuItemProps } from '@affine/component';
 import { Menu, MenuIcon, MenuItem } from '@affine/component';
+import { useDeleteFeed } from '@affine/core/components/page-list';
 import { useAppSettingHelper } from '@affine/core/hooks/affine/use-app-setting-helper';
 import { FeedService } from '@affine/core/modules/feed/services/feed';
 import { WorkbenchService } from '@affine/core/modules/workbench';
 import type { Collection } from '@affine/env/filter';
-import { useAFFiNEI18N } from '@affine/i18n/hooks';
+import { useI18n } from '@affine/i18n';
 import {
   DeleteIcon,
   EditIcon,
   SplitViewIcon,
-} from '@blocksuite/icons';
+} from '@blocksuite/icons/rc';
 import { useService } from '@toeverything/infra';
 import type { PropsWithChildren, ReactElement } from 'react';
 import { useCallback, useMemo } from 'react';
@@ -18,7 +19,6 @@ import * as styles from './feed-operations.css';
 import {
   useCreateFeedModal,
 } from './use-create-feed-modal';
-import { useDeleteFeed } from '@affine/core/components/page-list';
 
 export const FeedOperations = ({
                                  feed,
@@ -32,10 +32,10 @@ export const FeedOperations = ({
   const service = useService(FeedService);
   const workbench = useService(WorkbenchService).workbench;
   const deleteFeed = useDeleteFeed();
-  const t = useAFFiNEI18N();
+  const t = useI18n();
   const { open: openEditFeedNameModal, node: editNameModal } =
     useCreateFeedModal({
-      title: t['ai.readflow.editFeed.renameFeed'](),
+      title: t['ai.readflow.editFeed.editFeed'](),
     });
 
   const showEditName = useCallback(() => {

@@ -1,6 +1,6 @@
 import { tagColors } from '@affine/core/components/affine/page-properties/common';
 import type { Tag } from '@affine/env/filter';
-import { useAFFiNEI18N } from '@affine/i18n/hooks';
+import { useI18n } from '@affine/i18n';
 import { useCallback } from 'react';
 
 export const InternalTagPrefix = 'ai.readflow.internal-tags.';
@@ -48,7 +48,7 @@ export const UnseenTag: Tag = {
 export const isInternalTag = (tagName: any) => (tagName as string).startsWith(InternalTagPrefix);
 
 export const useTagI18N = () => {
-  const t = useAFFiNEI18N();
+  const t = useI18n();
   return useCallback((tagName: any) => {
     if (isInternalTag(tagName)) {
       // eslint-disable-next-line @typescript-eslint/ban-ts-comment

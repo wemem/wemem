@@ -1383,5 +1383,15 @@
   "ai.readflow.notification.message.feed-added": "Feed added",
   "ai.readflow.notification.action.feed-added": "Read newest items",
   "ai.readflow.workspaceSubPath.later": "Later",
-  "ai.readflow.workspaceSubPath.archive": "Archive"
+  "ai.readflow.workspaceSubPath.archive": "Archive",
+  "com.affine.ai-onboarding.local.action-dismiss": "Dismiss",
+  "com.affine.ai.template-insert.failed": "Failed to insert template, please try again.",
+  "com.affine.syncing": "Syncing",
+  "com.affine.time.now": "now",
+  "com.affine.time.this-mouth": "this month",
+  "com.affine.time.this-week": "this week",
+  "com.affine.time.this-year": "this year",
+  "com.affine.time.today": "today",
+  "com.affine.user-info.usage.ai": "AI Usage",
+  "com.affine.user-info.usage.cloud": "Cloud Storage"
 }

@@ -1,10 +1,17 @@
 import { cssVar } from '@toeverything/theme';
-import { createVar, keyframes, style } from '@vanilla-extract/css';
+import {
+  createVar,
+  generateIdentifier,
+  globalStyle,
+  keyframes,
+  style,
+} from '@vanilla-extract/css';
 
 export const animationTimeout = createVar();
 export const transformOrigin = createVar();
+export const animationType = createVar();
 
-const contentShow = keyframes({
+const zoomIn = keyframes({
   from: {
     transform: 'scale(0.10)',
   },
@@ -12,7 +19,7 @@ const contentShow = keyframes({
     transform: 'scale(1)',
   },
 });
-const contentHide = keyframes({
+const zoomOut = keyframes({
   to: {
     opacity: 0,
     transform: 'scale(0.10)',
@@ -41,26 +48,50 @@ const fadeOut = keyframes({
   },
 });
 
-const slideRight = keyframes({
-  from: {
-    transform: 'translateX(-200%)',
-    opacity: 0,
-  },
-  to: {
-    transform: 'translateX(0)',
-    opacity: 1,
-  },
+// every item must have its own unique view-transition-name
+const vtContentZoom = generateIdentifier('content-zoom');
+const vtContentFade = generateIdentifier('content-fade');
+const vtOverlayFade = generateIdentifier('content-fade');
+
+globalStyle(`::view-transition-group(${vtOverlayFade})`, {
+  animationDuration: animationTimeout,
 });
 
-const slideLeft = keyframes({
-  from: {
-    transform: 'translateX(0)',
-    opacity: 1,
-  },
-  to: {
-    transform: 'translateX(-200%)',
-    opacity: 0,
-  },
+globalStyle(`::view-transition-new(${vtOverlayFade})`, {
+  animationName: fadeIn,
+});
+
+globalStyle(`::view-transition-old(${vtOverlayFade})`, {
+  animationName: fadeOut,
+});
+
+globalStyle(
+  `::view-transition-group(${vtContentZoom}),
+   ::view-transition-group(${vtContentFade})`,
+  {
+    animationDuration: animationTimeout,
+    animationFillMode: 'forwards',
+    animationTimingFunction: 'cubic-bezier(0.42, 0, 0.58, 1)',
+  }
+);
+
+globalStyle(`::view-transition-new(${vtContentZoom})`, {
+  animationName: zoomIn,
+  // origin has to be set in ::view-transition-new/old
+  transformOrigin: transformOrigin,
+});
+
+globalStyle(`::view-transition-old(${vtContentZoom})`, {
+  animationName: zoomOut,
+  transformOrigin: transformOrigin,
+});
+
+globalStyle(`::view-transition-new(${vtContentFade})`, {
+  animationName: fadeIn,
+});
+
+globalStyle(`::view-transition-old(${vtContentFade})`, {
+  animationName: fadeOut,
 });
 
 export const modalOverlay = style({
@@ -68,17 +99,7 @@ export const modalOverlay = style({
   inset: 0,
   zIndex: cssVar('zIndexModal'),
   backgroundColor: cssVar('black30'),
-  opacity: 0,
-  selectors: {
-    '&[data-state=entered], &[data-state=entering]': {
-      animation: `${fadeIn} ${animationTimeout} ease-in-out`,
-      animationFillMode: 'forwards',
-    },
-    '&[data-state=exited], &[data-state=exiting]': {
-      animation: `${fadeOut} ${animationTimeout} ease-in-out`,
-      animationFillMode: 'backwards',
-    },
-  },
+  viewTransitionName: vtOverlayFade,
 });
 
 export const modalContentWrapper = style({
@@ -93,37 +114,39 @@ export const modalContentWrapper = style({
 export const modalContentContainer = style({
   display: 'flex',
   alignItems: 'flex-start',
+  width: '100%',
+  height: '100%',
+});
+
+export const modalContentContainerWithZoom = style({
+  viewTransitionName: vtContentZoom,
+});
+
+export const modalContentContainerWithFade = style({
+  viewTransitionName: vtContentFade,
+});
+
+export const containerPadding = style({
   width: '90%',
   height: '90%',
   maxWidth: 1248,
-  willChange: 'transform, opacity',
-  transformOrigin: transformOrigin,
-  selectors: {
-    '&[data-state=entered], &[data-state=entering]': {
-      animationFillMode: 'forwards',
-      animationName: contentShow,
-      animationDuration: animationTimeout,
-      animationTimingFunction: 'cubic-bezier(0.42, 0, 0.58, 1)',
-    },
-    '&[data-state=exited], &[data-state=exiting]': {
-      animationFillMode: 'forwards',
-      animationName: contentHide,
-      animationDuration: animationTimeout,
-      animationTimingFunction: 'cubic-bezier(0.42, 0, 0.58, 1)',
-    },
-  },
 });
 
 export const modalContent = style({
   flex: 1,
   height: '100%',
   backgroundColor: cssVar('backgroundOverlayPanelColor'),
-  boxShadow: '0px 0px 0px 2.23px rgba(0, 0, 0, 0.08)',
+  backdropFilter: 'drop-shadow(0px 0px 2px rgba(0, 0, 0, 0.08))',
   borderRadius: '8px',
   minHeight: 300,
   // :focus-visible will set outline
   outline: 'none',
   position: 'relative',
+  selectors: {
+    '&[data-no-interaction=true]': {
+      pointerEvents: 'none',
+    },
+  },
 });
 
 export const modalControls = style({
@@ -131,20 +154,5 @@ export const modalControls = style({
   zIndex: -1,
   minWidth: '48px',
   padding: '8px 0 0 16px',
-  opacity: 0,
   pointerEvents: 'auto',
-  selectors: {
-    '&[data-state=entered], &[data-state=entering]': {
-      animationName: slideRight,
-      animationDuration: animationTimeout,
-      animationFillMode: 'forwards',
-      animationTimingFunction: 'ease-in-out',
-    },
-    '&[data-state=exited], &[data-state=exiting]': {
-      animationName: slideLeft,
-      animationDuration: animationTimeout,
-      animationFillMode: 'forwards',
-      animationTimingFunction: 'ease-in-out',
-    },
-  },
 });

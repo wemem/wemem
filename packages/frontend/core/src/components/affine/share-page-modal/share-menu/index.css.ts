@@ -29,7 +29,6 @@ export const descriptionStyle = style({
 });
 export const buttonStyle = style({
   marginTop: '18px',
-  // todo: new color scheme should be used
 });
 export const actionsStyle = style({
   display: 'flex',
@@ -138,7 +137,7 @@ globalStyle(`${shareLinkStyle} > span`, {
 globalStyle(`${shareLinkStyle} > div > svg`, {
   color: cssVar('linkColor'),
 });
-export const journalShareButton = style({
+export const shareButton = style({
   height: 32,
   padding: '0px 8px',
 });

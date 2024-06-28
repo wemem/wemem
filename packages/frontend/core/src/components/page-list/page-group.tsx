@@ -1,6 +1,6 @@
 import { useJournalInfoHelper } from '@affine/core/hooks/use-journal';
 import type { Tag } from '@affine/env/filter';
-import { useAFFiNEI18N } from '@affine/i18n/hooks';
+import { useI18n } from '@affine/i18n';
 import { assertExists } from '@blocksuite/global/utils';
 import {
   EdgelessIcon,
@@ -8,7 +8,7 @@ import {
   TodayIcon,
   ToggleCollapseIcon,
   ViewLayersIcon,
-} from '@blocksuite/icons';
+} from '@blocksuite/icons/rc';
 import type { DocCollection, DocMeta } from '@blocksuite/store';
 import * as Collapsible from '@radix-ui/react-collapsible';
 import { DocsService, useLiveData, useService } from '@toeverything/infra';
@@ -82,7 +82,7 @@ export const ItemGroupHeader = <T extends ListItem>({
     selectionState.onSelectedIdsChange?.(newSelectedPageIds);
   }, [setSelectionActive, selectionState, allSelected, items]);
 
-  const t = useAFFiNEI18N();
+  const t = useI18n();
 
   return label ? (
     <div
@@ -148,7 +148,7 @@ export const ItemGroup = <T extends ListItem>({
       ...items.map(item => item.id),
     ]);
   }, [items, selectionState]);
-  const t = useAFFiNEI18N();
+  const t = useI18n();
   return (
     <Collapsible.Root
       data-testid="page-list-group"
@@ -194,7 +194,7 @@ export const ItemGroup = <T extends ListItem>({
   );
 };
 
-// todo: optimize how to render page meta list item
+// TODO(@Peng): optimize how to render page meta list item
 const requiredPropNames = [
   'docCollection',
   'rowAsLink',
@@ -284,7 +284,7 @@ function tagIdToTagOption(
 const PageTitle = ({ id }: { id: string }) => {
   const doc = useLiveData(useService(DocsService).list.doc$(id));
   const title = useLiveData(doc?.title$);
-  const t = useAFFiNEI18N();
+  const t = useI18n();
   return title || t['Untitled']();
 };
 

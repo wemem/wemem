@@ -1,6 +1,7 @@
 import { Tooltip } from '@affine/component/ui/tooltip';
 import { mixpanel } from '@affine/core/utils';
-import { useAFFiNEI18N } from '@affine/i18n/hooks';
+import { SubscriptionPlan } from '@affine/graphql';
+import { useI18n } from '@affine/i18n';
 import { useLiveData, useServices } from '@toeverything/infra';
 import { useSetAtom } from 'jotai';
 import { useCallback, useEffect } from 'react';
@@ -49,7 +50,7 @@ export const UserPlanButton = () => {
     [setSettingModalAtom]
   );
 
-  const t = useAFFiNEI18N();
+  const t = useI18n();
 
   if (!hasPayment) {
     // no payment feature
@@ -61,15 +62,12 @@ export const UserPlanButton = () => {
     return;
   }
 
-  if (!plan) {
-    // no plan, do nothing
-    return;
-  }
+  const planLabel = plan ?? SubscriptionPlan.Free;
 
   return (
     <Tooltip content={t['com.affine.payment.tag-tooltips']()} side="top">
       <div className={styles.userPlanButton} onClick={handleClick}>
-        {plan}
+        {planLabel}
       </div>
     </Tooltip>
   );

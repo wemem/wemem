@@ -2,7 +2,7 @@ import { Button, Checkbox, Loading, Switch } from '@affine/component';
 import { SettingHeader } from '@affine/component/setting-components';
 import { useAppSettingHelper } from '@affine/core/hooks/affine/use-app-setting-helper';
 import { useAsyncCallback } from '@affine/core/hooks/affine-async-hooks';
-import { useAFFiNEI18N } from '@affine/i18n/hooks';
+import { useI18n } from '@affine/i18n';
 import { useAtom } from 'jotai';
 import { atomWithStorage } from 'jotai/utils';
 import { Suspense, useCallback, useState } from 'react';
@@ -15,7 +15,7 @@ const ExperimentalFeaturesPrompt = ({
 }: {
   onConfirm: () => void;
 }) => {
-  const t = useAFFiNEI18N();
+  const t = useI18n();
   const [checked, setChecked] = useState(false);
 
   const onChange: (
@@ -126,8 +126,8 @@ const blocksuiteFeatureFlags: Partial<Record<keyof BlockSuiteFlags, string>> = {
   enable_expand_database_block: 'Enable Expand Database Block',
   enable_database_statistics: 'Enable Database Block Statistics',
   enable_block_query: 'Enable Todo Block Query',
-  enable_new_image_actions: 'Enable New Image Actions',
   enable_edgeless_text: 'Enable New Edgeless Text',
+  enable_ai_onboarding: 'Enable AI Onboarding',
 };
 
 const BlocksuiteFeatureFlagSettings = () => {
@@ -161,7 +161,7 @@ const BlocksuiteFeatureFlagSettings = () => {
 };
 
 const ExperimentalFeaturesMain = () => {
-  const t = useAFFiNEI18N();
+  const t = useI18n();
 
   return (
     <>
@@ -181,7 +181,7 @@ const ExperimentalFeaturesMain = () => {
   );
 };
 
-// todo: save to workspace meta instead?
+// TODO(@Peng): save to workspace meta instead?
 const experimentalFeaturesDisclaimerAtom = atomWithStorage(
   'affine:experimental-features-disclaimer',
   false

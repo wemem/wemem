@@ -1,4 +1,4 @@
-import { CloseIcon, DownloadIcon } from '@blocksuite/icons';
+import { CloseIcon, DownloadIcon } from '@blocksuite/icons/rc';
 import clsx from 'clsx';
 import { useCallback, useState } from 'react';
 
@@ -19,7 +19,7 @@ export function AppDownloadButton({
     setShow(false);
   }, []);
 
-  // TODO: unify this type of literal value.
+  // TODO(@JimmFly): unify this type of literal value.
   const handleClick = useCallback(() => {
     mixpanel.track('Button', {
       resolve: 'GoToDownloadAppPage',

@@ -1,11 +1,11 @@
 import { UserFeatureService } from '@affine/core/modules/cloud/services/user-feature';
-import { useAFFiNEI18N } from '@affine/i18n/hooks';
+import { useI18n } from '@affine/i18n';
 import {
   AppearanceIcon,
   ExperimentIcon,
   InformationIcon,
   KeyboardIcon,
-} from '@blocksuite/icons';
+} from '@blocksuite/icons/rc';
 import { useLiveData, useServices } from '@toeverything/infra';
 import type { ReactElement, SVGProps } from 'react';
 import { useEffect } from 'react';
@@ -30,7 +30,7 @@ interface GeneralSettingListItem {
 export type GeneralSettingList = GeneralSettingListItem[];
 
 export const useGeneralSettingList = (): GeneralSettingList => {
-  const t = useAFFiNEI18N();
+  const t = useI18n();
   const { authService, serverConfigService, userFeatureService } = useServices({
     AuthService,
     ServerConfigService,

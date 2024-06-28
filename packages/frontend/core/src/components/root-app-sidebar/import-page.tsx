@@ -1,14 +1,14 @@
 import { useAsyncCallback } from '@affine/core/hooks/affine-async-hooks';
 import { mixpanel } from '@affine/core/utils';
-import { useAFFiNEI18N } from '@affine/i18n/hooks';
-import { ImportIcon } from '@blocksuite/icons';
+import { useI18n } from '@affine/i18n';
+import { ImportIcon } from '@blocksuite/icons/rc';
 
 import type { DocCollection } from '../../shared';
 import { MenuItem } from '../app-sidebar';
 import { usePageHelper } from '../blocksuite/block-suite-page-list/utils';
 
 const ImportPage = ({ docCollection }: { docCollection: DocCollection }) => {
-  const t = useAFFiNEI18N();
+  const t = useI18n();
   const { importFile } = usePageHelper(docCollection);
 
   const onImportFile = useAsyncCallback(async () => {

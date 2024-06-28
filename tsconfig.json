@@ -49,6 +49,10 @@
     "paths": {
       "@affine/core/*": ["./packages/frontend/core/src/*"],
       "@affine/core": ["./packages/frontend/core/src/index.ts"],
+      "@affine/admin/*": ["./packages/frontend/admin/src/*"],
+      "@affine/admin/components/ui/*": [
+        "./packages/frontend/admin/src/components/ui/*"
+      ],
       "@affine/cli/*": ["./tools/cli/src/*"],
       "@affine/server/*": ["./packages/backend/server/src/*"],
       "@affine/component": ["./packages/frontend/component/src/index"],
@@ -57,7 +61,6 @@
         "./packages/frontend/component/src/components/*"
       ],
       "@affine/i18n": ["./packages/frontend/i18n/src"],
-      "@affine/i18n/hooks": ["./packages/frontend/i18n/src/i18n-generated"],
       "@affine/debug": ["./packages/common/debug"],
       "@affine/env": ["./packages/common/env/src"],
       "@affine/env/*": ["./packages/common/env/src/*"],
@@ -83,6 +86,9 @@
       "path": "./packages/backend/server/tests"
     },
     // Frontend
+    {
+      "path": "./packages/frontend/admin"
+    },
     {
       "path": "./packages/frontend/component"
     },

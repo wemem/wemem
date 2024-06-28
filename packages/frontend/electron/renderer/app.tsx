@@ -35,6 +35,7 @@ const desktopWhiteList = [
   '/open-app/url',
   '/upgrade-success',
   '/ai-upgrade-success',
+  '/share',
 ];
 if (
   !environment.isDesktop &&
@@ -92,7 +93,7 @@ window.addEventListener('focus', () => {
 frameworkProvider.get(LifecycleService).applicationStart();
 
 export function App() {
-  performanceRenderLogger.info('App');
+  performanceRenderLogger.debug('App');
 
   if (!languageLoadingPromise) {
     languageLoadingPromise = loadLanguage().catch(console.error);

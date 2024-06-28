@@ -6,8 +6,7 @@ import { useBlockSuiteDocMeta } from '@affine/core/hooks/use-block-suite-page-me
 import { CollectionService } from '@affine/core/modules/collection';
 import type { Tag } from '@affine/core/modules/tag';
 import type { Collection, Filter } from '@affine/env/filter';
-import { Trans } from '@affine/i18n';
-import { useAFFiNEI18N } from '@affine/i18n/hooks';
+import { Trans, useI18n } from '@affine/i18n';
 import type { DocMeta } from '@blocksuite/store';
 import { useService, WorkspaceService } from '@toeverything/infra';
 import { type ReactNode, useCallback, useMemo, useRef, useState } from 'react';
@@ -21,7 +20,6 @@ import { PageListItemRenderer } from '../page-group';
 import { ListTableHeader } from '../page-header';
 import type { ItemListHandle, ListItem } from '../types';
 import { useFilteredPageMetas } from '../use-filtered-page-metas';
-import type { AllPageListConfig } from '../view/edit-collection/edit-collection';
 import { VirtualizedList } from '../virtualized-list';
 import {
   CollectionPageListHeader,
@@ -30,7 +28,7 @@ import {
 } from './page-list-header';
 
 const usePageOperationsRenderer = () => {
-  const t = useAFFiNEI18N();
+  const t = useI18n();
   const collectionService = useService(CollectionService);
   const removeFromAllowList = useCallback(
     (id: string) => {
@@ -60,7 +58,6 @@ export const VirtualizedPageList = ({
   feed,
   feedDocs,
   filters,
-  config,
   listItem,
   setHideHeaderCreateNewPage,
   currentFilters,
@@ -71,7 +68,6 @@ export const VirtualizedPageList = ({
   feed?: Collection;
   feedDocs?: boolean;
   filters?: Filter[];
-  config?: AllPageListConfig;
   listItem?: DocMeta[];
   setHideHeaderCreateNewPage?: (hide: boolean) => void;
   emptyComponent?: ReactNode;
@@ -128,12 +124,11 @@ export const VirtualizedPageList = ({
     if (tag) {
       return <TagPageListHeader workspaceId={currentWorkspace.id} tag={tag} />;
     }
-    if (collection && config) {
+    if (collection) {
       return (
         <CollectionPageListHeader
           workspaceId={currentWorkspace.id}
           collection={collection}
-          config={config}
         />
       );
     }
@@ -160,7 +155,7 @@ export const VirtualizedPageList = ({
     }
     return <PageListHeader currentFilters={currentFilters!}
                            onChangeCurrentFilters={onChangeCurrentFilters!}/>;
-  }, [collection, config, currentWorkspace.docCollection.meta.properties, currentWorkspace.id, feed, feedDocs, tag]);
+  }, [collection, currentFilters, currentWorkspace.docCollection.meta.properties, currentWorkspace.id, feed, feedDocs, onChangeCurrentFilters, tag]);
 
   const { setTrashModal } = useTrashModalHelper(currentWorkspace.docCollection);
 

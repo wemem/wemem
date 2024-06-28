@@ -13,13 +13,14 @@ export type SearchCallbackResult =
   | {
       docId: string;
       blockId?: string;
+      isNewDoc?: boolean;
     }
   | {
       query: string;
       action: 'insert';
     };
 
-// todo: move command registry to entity as well
+// TODO(@Peng): move command registry to entity as well
 export class QuickSearch extends Entity {
   constructor(
     private readonly docsService: DocsService,

@@ -3,7 +3,7 @@ import { createEmptyCollection, useCreateFeedModal } from '@affine/core/componen
 import { useNavigateHelper } from '@affine/core/hooks/use-navigate-helper';
 import { FeedService } from '@affine/core/modules/feed/services/feed';
 import { TagService } from '@affine/core/modules/tag';
-import { useAFFiNEI18N } from '@affine/i18n/hooks';
+import { useI18n } from '@affine/i18n';
 import type { DocCollection } from '@blocksuite/store';
 import { useService } from '@toeverything/infra';
 import { nanoid } from 'nanoid';
@@ -15,7 +15,7 @@ export const FeedFilterTagPrefix = 'feed-filter-tag-';
 export const useCreateFeed = (docCollection: DocCollection) => {
   const navigateHelper = useNavigateHelper();
   const feedService = useService(FeedService);
-  const t = useAFFiNEI18N();
+  const t = useI18n();
   const tagList = useService(TagService).tagList;
   const { node, open } = useCreateFeedModal({
     title: t['ai.readflow.editFeed.createFeed'](),

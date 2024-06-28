@@ -1,6 +1,6 @@
 import { MenuItem } from '@affine/component/ui/menu';
-import { useAFFiNEI18N } from '@affine/i18n/hooks';
-import { ImportIcon, PlusIcon } from '@blocksuite/icons';
+import { useI18n } from '@affine/i18n';
+import { ImportIcon, PlusIcon } from '@blocksuite/icons/rc';
 
 import * as styles from './index.css';
 
@@ -11,7 +11,7 @@ export const AddWorkspace = ({
   onAddWorkspace?: () => void;
   onNewWorkspace?: () => void;
 }) => {
-  const t = useAFFiNEI18N();
+  const t = useI18n();
 
   return (
     <div>

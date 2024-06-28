@@ -5,7 +5,7 @@ import { useDeleteCollectionInfo } from '@affine/core/hooks/affine/use-delete-co
 import { FavoriteItemsAdapter } from '@affine/core/modules/properties';
 import { WorkbenchService } from '@affine/core/modules/workbench';
 import type { Collection } from '@affine/env/filter';
-import { useAFFiNEI18N } from '@affine/i18n/hooks';
+import { useI18n } from '@affine/i18n';
 import {
   DeleteIcon,
   EditIcon,
@@ -14,14 +14,13 @@ import {
   FilterIcon,
   PlusIcon,
   SplitViewIcon,
-} from '@blocksuite/icons';
+} from '@blocksuite/icons/rc';
 import { useLiveData, useService } from '@toeverything/infra';
 import type { PropsWithChildren, ReactElement } from 'react';
 import { useCallback, useMemo } from 'react';
 
 import { CollectionService } from '../../../modules/collection';
 import * as styles from './collection-operations.css';
-import type { AllPageListConfig } from './index';
 import {
   useEditCollection,
   useEditCollectionName,
@@ -29,13 +28,11 @@ import {
 
 export const CollectionOperations = ({
   collection,
-  config,
   openRenameModal,
   onAddDocToCollection,
   children,
 }: PropsWithChildren<{
   collection: Collection;
-  config: AllPageListConfig;
   openRenameModal?: () => void;
   onAddDocToCollection?: () => void;
 }>) => {
@@ -44,8 +41,8 @@ export const CollectionOperations = ({
   const service = useService(CollectionService);
   const workbench = useService(WorkbenchService).workbench;
   const { open: openEditCollectionModal, node: editModal } =
-    useEditCollection(config);
-  const t = useAFFiNEI18N();
+    useEditCollection();
+  const t = useI18n();
   const { open: openEditCollectionNameModal, node: editNameModal } =
     useEditCollectionName({
       title: t['com.affine.editCollection.renameCollection'](),

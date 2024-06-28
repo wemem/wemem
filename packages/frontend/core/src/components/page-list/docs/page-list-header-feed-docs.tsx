@@ -7,7 +7,7 @@ import {
 } from '@affine/core/components/page-list/docs/page-list-header-feed-operations-menu';
 import { useNavigateHelper } from '@affine/core/hooks/use-navigate-helper';
 import type { Filter, PropertiesMeta } from '@affine/env/filter';
-import { useAFFiNEI18N } from '@affine/i18n/hooks';
+import { useI18n } from '@affine/i18n';
 import { useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
 
@@ -20,7 +20,7 @@ export const FeedDocsPageListHeader = ({ workspaceId, propertiesMeta, currentFil
   currentFilters: Filter[];
   onChangeCurrentFilters: (filters: Filter[]) => void;
 }) => {
-  const t = useAFFiNEI18N();
+  const t = useI18n();
   const params = useParams();
   const { jumpToFeedDocs } = useNavigateHelper();
   const onStatusChange = (status: 'true' | 'false') => {

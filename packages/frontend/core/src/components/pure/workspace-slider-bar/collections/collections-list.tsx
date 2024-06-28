@@ -20,12 +20,12 @@ import {
 import { CollectionService } from '@affine/core/modules/collection';
 import { FavoriteItemsAdapter } from '@affine/core/modules/properties';
 import type { Collection } from '@affine/env/filter';
-import { useAFFiNEI18N } from '@affine/i18n/hooks';
+import { useI18n } from '@affine/i18n';
 import {
   MoreHorizontalIcon,
   PlusIcon,
   ViewLayersIcon,
-} from '@blocksuite/icons';
+} from '@blocksuite/icons/rc';
 import type { DocCollection } from '@blocksuite/store';
 import { type AnimateLayoutChanges, useSortable } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
@@ -60,24 +60,12 @@ export const CollectionSidebarNavItem = ({
   dndId: DNDIdentifier;
   className?: string;
 }) => {
-  const pages = useBlockSuiteDocMeta(docCollection);
   const [collapsed, setCollapsed] = useState(true);
   const [open, setOpen] = useState(false);
   const collectionService = useService(CollectionService);
-  const favAdapter = useService(FavoriteItemsAdapter);
   const { createPage } = usePageHelper(docCollection);
   const { openConfirmModal } = useConfirmModal();
-  const t = useAFFiNEI18N();
-
-  const favourites = useLiveData(favAdapter.favorites$);
-
-  const removeFromAllowList = useCallback(
-    (id: string) => {
-      collectionService.deletePageFromCollection(collection.id, id);
-      toast(t['com.affine.collection.removePage.success']());
-    },
-    [collection, collectionService, t]
-  );
+  const t = useI18n();
 
   const overlayPreview = useMemo(() => {
     return (
@@ -112,25 +100,6 @@ export const CollectionSidebarNavItem = ({
 
   const isOver = over?.id === dndId && dragOverIntent === 'collection:add';
 
-  const config = useAllPageListConfig();
-  const allPagesMeta = useMemo(
-    () => Object.fromEntries(pages.map(v => [v.id, v])),
-    [pages]
-  );
-  const allowList = useMemo(
-    () => new Set(collection.allowList),
-    [collection.allowList]
-  );
-
-  const pagesToRender = pages.filter(meta => {
-    if (meta.trash) return false;
-    const pageData = {
-      meta,
-      publicMode: config.getPublicMode(meta.id),
-      favorite: favourites.some(fav => fav.id === meta.id),
-    };
-    return filterPage(collection, pageData);
-  });
   const currentPath = useLiveData(
     useService(WorkbenchService).workbench.location$.map(
       location => location.pathname
@@ -205,7 +174,6 @@ export const CollectionSidebarNavItem = ({
             </IconButton>
             <CollectionOperations
               collection={collection}
-              config={config}
               openRenameModal={handleOpen}
               onAddDocToCollection={onConfirmAddDocToCollection}
             >
@@ -226,36 +194,96 @@ export const CollectionSidebarNavItem = ({
             />
           </div>
         }
-        collapsed={pagesToRender.length > 0 ? collapsed : undefined}
+        collapsed={collapsed}
       >
         <span>{collection.name}</span>
       </SidebarMenuLinkItem>
       <Collapsible.Content className={styles.collapsibleContent}>
-        <div className={styles.docsListContainer}>
-          {pagesToRender.map(page => {
-            return (
-              <Doc
-                parentId={dndId}
-                inAllowList={allowList.has(page.id)}
-                removeFromAllowList={removeFromAllowList}
-                allPageMeta={allPagesMeta}
-                doc={page}
-                key={page.id}
-                docCollection={docCollection}
-              />
-            );
-          })}
-        </div>
+        {!collapsed && (
+          <CollectionSidebarNavItemContent
+            collection={collection}
+            docCollection={docCollection}
+            dndId={dndId}
+          />
+        )}
       </Collapsible.Content>
     </Collapsible.Root>
   );
 };
+
+export const CollectionSidebarNavItemContent = ({
+  collection,
+  docCollection,
+  dndId,
+}: {
+  collection: Collection;
+  docCollection: DocCollection;
+  dndId: DNDIdentifier;
+}) => {
+  const t = useI18n();
+  const pages = useBlockSuiteDocMeta(docCollection);
+  const favAdapter = useService(FavoriteItemsAdapter);
+  const collectionService = useService(CollectionService);
+
+  const config = useAllPageListConfig();
+  const favourites = useLiveData(favAdapter.favorites$);
+  const allowList = useMemo(
+    () => new Set(collection.allowList),
+    [collection.allowList]
+  );
+  const allPagesMeta = useMemo(
+    () => Object.fromEntries(pages.map(v => [v.id, v])),
+    [pages]
+  );
+  const removeFromAllowList = useCallback(
+    (id: string) => {
+      collectionService.deletePageFromCollection(collection.id, id);
+      toast(t['com.affine.collection.removePage.success']());
+    },
+    [collection, collectionService, t]
+  );
+
+  const filtered = pages.filter(meta => {
+    if (meta.trash) return false;
+    const pageData = {
+      meta,
+      publicMode: config.getPublicMode(meta.id),
+      favorite: favourites.some(fav => fav.id === meta.id),
+    };
+    return filterPage(collection, pageData);
+  });
+
+  return (
+    <div className={styles.docsListContainer}>
+      {filtered.length > 0 ? (
+        filtered.map(page => {
+          return (
+            <Doc
+              parentId={dndId}
+              inAllowList={allowList.has(page.id)}
+              removeFromAllowList={removeFromAllowList}
+              allPageMeta={allPagesMeta}
+              doc={page}
+              key={page.id}
+              docCollection={docCollection}
+            />
+          );
+        })
+      ) : (
+        <div className={styles.emptyCollection}>
+          {t['com.affine.collection.emptyCollection']()}
+        </div>
+      )}
+    </div>
+  );
+};
+
 export const CollectionsList = ({
   docCollection: workspace,
   onCreate,
 }: CollectionsListProps) => {
   const collections = useLiveData(useService(CollectionService).collections$);
-  const t = useAFFiNEI18N();
+  const t = useI18n();
 
   if (collections.length === 0) {
     return (

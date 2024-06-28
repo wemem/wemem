@@ -6,7 +6,7 @@
     "@affine/env": "workspace:*",
     "@affine/templates": "workspace:*",
     "@aws-sdk/client-s3": "3.592.0",
-    "@blocksuite/presets": "0.15.0-canary-202406130805-4cefc62",
+    "@blocksuite/presets": "0.15.0-canary-202406280242-21d8d15",
     "@clack/core": "^0.3.4",
     "@clack/prompts": "^0.7.0",
     "@magic-works/i18n-codegen": "^0.6.0",
@@ -16,6 +16,7 @@
     "@sentry/webpack-plugin": "^2.16.1",
     "@types/webpack-env": "^1.18.4",
     "@vanilla-extract/webpack-plugin": "^2.3.7",
+    "autoprefixer": "^10.4.19",
     "copy-webpack-plugin": "^12.0.2",
     "css-loader": "^7.1.1",
     "cssnano": "^7.0.0",
@@ -24,12 +25,14 @@
     "lodash-es": "^4.17.21",
     "mime-types": "^2.1.35",
     "mini-css-extract-plugin": "^2.8.1",
+    "postcss": "^8.4.38",
     "postcss-loader": "^8.1.1",
     "raw-loader": "^4.0.2",
     "source-map-loader": "^5.0.0",
     "string-replace-loader": "^3.1.0",
     "style-loader": "^4.0.0",
     "swc-loader": "^0.2.6",
+    "tailwindcss": "^3.4.4",
     "terser-webpack-plugin": "^5.3.10",
     "thread-loader": "^4.0.2",
     "ts-node": "^10.9.2",
@@ -43,5 +46,5 @@
     "build": "node --loader ts-node/esm/transpile-only.mjs ./src/bin/build.ts",
     "dev": "node --loader ts-node/esm/transpile-only.mjs ./src/bin/dev.ts"
   },
-  "version": "0.14.0"
+  "version": "0.15.0"
 }

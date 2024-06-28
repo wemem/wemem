@@ -9,14 +9,13 @@ import { CollectionService } from '@affine/core/modules/collection';
 import { FeedService } from '@affine/core/modules/feed/services/feed';
 import { FilterContainer } from '@affine/core/pages/workspace/all-page/all-page-filter';
 import type { Collection, Filter } from '@affine/env/filter';
-import { Trans } from '@affine/i18n';
-import { useAFFiNEI18N } from '@affine/i18n/hooks';
+import { Trans, useI18n } from '@affine/i18n';
 import {
   CloseIcon,
   FilterIcon,
   PageIcon,
   ViewLayersIcon,
-} from '@blocksuite/icons';
+} from '@blocksuite/icons/rc';
 import { useLiveData, useService, WorkspaceService } from '@toeverything/infra';
 import { useCallback, useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
@@ -67,7 +66,7 @@ export const Component = function CollectionPage() {
 const Placeholder = ({ collection }: { collection: Collection }) => {
   const workspace = useService(WorkspaceService).workspace;
   const collectionService = useService(CollectionService);
-  const { node, open } = useEditCollection(useAllPageListConfig());
+  const { node, open } = useEditCollection();
   const { jumpToCollections } = useNavigateHelper();
   const openPageEdit = useAsyncCallback(async () => {
     const ret = await open({ ...collection }, 'page');
@@ -85,7 +84,7 @@ const Placeholder = ({ collection }: { collection: Collection }) => {
     setShowTips(false);
     localStorage.setItem('hide-empty-collection-help-info', 'true');
   }, []);
-  const t = useAFFiNEI18N();
+  const t = useI18n();
 
   const handleJumpToCollections = useCallback(() => {
     jumpToCollections(workspace.id);

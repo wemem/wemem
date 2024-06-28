@@ -1,6 +1,8 @@
 import { Scrollable } from '@affine/component';
 import { PageDetailSkeleton } from '@affine/component/page-detail-skeleton';
+import { AIProvider } from '@affine/core/blocksuite/presets/ai';
 import { PageAIOnboarding } from '@affine/core/components/affine/ai-onboarding';
+import { AIIsland } from '@affine/core/components/pure/ai-island';
 import { useAppSettingHelper } from '@affine/core/hooks/affine/use-app-setting-helper';
 import { RecentPagesService } from '@affine/core/modules/cmdk';
 import type { PageRootService } from '@blocksuite/blocks';
@@ -13,7 +15,7 @@ import {
   ImageBlockService,
 } from '@blocksuite/blocks';
 import { DisposableGroup } from '@blocksuite/global/utils';
-import { type AffineEditorContainer, AIProvider } from '@blocksuite/presets';
+import { type AffineEditorContainer } from '@blocksuite/presets';
 import type { Doc as BlockSuiteDoc } from '@blocksuite/store';
 import type { Doc } from '@toeverything/infra';
 import {
@@ -22,8 +24,6 @@ import {
   FrameworkScope,
   globalBlockSuiteSchema,
   GlobalContextService,
-  GlobalStateService,
-  LiveData,
   useLiveData,
   useService,
   WorkspaceService,
@@ -36,7 +36,6 @@ import type { Map as YMap } from 'yjs';
 
 import { AffineErrorBoundary } from '../../../components/affine/affine-error-boundary';
 import { GlobalPageHistoryModal } from '../../../components/affine/page-history-modal';
-import { ImagePreviewModal } from '../../../components/image-preview';
 import { PageDetailEditor } from '../../../components/page-detail-editor';
 import { TrashPageFooter } from '../../../components/pure/trash-page-footer';
 import { TopTip } from '../../../components/top-tip';
@@ -44,11 +43,11 @@ import { useRegisterBlocksuiteEditorCommands } from '../../../hooks/affine/use-r
 import { useActiveBlocksuiteEditor } from '../../../hooks/use-block-suite-editor';
 import { usePageDocumentTitle } from '../../../hooks/use-global-state';
 import { useNavigateHelper } from '../../../hooks/use-navigate-helper';
-import type { SidebarTabName } from '../../../modules/multi-tab-sidebar';
 import {
   MultiTabSidebarBody,
   MultiTabSidebarHeaderSwitcher,
   sidebarTabs,
+  type TabOnLoadFn,
 } from '../../../modules/multi-tab-sidebar';
 import {
   RightSidebarService,
@@ -64,37 +63,29 @@ import { PageNotFound } from '../../404';
 import * as styles from './detail-page.css';
 import { DetailPageHeader } from './detail-page-header';
 
-const RIGHT_SIDEBAR_TABS_ACTIVE_KEY = 'app:settings:rightsidebar:tabs:active';
-
 const DetailPageImpl = memo(function DetailPageImpl() {
-  const globalState = useService(GlobalStateService).globalState;
-  const activeTabName = useLiveData(
-    LiveData.from(
-      globalState.watch<SidebarTabName>(RIGHT_SIDEBAR_TABS_ACTIVE_KEY),
-      'journal'
-    )
-  );
-  const setActiveTabName = useCallback(
-    (name: string) => {
-      globalState.set(RIGHT_SIDEBAR_TABS_ACTIVE_KEY, name);
-    },
-    [globalState]
-  );
+  const rightSidebar = useService(RightSidebarService).rightSidebar;
+  const activeTabName = useLiveData(rightSidebar.activeTabName$);
 
   const doc = useService(DocService).doc;
-  const docRecordList = useService(DocsService).list;
   const { openPage, jumpToPageBlock, jumpToTag } = useNavigateHelper();
   const [editor, setEditor] = useState<AffineEditorContainer | null>(null);
   const workspace = useService(WorkspaceService).workspace;
   const globalContext = useService(GlobalContextService).globalContext;
-  const rightSidebar = useService(RightSidebarService).rightSidebar;
   const docCollection = workspace.docCollection;
   const mode = useLiveData(doc.mode$);
   const { appSettings } = useAppSettingHelper();
+  const [tabOnLoad, setTabOnLoad] = useState<TabOnLoadFn | null>(null);
 
   const isActiveView = useIsActiveView();
-  // TODO: remove jotai here
+  // TODO(@eyhn): remove jotai here
   const [_, setActiveBlockSuiteEditor] = useActiveBlocksuiteEditor();
+
+  const setActiveTabName = useCallback(
+    (...args: Parameters<typeof rightSidebar.setActiveTabName>) =>
+      rightSidebar.setActiveTabName(...args),
+    [rightSidebar]
+  );
 
   useEffect(() => {
     if (isActiveView) {
@@ -103,12 +94,28 @@ const DetailPageImpl = memo(function DetailPageImpl() {
   }, [editor, isActiveView, setActiveBlockSuiteEditor]);
 
   useEffect(() => {
-    AIProvider.slots.requestContinueInChat.on(() => {
-      rightSidebar.open();
-      if (activeTabName !== 'chat') {
+    const disposable = AIProvider.slots.requestOpenWithChat.on(params => {
+      const opened = rightSidebar.isOpen$.value;
+      const actived = activeTabName === 'chat';
+
+      if (!opened) {
+        rightSidebar.open();
+      }
+      if (!actived) {
         setActiveTabName('chat');
       }
+
+      // Save chat parameters:
+      // * The right sidebar is not open
+      // * Chat panel is not activated
+      if (!opened || !actived) {
+        const callback = AIProvider.genRequestChatCardsFn(params);
+        setTabOnLoad(() => callback);
+      } else {
+        setTabOnLoad(null);
+      }
     });
+    return () => disposable.dispose();
   }, [activeTabName, rightSidebar, setActiveTabName]);
 
   useEffect(() => {
@@ -186,15 +193,6 @@ const DetailPageImpl = memo(function DetailPageImpl() {
         editorHost.std.spec.getService<PageRootService>('affine:page');
       const disposable = new DisposableGroup();
 
-      pageService.getDocUpdatedAt = (pageId: string) => {
-        const linkedPage = docRecordList.doc$(pageId).value;
-        if (!linkedPage) return new Date();
-
-        const updatedDate = linkedPage.meta$.value.updatedDate;
-        const createDate = linkedPage.meta$.value.createDate;
-        return new Date(updatedDate || createDate || Date.now());
-      };
-
       doc.setMode(mode);
       disposable.add(
         pageService.slots.docLinkClicked.on(({ docId, blockId }) => {
@@ -218,7 +216,6 @@ const DetailPageImpl = memo(function DetailPageImpl() {
     [
       doc,
       mode,
-      docRecordList,
       jumpToPageBlock,
       docCollection.id,
       openPage,
@@ -236,6 +233,7 @@ const DetailPageImpl = memo(function DetailPageImpl() {
       </ViewHeaderIsland>
       <ViewBodyIsland>
         <div className={styles.mainContainer}>
+          <AIIsland />
           {/* Add a key to force rerender when page changed, to avoid error boundary persisting. */}
           <AffineErrorBoundary key={doc.id}>
             <TopTip pageId={doc.id} workspace={workspace} />
@@ -282,6 +280,7 @@ const DetailPageImpl = memo(function DetailPageImpl() {
               sidebarTabs.find(ext => ext.name === activeTabName) ??
               sidebarTabs[0]
             }
+            onLoad={tabOnLoad}
           >
             {/* Show switcher in body for windows desktop */}
             {isWindowsDesktop && (
@@ -294,8 +293,6 @@ const DetailPageImpl = memo(function DetailPageImpl() {
           </MultiTabSidebarBody>
         }
       />
-
-      <ImagePreviewModal pageId={doc.id} docCollection={docCollection} />
       <GlobalPageHistoryModal />
       <PageAIOnboarding />
     </>
@@ -358,7 +355,7 @@ export const DetailPage = ({ pageId }: { pageId: string }): ReactElement => {
 };
 
 export const Component = () => {
-  performanceRenderLogger.info('DetailPage');
+  performanceRenderLogger.debug('DetailPage');
 
   const params = useParams();
   const recentPages = useService(RecentPagesService);

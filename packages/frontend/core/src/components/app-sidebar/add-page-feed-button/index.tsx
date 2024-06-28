@@ -1,7 +1,7 @@
 import { Button } from '@affine/component';
 import type { DocCollection } from '@affine/core/shared';
-import { useAFFiNEI18N } from '@affine/i18n/hooks';
-import { PageIcon } from '@blocksuite/icons';
+import { useI18n } from '@affine/i18n';
+import { PageIcon } from '@blocksuite/icons/rc';
 import clsx from 'clsx';
 import { PiRss } from 'react-icons/pi';
 
@@ -20,7 +20,7 @@ export function AddPageFeedButton({
                                     onOpenNewFeedModal,
                                     className,
                                   }: AddPageFeedButtonProps) {
-  const t = useAFFiNEI18N();
+  const t = useI18n();
   return (
     <div className={clsx(styles.root)}>
       <Button

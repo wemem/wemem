@@ -1,13 +1,13 @@
+import { ChatPanel } from '@affine/core/blocksuite/presets/ai';
 import { assertExists } from '@blocksuite/global/utils';
-import { AiIcon } from '@blocksuite/icons';
-import { ChatPanel } from '@blocksuite/presets';
+import { AiIcon } from '@blocksuite/icons/rc';
 import { useCallback, useEffect, useRef } from 'react';
 
 import type { SidebarTab, SidebarTabProps } from '../sidebar-tab';
 import * as styles from './chat.css';
 
 // A wrapper for CopilotPanel
-const EditorChatPanel = ({ editor }: SidebarTabProps) => {
+const EditorChatPanel = ({ editor, onLoad }: SidebarTabProps) => {
   const chatPanelRef = useRef<ChatPanel | null>(null);
 
   const onRefChange = useCallback((container: HTMLDivElement | null) => {
@@ -16,6 +16,16 @@ const EditorChatPanel = ({ editor }: SidebarTabProps) => {
       container.append(chatPanelRef.current);
     }
   }, []);
+
+  useEffect(() => {
+    if (onLoad && chatPanelRef.current) {
+      (chatPanelRef.current as ChatPanel).updateComplete
+        .then(() => {
+          onLoad(chatPanelRef.current as HTMLElement);
+        })
+        .catch(console.error);
+    }
+  }, [onLoad]);
 
   useEffect(() => {
     if (!editor) return;

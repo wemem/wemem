@@ -5,9 +5,8 @@ import { AuthService, SubscriptionService } from '@affine/core/modules/cloud';
 import { popupWindow } from '@affine/core/utils';
 import type { SubscriptionRecurring } from '@affine/graphql';
 import { SubscriptionPlan, SubscriptionStatus } from '@affine/graphql';
-import { Trans } from '@affine/i18n';
-import { useAFFiNEI18N } from '@affine/i18n/hooks';
-import { DoneIcon } from '@blocksuite/icons';
+import { Trans, useI18n } from '@affine/i18n';
+import { DoneIcon } from '@blocksuite/icons/rc';
 import { useLiveData, useService } from '@toeverything/infra';
 import { useAtom, useSetAtom } from 'jotai';
 import { nanoid } from 'nanoid';
@@ -86,7 +85,7 @@ export const PlanCard = (props: PlanCardProps) => {
 };
 
 const ActionButton = ({ detail, recurring }: PlanCardProps) => {
-  const t = useAFFiNEI18N();
+  const t = useI18n();
   const loggedIn =
     useLiveData(useService(AuthService).session.status$) === 'authenticated';
   const subscriptionService = useService(SubscriptionService);
@@ -157,7 +156,7 @@ const ActionButton = ({ detail, recurring }: PlanCardProps) => {
 };
 
 const CurrentPlan = () => {
-  const t = useAFFiNEI18N();
+  const t = useI18n();
   return (
     <Button className={styles.planAction}>
       {t['com.affine.payment.current-plan']()}
@@ -166,12 +165,24 @@ const CurrentPlan = () => {
 };
 
 const Downgrade = ({ disabled }: { disabled?: boolean }) => {
-  const t = useAFFiNEI18N();
+  const t = useI18n();
   const [open, setOpen] = useState(false);
+  const subscription = useService(SubscriptionService).subscription;
 
   const tooltipContent = disabled
     ? t['com.affine.payment.downgraded-tooltip']()
     : null;
+
+  const handleClick = useCallback(() => {
+    setOpen(true);
+    mixpanel.track('PlanChangeStarted', {
+      segment: 'settings panel',
+      module: 'pricing plan list',
+      control: 'billing cancel action',
+      type: subscription.pro$.value?.plan,
+      category: subscription.pro$.value?.recurring,
+    });
+  }, [subscription.pro$.value?.plan, subscription.pro$.value?.recurring]);
 
   return (
     <CancelAction open={open} onOpenChange={setOpen}>
@@ -180,7 +191,7 @@ const Downgrade = ({ disabled }: { disabled?: boolean }) => {
           <Button
             className={styles.planAction}
             type="primary"
-            onClick={() => setOpen(true)}
+            onClick={handleClick}
             disabled={disabled}
           >
             {t['com.affine.payment.downgrade']()}
@@ -192,7 +203,7 @@ const Downgrade = ({ disabled }: { disabled?: boolean }) => {
 };
 
 const BookDemo = ({ plan }: { plan: SubscriptionPlan }) => {
-  const t = useAFFiNEI18N();
+  const t = useI18n();
   const url = useMemo(() => {
     switch (plan) {
       case SubscriptionPlan.Team:
@@ -227,7 +238,7 @@ const BookDemo = ({ plan }: { plan: SubscriptionPlan }) => {
 const Upgrade = ({ recurring }: { recurring: SubscriptionRecurring }) => {
   const [isMutating, setMutating] = useState(false);
   const [isOpenedExternalWindow, setOpenedExternalWindow] = useState(false);
-  const t = useAFFiNEI18N();
+  const t = useI18n();
 
   const subscriptionService = useService(SubscriptionService);
 
@@ -258,6 +269,13 @@ const Upgrade = ({ recurring }: { recurring: SubscriptionRecurring }) => {
     }
 
     setMutating(true);
+    mixpanel.track('PlanUpgradeStarted', {
+      segment: 'settings panel',
+      module: 'pricing plan list',
+      control: 'pricing plan action',
+      type: 'cloud pro subscription',
+      category: recurring,
+    });
     const link = await subscriptionService.createCheckoutSession({
       recurring,
       idempotencyKey,
@@ -269,7 +287,6 @@ const Upgrade = ({ recurring }: { recurring: SubscriptionRecurring }) => {
     setIdempotencyKey(nanoid());
     popupWindow(link);
     setOpenedExternalWindow(true);
-    mixpanel.track_forms('Subscription', SubscriptionPlan.Pro);
   }, [openPaymentDisableModal, subscriptionService, recurring, idempotencyKey]);
 
   return (
@@ -296,12 +313,23 @@ const ChangeRecurring = ({
   disabled?: boolean;
   due: string;
 }) => {
-  const t = useAFFiNEI18N();
+  const t = useI18n();
   const [open, setOpen] = useState(false);
   const [isMutating, setIsMutating] = useState(false);
   // allow replay request on network error until component unmount or success
   const [idempotencyKey, setIdempotencyKey] = useState(nanoid());
   const subscription = useService(SubscriptionService).subscription;
+
+  const onStartChange = useCallback(() => {
+    mixpanel.track('PlanChangeStarted', {
+      segment: 'settings panel',
+      module: 'pricing plan list',
+      control: 'plan resume action',
+      type: 'cloud pro subscription',
+      category: to,
+    });
+    setOpen(true);
+  }, [to]);
 
   const change = useAsyncCallback(async () => {
     setIsMutating(true);
@@ -328,7 +356,7 @@ const ChangeRecurring = ({
       <Button
         className={styles.planAction}
         type="primary"
-        onClick={() => setOpen(true)}
+        onClick={onStartChange}
         disabled={disabled || isMutating}
         loading={isMutating}
       >
@@ -369,9 +397,21 @@ const SignUpAction = ({ children }: PropsWithChildren) => {
 };
 
 const ResumeButton = () => {
-  const t = useAFFiNEI18N();
+  const t = useI18n();
   const [open, setOpen] = useState(false);
   const [hovered, setHovered] = useState(false);
+  const subscription = useService(SubscriptionService).subscription;
+
+  const handleClick = useCallback(() => {
+    setOpen(true);
+    mixpanel.track('PlanChangeStarted', {
+      segment: 'settings panel',
+      module: 'pricing plan list',
+      control: 'pricing plan action',
+      type: 'cloud pro subscription',
+      category: subscription.pro$.value?.recurring,
+    });
+  }, [subscription.pro$.value?.recurring]);
 
   return (
     <ResumeAction open={open} onOpenChange={setOpen}>
@@ -379,7 +419,7 @@ const ResumeButton = () => {
         className={styles.planAction}
         onMouseEnter={() => setHovered(true)}
         onMouseLeave={() => setHovered(false)}
-        onClick={() => setOpen(true)}
+        onClick={handleClick}
       >
         {hovered
           ? t['com.affine.payment.resume-renewal']()

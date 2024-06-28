@@ -5,20 +5,23 @@ import { useBlockSuiteDocMeta } from '@affine/core/hooks/use-block-suite-page-me
 import { FavoriteItemsAdapter } from '@affine/core/modules/properties';
 import { ShareDocsService } from '@affine/core/modules/share-doc';
 import { PublicPageMode } from '@affine/graphql';
-import { useAFFiNEI18N } from '@affine/i18n/hooks';
+import { useI18n } from '@affine/i18n';
 import type { DocMeta } from '@blocksuite/store';
 import { useLiveData, useService, WorkspaceService } from '@toeverything/infra';
 import { useCallback, useEffect, useMemo } from 'react';
 
 import { usePageHelper } from '../../components/blocksuite/block-suite-page-list/utils';
 
+/**
+ * @deprecated very poor performance
+ */
 export const useAllPageListConfig = () => {
   const currentWorkspace = useService(WorkspaceService).workspace;
   const shareDocService = useService(ShareDocsService);
   const shareDocs = useLiveData(shareDocService.shareDocs?.list$);
 
   useEffect(() => {
-    // TODO: loading & error UI
+    // TODO(@eyhn): loading & error UI
     shareDocService.shareDocs?.revalidate();
   }, [shareDocService]);
 
@@ -30,7 +33,7 @@ export const useAllPageListConfig = () => {
     [pageMetas]
   );
   const favAdapter = useService(FavoriteItemsAdapter);
-  const t = useAFFiNEI18N();
+  const t = useI18n();
   const favoriteItems = useLiveData(favAdapter.favorites$);
 
   const isActive = useCallback(

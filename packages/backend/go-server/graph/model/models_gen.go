@@ -139,6 +139,7 @@ type FeedItem struct {
 	Link                string  `json:"link"`
 	DescriptionMarkdown string  `json:"descriptionMarkdown"`
 	ContentMarkdown     *string `json:"contentMarkdown,omitempty"`
+	PublishedAt         string  `json:"publishedAt"`
 	CreatedAt           string  `json:"createdAt"`
 }
 

@@ -1,6 +1,6 @@
 import { FeedService } from '@affine/core/modules/feed/services/feed';
 import type { Collection } from '@affine/env/filter';
-import { useAFFiNEI18N } from '@affine/i18n/hooks';
+import { useI18n } from '@affine/i18n';
 import { useService } from '@toeverything/infra';
 import { useCallback } from 'react';
 
@@ -8,7 +8,7 @@ import { useEditFeedModal } from './use-edit-feed-modal';
 
 export const useEditFeed = (collection: Collection) => {
   const feedService = useService(FeedService);
-  const t = useAFFiNEI18N();
+  const t = useI18n();
   const { node, open } = useEditFeedModal({
     title: t['ai.readflow.editFeed.editFeed'](),
     showTips: true,

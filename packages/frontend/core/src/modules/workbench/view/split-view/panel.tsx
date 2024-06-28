@@ -1,11 +1,11 @@
 import { MenuIcon, MenuItem } from '@affine/component';
-import { useAFFiNEI18N } from '@affine/i18n/hooks';
+import { useI18n } from '@affine/i18n';
 import {
   ExpandCloseIcon,
   MoveToLeftDuotoneIcon,
   MoveToRightDuotoneIcon,
   SoloViewIcon,
-} from '@blocksuite/icons';
+} from '@blocksuite/icons/rc';
 import { useSortable } from '@dnd-kit/sortable';
 import { useLiveData, useService } from '@toeverything/infra';
 import { assignInlineVars } from '@vanilla-extract/dynamic';
@@ -115,7 +115,7 @@ export const SplitViewPanel = memo(function SplitViewPanel({
 });
 
 const SplitViewMenu = ({ view }: { view: View }) => {
-  const t = useAFFiNEI18N();
+  const t = useI18n();
   const workbench = useService(WorkbenchService).workbench;
   const views = useLiveData(workbench.views$);
 

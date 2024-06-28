@@ -3,8 +3,8 @@ import { SettingRow } from '@affine/component/setting-components';
 import { ConfirmModal } from '@affine/component/ui/modal';
 import { useAsyncCallback } from '@affine/core/hooks/affine-async-hooks';
 import { WorkspacePermissionService } from '@affine/core/modules/permissions';
-import { useAFFiNEI18N } from '@affine/i18n/hooks';
-import { ArrowRightSmallIcon } from '@blocksuite/icons';
+import { useI18n } from '@affine/i18n';
+import { ArrowRightSmallIcon } from '@blocksuite/icons/rc';
 import {
   GlobalContextService,
   useLiveData,
@@ -35,7 +35,7 @@ export const DeleteLeaveWorkspace = () => {
     WorkspacePermissionService,
     WorkspacesService,
   });
-  const t = useAFFiNEI18N();
+  const t = useI18n();
   const workspace = workspaceService.workspace;
   const { jumpToSubPath, jumpToIndex } = useNavigateHelper();
   // fixme: cloud regression
@@ -70,7 +70,7 @@ export const DeleteLeaveWorkspace = () => {
       const backWorkspace = workspaceList.find(
         ws => ws.id !== currentWorkspaceId
       );
-      // TODO: if there is no workspace, jump to a new page(wait for design)
+      // TODO(@eyhn): if there is no workspace, jump to a new page(wait for design)
       if (backWorkspace) {
         jumpToSubPath(
           backWorkspace?.id || '',

@@ -6,9 +6,8 @@ import { openSettingModalAtom } from '@affine/core/atoms';
 import { useDocCollectionPageTitle } from '@affine/core/hooks/use-block-suite-workspace-page-title';
 import { WorkspacePermissionService } from '@affine/core/modules/permissions';
 import { WorkspaceQuotaService } from '@affine/core/modules/quota';
-import { Trans } from '@affine/i18n';
-import { useAFFiNEI18N } from '@affine/i18n/hooks';
-import { CloseIcon, ToggleCollapseIcon } from '@blocksuite/icons';
+import { i18nTime, Trans, useI18n } from '@affine/i18n';
+import { CloseIcon, ToggleCollapseIcon } from '@blocksuite/icons/rc';
 import type { Doc as BlockSuiteDoc, DocCollection } from '@blocksuite/store';
 import * as Collapsible from '@radix-ui/react-collapsible';
 import type { DialogContentProps } from '@radix-ui/react-dialog';
@@ -33,11 +32,7 @@ import {
 import { encodeStateAsUpdate } from 'yjs';
 
 import { pageHistoryModalAtom } from '../../../atoms/page-history';
-import {
-  type CalendarTranslation,
-  mixpanel,
-  timestampToLocalTime,
-} from '../../../utils';
+import { mixpanel } from '../../../utils';
 import { BlockSuiteEditor } from '../../blocksuite/block-suite-editor';
 import { StyledEditorModeSwitch } from '../../blocksuite/block-suite-mode-switch/style';
 import {
@@ -144,7 +139,11 @@ const HistoryEditorPreview = ({
           </StyledEditorModeSwitch>
           <div className={styles.previewHeaderTitle}>{title}</div>
           <div className={styles.previewHeaderTimestamp}>
-            {ts ? timestampToLocalTime(ts) : null}
+            {ts
+              ? i18nTime(ts, {
+                  absolute: { accuracy: 'minute', noDate: true },
+                })
+              : null}
           </div>
         </div>
 
@@ -234,7 +233,7 @@ const PlanPrompt = () => {
     });
   }, [setSettingModalAtom]);
 
-  const t = useAFFiNEI18N();
+  const t = useI18n();
 
   const planTitle = useMemo(() => {
     return (
@@ -248,7 +247,7 @@ const PlanPrompt = () => {
               : t[
                   'com.affine.history.confirm-restore-modal.plan-prompt.title'
                 ]()
-            : '' /* TODO: loading UI */
+            : '' /* TODO(@catsjuice): loading UI */
         }
 
         <IconButton
@@ -315,16 +314,10 @@ const PageHistoryList = ({
   onLoadMore: (() => void) | false;
   loadingMore: boolean;
 }) => {
-  const t = useAFFiNEI18N();
+  const t = useI18n();
   const historyListByDay = useMemo(() => {
-    const translation: CalendarTranslation = {
-      yesterday: t['com.affine.yesterday'],
-      today: t['com.affine.today'],
-      tomorrow: t['com.affine.tomorrow'],
-      nextWeek: t['com.affine.nextWeek'],
-    };
-    return historyListGroupByDay(historyList, translation);
-  }, [historyList, t]);
+    return historyListGroupByDay(historyList);
+  }, [historyList]);
 
   const [collapsedMap, setCollapsedMap] = useState<Record<number, boolean>>({});
 
@@ -382,7 +375,9 @@ const PageHistoryList = ({
                           data-active={activeVersion === history.timestamp}
                         >
                           <button>
-                            {timestampToLocalTime(history.timestamp)}
+                            {i18nTime(history.timestamp, {
+                              absolute: { noDate: true, accuracy: 'minute' },
+                            })}
                           </button>
                         </div>
                         {idx > list.length - 1 ? (
@@ -414,7 +409,7 @@ const PageHistoryList = ({
 };
 
 const EmptyHistoryPrompt = () => {
-  const t = useAFFiNEI18N();
+  const t = useI18n();
 
   return (
     <div
@@ -451,7 +446,7 @@ const PageHistoryManager = ({
 
   const snapshotPage = useSnapshotPage(docCollection, pageDocId, activeVersion);
 
-  const t = useAFFiNEI18N();
+  const t = useI18n();
 
   const { onRestore, isMutating } = useRestorePage(docCollection, pageId);
 

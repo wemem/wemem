@@ -17,10 +17,10 @@ import { FavoriteItemsAdapter } from '@affine/core/modules/properties';
 import { WorkbenchLink } from '@affine/core/modules/workbench';
 import { UnseenFilter } from '@affine/core/pages/workspace/feed-docs';
 import type { Collection } from '@affine/env/filter';
-import { useAFFiNEI18N } from '@affine/i18n/hooks';
+import { useI18n } from '@affine/i18n';
 import {
   MoreHorizontalIcon,
-} from '@blocksuite/icons';
+} from '@blocksuite/icons/rc';
 import type { DocCollection } from '@blocksuite/store';
 import * as Collapsible from '@radix-ui/react-collapsible';
 import { useLiveData, useService } from '@toeverything/infra';
@@ -50,7 +50,7 @@ export const FeedSidebarNavItem = ({
   const feedService = useService(FeedService);
   const favAdapter = useService(FavoriteItemsAdapter);
   const favourites = useLiveData(favAdapter.favorites$);
-  const t = useAFFiNEI18N();
+  const t = useI18n();
   const dndId = getDNDId(
     'sidebar-collections',
     'collection',
@@ -181,7 +181,7 @@ export const FeedSidebarReadFeeds = ({
   const config = useAllPageListConfig();
   const favAdapter = useService(FavoriteItemsAdapter);
   const favourites = useLiveData(favAdapter.favorites$);
-  const t = useAFFiNEI18N();
+  const t = useI18n();
   const dndId = getDNDId(
     'sidebar-collections',
     'collection',
@@ -257,7 +257,7 @@ export const FeedSidebarManageFeeds = ({ feeds, docCollection, className }: {
   className?: string
 }) => {
   const [collapsed, setCollapsed] = useState(true);
-  const t = useAFFiNEI18N();
+  const t = useI18n();
 
   const currentPath = useLiveData(
     useService(WorkbenchService).workbench.location$.map(
@@ -304,7 +304,7 @@ export const FeedSidebarManageFeeds = ({ feeds, docCollection, className }: {
 
 export const FeedList = ({ docCollection }: FeedsListProps) => {
   const feeds = useLiveData(useService(FeedService).feeds$);
-  const t = useAFFiNEI18N();
+  const t = useI18n();
   const { node, handleCreateFeed } = useCreateFeed(docCollection);
   if (feeds.length === 0) {
     return (

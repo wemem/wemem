@@ -6,8 +6,8 @@ import {
 import { Avatar } from '@affine/component/ui/avatar';
 import { Button } from '@affine/component/ui/button';
 import { useAsyncCallback } from '@affine/core/hooks/affine-async-hooks';
-import { useAFFiNEI18N } from '@affine/i18n/hooks';
-import { ArrowRightSmallIcon, CameraIcon } from '@blocksuite/icons';
+import { useI18n } from '@affine/i18n';
+import { ArrowRightSmallIcon, CameraIcon } from '@blocksuite/icons/rc';
 import {
   useEnsureLiveData,
   useLiveData,
@@ -31,7 +31,7 @@ import { StorageProgress } from './storage-progress';
 import * as styles from './style.css';
 
 export const UserAvatar = () => {
-  const t = useAFFiNEI18N();
+  const t = useI18n();
   const session = useService(AuthService).session;
   const account = useEnsureLiveData(session.account$);
 
@@ -44,7 +44,7 @@ export const UserAvatar = () => {
         await session.uploadAvatar(file);
         notify.success({ title: 'Update user avatar success' });
       } catch (e) {
-        // TODO: i18n
+        // TODO(@catsjuice): i18n
         notify.error({
           title: 'Update user avatar failed',
           message: String(e),
@@ -89,7 +89,7 @@ export const UserAvatar = () => {
 };
 
 export const AvatarAndName = () => {
-  const t = useAFFiNEI18N();
+  const t = useI18n();
   const session = useService(AuthService).session;
   const account = useEnsureLiveData(session.account$);
   const [input, setInput] = useState<string>(account.label);
@@ -158,7 +158,7 @@ export const AvatarAndName = () => {
 };
 
 const StoragePanel = () => {
-  const t = useAFFiNEI18N();
+  const t = useI18n();
 
   const setSettingModalAtom = useSetAtom(openSettingModalAtom);
   const onUpgrade = useCallback(() => {
@@ -193,7 +193,7 @@ export const AccountSetting: FC = () => {
   const serverFeatures = useLiveData(
     serverConfigService.serverConfig.features$
   );
-  const t = useAFFiNEI18N();
+  const t = useI18n();
   const session = authService.session;
   useEffect(() => {
     session.revalidate();

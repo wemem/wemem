@@ -1,4 +1,3 @@
-import { HubIsland } from '@affine/core/components/affine/hub-island';
 import { useAppSettingHelper } from '@affine/core/hooks/affine/use-app-setting-helper';
 import type { DragEndEvent } from '@dnd-kit/core';
 import {
@@ -36,7 +35,7 @@ export interface SplitViewProps extends HTMLAttributes<HTMLDivElement> {
 }
 
 type SlotsMap = Record<View['id'], RefObject<HTMLDivElement | null>>;
-// TODO: vertical orientation support
+// TODO(@catsjuice): vertical orientation support
 export const SplitView = ({
   orientation = 'horizontal',
   className,
@@ -116,7 +115,6 @@ export const SplitView = ({
       data-client-border={appSettings.clientBorder}
       {...attrs}
     >
-      <HubIsland />
       <DndContext
         sensors={sensors}
         collisionDetection={closestCenter}

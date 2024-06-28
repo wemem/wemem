@@ -6,7 +6,7 @@ import { useAsyncCallback } from '@affine/core/hooks/affine-async-hooks';
 import { DebugLogger } from '@affine/debug';
 import { apis } from '@affine/electron-api';
 import { WorkspaceFlavour } from '@affine/env/workspace';
-import { useAFFiNEI18N } from '@affine/i18n/hooks';
+import { useI18n } from '@affine/i18n';
 import {
   initEmptyPage,
   useLiveData,
@@ -55,7 +55,7 @@ const NameWorkspaceContent = ({
   onConfirmName,
   ...props
 }: NameWorkspaceContentProps) => {
-  const t = useAFFiNEI18N();
+  const t = useI18n();
   const [workspaceName, setWorkspaceName] = useState('');
   const [enable, setEnable] = useState(shouldEnableCloud);
   const session = useService(AuthService).session;
@@ -101,7 +101,7 @@ const NameWorkspaceContent = ({
     },
     [handleCreateWorkspace, workspaceName]
   );
-  // TODO: Support uploading avatars.
+
   // Currently, when we create a new workspace and upload an avatar at the same time,
   // an error occurs after the creation is successful: get blob 404 not found
   return (
@@ -182,11 +182,11 @@ export const CreateWorkspaceModal = ({
   onCreate,
 }: ModalProps) => {
   const [step, setStep] = useState<CreateWorkspaceStep>();
-  const t = useAFFiNEI18N();
+  const t = useI18n();
   const workspacesService = useService(WorkspacesService);
   const [loading, setLoading] = useState(false);
 
-  // todo: maybe refactor using xstate?
+  // TODO(@Peng): maybe refactor using xstate?
   useLayoutEffect(() => {
     let canceled = false;
     // if mode changed, reset step
@@ -247,6 +247,7 @@ export const CreateWorkspaceModal = ({
         const { id } = await workspacesService.create(
           workspaceFlavour,
           async workspace => {
+            workspace.meta.initialize();
             workspace.meta.setName(name);
             const page = workspace.createDoc();
             defaultDocId = page.id;

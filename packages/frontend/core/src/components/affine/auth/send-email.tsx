@@ -13,7 +13,7 @@ import {
   sendSetPasswordEmailMutation,
   sendVerifyEmailMutation,
 } from '@affine/graphql';
-import { useAFFiNEI18N } from '@affine/i18n/hooks';
+import { useI18n } from '@affine/i18n';
 import { useLiveData, useService } from '@toeverything/infra';
 import { useCallback, useState } from 'react';
 
@@ -22,7 +22,7 @@ import { ServerConfigService } from '../../../modules/cloud';
 import type { AuthPanelProps } from './index';
 
 const useEmailTitle = (emailType: AuthPanelProps['emailType']) => {
-  const t = useAFFiNEI18N();
+  const t = useI18n();
 
   switch (emailType) {
     case 'setPassword':
@@ -37,7 +37,7 @@ const useEmailTitle = (emailType: AuthPanelProps['emailType']) => {
 };
 
 const useNotificationHint = (emailType: AuthPanelProps['emailType']) => {
-  const t = useAFFiNEI18N();
+  const t = useI18n();
 
   switch (emailType) {
     case 'setPassword':
@@ -50,7 +50,7 @@ const useNotificationHint = (emailType: AuthPanelProps['emailType']) => {
   }
 };
 const useButtonContent = (emailType: AuthPanelProps['emailType']) => {
-  const t = useAFFiNEI18N();
+  const t = useI18n();
 
   switch (emailType) {
     case 'setPassword':
@@ -114,7 +114,7 @@ const useSendEmail = (emailType: AuthPanelProps['emailType']) => {
             callbackUrl = 'verify-email';
             break;
         }
-        // TODO: add error handler
+        // TODO(@eyhn): add error handler
         return trigger({
           email,
           callbackUrl: `/auth/${callbackUrl}?isClient=${
@@ -138,7 +138,7 @@ export const SendEmail = ({
   email,
   emailType,
 }: AuthPanelProps) => {
-  const t = useAFFiNEI18N();
+  const t = useI18n();
   const serverConfig = useService(ServerConfigService).serverConfig;
 
   const passwordLimits = useLiveData(
@@ -152,7 +152,7 @@ export const SendEmail = ({
   const { loading, sendEmail } = useSendEmail(emailType);
 
   const onSendEmail = useAsyncCallback(async () => {
-    // TODO: add error handler
+    // TODO(@eyhn): add error handler
     await sendEmail(email);
 
     notify.success({ title: hint });
@@ -164,7 +164,7 @@ export const SendEmail = ({
   }, [setAuthState]);
 
   if (!passwordLimits) {
-    // TODO: loading & error UI
+    // TODO(@eyhn): loading & error UI
     return null;
   }
 

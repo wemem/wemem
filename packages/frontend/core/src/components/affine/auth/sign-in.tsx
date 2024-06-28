@@ -2,9 +2,8 @@ import { notify } from '@affine/component';
 import { AuthInput, ModalHeader } from '@affine/component/auth-components';
 import { Button } from '@affine/component/ui/button';
 import { useAsyncCallback } from '@affine/core/hooks/affine-async-hooks';
-import { Trans } from '@affine/i18n';
-import { useAFFiNEI18N } from '@affine/i18n/hooks';
-import { ArrowDownBigIcon } from '@blocksuite/icons';
+import { Trans, useI18n } from '@affine/i18n';
+import { ArrowDownBigIcon } from '@blocksuite/icons/rc';
 import { useLiveData, useService } from '@toeverything/infra';
 import type { FC } from 'react';
 import { useCallback, useEffect, useState } from 'react';
@@ -28,7 +27,7 @@ export const SignIn: FC<AuthPanelProps> = ({
   email,
   onSignedIn,
 }) => {
-  const t = useAFFiNEI18N();
+  const t = useI18n();
   const authService = useService(AuthService);
   const [searchParams] = useSearchParams();
   const [isMutating, setIsMutating] = useState(false);
@@ -99,7 +98,7 @@ export const SignIn: FC<AuthPanelProps> = ({
     } catch (err) {
       console.error(err);
 
-      // TODO: better error handling
+      // TODO(@eyhn): better error handling
       notify.error({
         title: 'Failed to send email. Please try again.',
       });

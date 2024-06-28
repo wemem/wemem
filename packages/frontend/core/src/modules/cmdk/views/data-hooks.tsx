@@ -16,15 +16,14 @@ import { CollectionService } from '@affine/core/modules/collection';
 import { WorkspaceSubPath } from '@affine/core/shared';
 import { mixpanel } from '@affine/core/utils';
 import type { Collection } from '@affine/env/filter';
-import { Trans } from '@affine/i18n';
-import { useAFFiNEI18N } from '@affine/i18n/hooks';
+import { Trans, useI18n } from '@affine/i18n';
 import {
   EdgelessIcon,
   LinkIcon,
   PageIcon,
   TodayIcon,
   ViewLayersIcon,
-} from '@blocksuite/icons';
+} from '@blocksuite/icons/rc';
 import type { DocRecord, Workspace } from '@toeverything/infra';
 import {
   GlobalContextService,
@@ -81,7 +80,7 @@ const docToCommand = (
   run: () => void,
   getPageTitle: ReturnType<typeof useGetDocCollectionPageTitle>,
   isPageJournal: (pageId: string) => boolean,
-  t: ReturnType<typeof useAFFiNEI18N>,
+  t: ReturnType<typeof useI18n>,
   subTitle?: string
 ): CMDKCommand => {
   const docMode = doc.mode$.value;
@@ -122,7 +121,7 @@ function useSearchedDocCommands(
   const workspace = useService(WorkspaceService).workspace;
   const getPageTitle = useGetDocCollectionPageTitle(workspace.docCollection);
   const { isPageJournal } = useJournalHelper(workspace.docCollection);
-  const t = useAFFiNEI18N();
+  const t = useI18n();
 
   const [searchTime, setSearchTime] = useState<number>(0);
 
@@ -202,7 +201,7 @@ export const usePageCommands = () => {
   const query = useLiveData(quickSearch.query$);
   const navigationHelper = useNavigateHelper();
   const journalHelper = useJournalHelper(workspace.docCollection);
-  const t = useAFFiNEI18N();
+  const t = useI18n();
 
   const onSelectPage = useCallback(
     (opts: { docId: string; blockId?: string }) => {
@@ -321,7 +320,7 @@ export const usePageCommands = () => {
   ]);
 };
 
-// todo: refactor to reduce duplication with usePageCommands
+// TODO(@Peng): refactor to reduce duplication with usePageCommands
 export const useSearchCallbackCommands = () => {
   const quickSearch = useService(QuickSearchService).quickSearch;
   const workspace = useService(WorkspaceService).workspace;
@@ -384,11 +383,7 @@ export const useSearchCallbackCommands = () => {
             const page = pageHelper.createPage('page', false);
             page.load();
             pageMetaHelper.setDocTitle(page.id, query);
-            mixpanel.track('DocCreated', {
-              control: 'cmdk',
-              type: 'doc',
-            });
-            onSelectPage({ docId: page.id });
+            onSelectPage({ docId: page.id, isNewDoc: true });
           },
           icon: <PageIcon />,
         });
@@ -402,7 +397,7 @@ export const collectionToCommand = (
   collection: Collection,
   navigationHelper: ReturnType<typeof useNavigateHelper>,
   selectCollection: (id: string) => void,
-  t: ReturnType<typeof useAFFiNEI18N>,
+  t: ReturnType<typeof useI18n>,
   workspace: Workspace
 ): CMDKCommand => {
   const label = collection.name || t['Untitled']();
@@ -420,13 +415,13 @@ export const collectionToCommand = (
 };
 
 export const useCollectionsCommands = () => {
-  // todo: considering collections for searching pages
+  // TODO(@eyhn): considering collections for searching pages
   const collectionService = useService(CollectionService);
   const collections = useLiveData(collectionService.collections$);
   const quickSearch = useService(QuickSearchService).quickSearch;
   const query = useLiveData(quickSearch.query$);
   const navigationHelper = useNavigateHelper();
-  const t = useAFFiNEI18N();
+  const t = useI18n();
   const workspace = useService(WorkspaceService).workspace;
   const selectCollection = useCallback(
     (id: string) => {

@@ -13,7 +13,7 @@ import { useCallback, useEffect, useMemo, useState } from 'react';
 import { filterSortAndGroupCommands } from './filter-commands';
 import type { CMDKCommand, CommandContext } from './types';
 import { notify, toast } from '@affine/component';
-import { useAFFiNEI18N } from '@affine/i18n/hooks';
+import { useI18n } from '@affine/i18n';
 
 export type FeedRecord = NonNullable<SearchFeedsQuery['searchFeeds']>[number];
 export const cmdkValueAtom = atom('');
@@ -105,7 +105,7 @@ export const useSearchFeedsCommands = () => {
   const workspace = useService(WorkspaceService).workspace;
   const navigationHelper = useNavigateHelper();
   const createFeed = useCreateFeed2(workspace.docCollection);
-  const t = useAFFiNEI18N();
+  const t = useI18n();
 
   const onSelectPage = useCallback(
     (feed: FeedRecord) => {

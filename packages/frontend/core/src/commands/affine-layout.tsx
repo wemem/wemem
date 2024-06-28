@@ -1,5 +1,5 @@
-import type { useAFFiNEI18N } from '@affine/i18n/hooks';
-import { SidebarIcon } from '@blocksuite/icons';
+import type { useI18n } from '@affine/i18n';
+import { SidebarIcon } from '@blocksuite/icons/rc';
 import type { createStore } from 'jotai';
 
 import { appSidebarOpenAtom } from '../components/app-sidebar';
@@ -9,7 +9,7 @@ export function registerAffineLayoutCommands({
   t,
   store,
 }: {
-  t: ReturnType<typeof useAFFiNEI18N>;
+  t: ReturnType<typeof useI18n>;
   store: ReturnType<typeof createStore>;
 }) {
   const unsubs: Array<() => void> = [];

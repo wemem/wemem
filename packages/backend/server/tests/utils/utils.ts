@@ -6,10 +6,12 @@ import { PrismaClient } from '@prisma/client';
 import cookieParser from 'cookie-parser';
 import graphqlUploadExpress from 'graphql-upload/graphqlUploadExpress.mjs';
 import type { Response } from 'supertest';
+import supertest from 'supertest';
 
 import { AppModule, FunctionalityModules } from '../../src/app.module';
 import { AuthGuard, AuthModule } from '../../src/core/auth';
 import { UserFeaturesInit1698652531198 } from '../../src/data/migrations/1698652531198-user-features-init';
+import { GlobalExceptionFilter } from '../../src/fundamentals';
 import { GqlModule } from '../../src/fundamentals/graphql';
 
 async function flushDB(client: PrismaClient) {
@@ -116,6 +118,7 @@ export async function createTestingApp(moduleDef: TestingModuleMeatdata = {}) {
     logger: ['warn'],
   });
 
+  app.useGlobalFilters(new GlobalExceptionFilter(app.getHttpAdapter()));
   app.use(
     graphqlUploadExpress({
       maxFileSize: 10 * 1024 * 1024,
@@ -144,4 +147,16 @@ export function handleGraphQLError(resp: Response) {
     const stacktrace = cause.extensions?.stacktrace;
     throw new Error(stacktrace ? stacktrace.join('\n') : cause.message, cause);
   }
+}
+
+export function gql(app: INestApplication, query?: string) {
+  const req = supertest(app.getHttpServer())
+    .post('/graphql')
+    .set({ 'x-request-id': 'test', 'x-operation-name': 'test' });
+
+  if (query) {
+    return req.send({ query });
+  }
+
+  return req;
 }

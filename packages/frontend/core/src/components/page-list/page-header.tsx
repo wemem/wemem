@@ -1,7 +1,7 @@
 import type { CheckboxProps } from '@affine/component';
 import { Checkbox } from '@affine/component';
-import { useAFFiNEI18N } from '@affine/i18n/hooks';
-import { MultiSelectIcon } from '@blocksuite/icons';
+import { useI18n } from '@affine/i18n';
+import { MultiSelectIcon } from '@blocksuite/icons/rc';
 import clsx from 'clsx';
 import { selectAtom } from 'jotai/utils';
 import type { MouseEventHandler } from 'react';
@@ -72,7 +72,7 @@ const ListHeaderCheckbox = () => {
 };
 
 export const ListHeaderTitleCell = () => {
-  const t = useAFFiNEI18N();
+  const t = useI18n();
   return (
     <div className={styles.headerTitleCell}>
       <ListHeaderCheckbox />

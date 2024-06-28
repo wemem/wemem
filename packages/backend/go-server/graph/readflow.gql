@@ -21,6 +21,7 @@ type FeedItem{
   link: String!
   descriptionMarkdown: String!
   contentMarkdown: String
+  publishedAt: DateTime!
   createdAt: DateTime!
 }
 

@@ -1,7 +1,7 @@
 {
   "name": "@affine/server",
   "private": true,
-  "version": "0.14.0",
+  "version": "0.15.0",
   "description": "Affine Node.js server",
   "type": "module",
   "bin": {
@@ -15,7 +15,8 @@
     "test:coverage": "c8 ava --concurrency 1 --serial",
     "postinstall": "prisma generate",
     "data-migration": "node --loader ts-node/esm/transpile-only.mjs ./src/data/index.ts",
-    "predeploy": "yarn prisma migrate deploy && node --import ./scripts/register.js ./dist/data/index.js run"
+    "predeploy": "yarn prisma migrate deploy && node --import ./scripts/register.js ./dist/data/index.js run",
+    "predeploy:ts": "yarn prisma migrate deploy && node --loader ts-node/esm/transpile-only.mjs ./src/data/index.ts run"
   },
   "dependencies": {
     "@apollo/server": "^4.10.2",
@@ -62,11 +63,13 @@
     "dotenv": "^16.4.5",
     "dotenv-cli": "^7.4.1",
     "express": "^4.19.2",
+    "fast-xml-parser": "^4.4.0",
     "get-stream": "^9.0.1",
     "graphql": "^16.8.1",
     "graphql-scalars": "^1.23.0",
     "graphql-type-json": "^0.3.2",
     "graphql-upload": "^16.0.2",
+    "html-validate": "^8.20.1",
     "ioredis": "^5.3.2",
     "keyv": "^4.5.4",
     "lodash-es": "^4.17.21",
@@ -79,14 +82,16 @@
     "on-headers": "^1.0.2",
     "openai": "^4.33.0",
     "parse-duration": "^1.1.0",
+    "piscina": "^4.5.1",
     "pretty-time": "^1.1.0",
     "prisma": "^5.12.1",
     "prom-client": "^15.1.1",
     "reflect-metadata": "^0.2.2",
     "rxjs": "^7.8.1",
     "semver": "^7.6.0",
+    "ses": "^1.4.1",
     "socket.io": "^4.7.5",
-    "stripe": "^15.0.0",
+    "stripe": "^16.0.0",
     "ts-node": "^10.9.2",
     "typescript": "^5.4.5",
     "ws": "^8.16.0",
@@ -131,7 +136,13 @@
       "ts-node/esm/transpile-only.mjs",
       "--es-module-specifier-resolution=node"
     ],
+    "watchMode": {
+      "ignoreChanges": [
+        "**/*.gen.*"
+      ]
+    },
     "files": [
+      "**/__tests__/**/*.spec.ts",
       "tests/**/*.spec.ts",
       "tests/**/*.e2e.ts"
     ],
@@ -160,9 +171,11 @@
     ],
     "ignore": [
       "**/__tests__/**",
-      "**/dist/**"
+      "**/dist/**",
+      "*.gen.*"
     ],
     "env": {
+      "AFFINE_SERVER_EXTERNAL_URL": "http://localhost:8080",
       "TS_NODE_TRANSPILE_ONLY": true,
       "TS_NODE_PROJECT": "./tsconfig.json",
       "DEBUG": "affine:*",
@@ -180,7 +193,8 @@
     "exclude": [
       "scripts",
       "node_modules",
-      "**/*.spec.ts"
+      "**/*.spec.ts",
+      "**/*.e2e.ts"
     ]
   },
   "stableVersion": "0.5.3",

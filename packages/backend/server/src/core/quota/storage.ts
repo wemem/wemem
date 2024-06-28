@@ -1,5 +1,6 @@
-import { Injectable, Logger, NotFoundException } from '@nestjs/common';
+import { Injectable, Logger } from '@nestjs/common';
 
+import { WorkspaceOwnerNotFound } from '../../fundamentals';
 import { FeatureService, FeatureType } from '../features';
 import { WorkspaceBlobStorage } from '../storage';
 import { PermissionService } from '../workspaces/permission';
@@ -40,7 +41,6 @@ export class QuotaManagementService {
     };
   }
 
-  // TODO: lazy calc, need to be optimized with cache
   async getUserUsage(userId: string) {
     const workspaces = await this.permissions.getOwnedWorkspaces(userId);
 
@@ -115,7 +115,7 @@ export class QuotaManagementService {
   async getWorkspaceUsage(workspaceId: string): Promise<QuotaBusinessType> {
     const { user: owner } =
       await this.permissions.getWorkspaceOwner(workspaceId);
-    if (!owner) throw new NotFoundException('Workspace owner not found');
+    if (!owner) throw new WorkspaceOwnerNotFound({ workspaceId });
     const {
       feature: {
         name,

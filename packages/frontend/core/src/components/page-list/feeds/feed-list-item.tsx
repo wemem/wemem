@@ -2,7 +2,7 @@ import { Checkbox } from '@affine/component';
 import type { FeedListItemProps } from '@affine/core/components/page-list/types-feed';
 import { getDNDId } from '@affine/core/hooks/affine/use-global-dnd-helper';
 import { WorkbenchLink } from '@affine/core/modules/workbench';
-import { useAFFiNEI18N } from '@affine/i18n/hooks';
+import { useI18n } from '@affine/i18n';
 import { useDraggable } from '@dnd-kit/core';
 import type { PropsWithChildren } from 'react';
 import { useCallback, useMemo } from 'react';
@@ -20,7 +20,7 @@ const ListTitleCell = ({
                          title,
                          preview,
                        }: Pick<PageListItemProps, 'title' | 'preview'>) => {
-  const t = useAFFiNEI18N();
+  const t = useI18n();
   console.log('preview',preview);
   return (
     <div data-testid="page-list-item-title" className={styles.titleCell}>

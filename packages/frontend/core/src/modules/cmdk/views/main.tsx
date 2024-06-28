@@ -1,10 +1,10 @@
 import { Loading } from '@affine/component/ui/loading';
 import type { CommandCategory } from '@affine/core/commands';
-import { formatDate } from '@affine/core/components/page-list';
 import { useDocEngineStatus } from '@affine/core/hooks/affine/use-doc-engine-status';
 import { useAsyncCallback } from '@affine/core/hooks/affine-async-hooks';
 import { QuickSearchService } from '@affine/core/modules/cmdk';
-import { useAFFiNEI18N } from '@affine/i18n/hooks';
+import { type I18nKeys, i18nTime } from '@affine/i18n';
+import { useI18n } from '@affine/i18n';
 import type { DocMeta } from '@blocksuite/store';
 import { useLiveData, useService } from '@toeverything/infra';
 import clsx from 'clsx';
@@ -32,13 +32,7 @@ import { CMDKModal } from './modal';
 import { NotFoundGroup } from './not-found';
 import type { CMDKCommand } from './types';
 
-type NoParametersKeys<T> = {
-  [K in keyof T]: T[K] extends () => any ? K : never;
-}[keyof T];
-
-type i18nKey = NoParametersKeys<ReturnType<typeof useAFFiNEI18N>>;
-
-const categoryToI18nKey: Record<CommandCategory, i18nKey> = {
+const categoryToI18nKey = {
   'affine:recent': 'com.affine.cmdk.affine.category.affine.recent',
   'affine:navigation': 'com.affine.cmdk.affine.category.affine.navigation',
   'affine:creation': 'com.affine.cmdk.affine.category.affine.creation',
@@ -55,7 +49,7 @@ const categoryToI18nKey: Record<CommandCategory, i18nKey> = {
     'com.affine.cmdk.affine.category.editor.insert-object',
   'editor:page': 'com.affine.cmdk.affine.category.editor.page',
   'affine:results': 'com.affine.cmdk.affine.category.results',
-};
+} satisfies Record<CommandCategory, I18nKeys>;
 
 const QuickSearchGroup = ({
   category,
@@ -66,7 +60,7 @@ const QuickSearchGroup = ({
   commands: CMDKCommand[];
   onOpenChange?: (open: boolean) => void;
 }) => {
-  const t = useAFFiNEI18N();
+  const t = useI18n();
   const i18nKey = categoryToI18nKey[category];
   const quickSearch = useService(QuickSearchService).quickSearch;
   const query = useLiveData(quickSearch.query$);
@@ -111,7 +105,7 @@ const QuickSearchGroup = ({
             </div>
             {command.timestamp ? (
               <div className={styles.timestamp}>
-                {formatDate(new Date(command.timestamp))}
+                {i18nTime(command.timestamp, { relative: true })}
               </div>
             ) : null}
             {command.keyBinding ? (
@@ -169,7 +163,7 @@ export const CMDKContainer = ({
   groups: ReturnType<typeof useCMDKCommandGroups>;
   onQueryChange: (query: string) => void;
 }>) => {
-  const t = useAFFiNEI18N();
+  const t = useI18n();
   const [value, setValue] = useAtom(cmdkValueAtom);
   const [opening, setOpening] = useState(open);
   const { syncing, progress } = useDocEngineStatus();
@@ -206,7 +200,7 @@ export const CMDKContainer = ({
       onValueChange={setValue}
       loop
     >
-      {/* todo: add page context here */}
+      {/* TODO(@Peng): add page context here */}
       {inputLabel ? (
         <div className={styles.pageTitleWrapper}>
           <span className={styles.pageTitle}>{inputLabel}</span>
@@ -254,7 +248,7 @@ const CMDKQuickSearchModalInner = ({
   const quickSearch = useService(QuickSearchService).quickSearch;
   const query = useLiveData(quickSearch.query$);
   const groups = useCMDKCommandGroups();
-  const t = useAFFiNEI18N();
+  const t = useI18n();
   return (
     <CMDKContainer
       className={styles.root}
@@ -278,7 +272,7 @@ const CMDKQuickSearchCallbackModalInner = ({
   const quickSearch = useService(QuickSearchService).quickSearch;
   const query = useLiveData(quickSearch.query$);
   const groups = useSearchCallbackCommandGroups();
-  const t = useAFFiNEI18N();
+  const t = useI18n();
   return (
     <CMDKContainer
       className={styles.root}

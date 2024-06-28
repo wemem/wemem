@@ -4,18 +4,16 @@ import {
   useEditCollection,
   VirtualizedPageList,
 } from '@affine/core/components/page-list';
-import { useAllPageListConfig } from '@affine/core/hooks/affine/use-all-page-list-config';
 import { useAsyncCallback } from '@affine/core/hooks/affine-async-hooks';
 import { CollectionService } from '@affine/core/modules/collection';
 import type { Collection } from '@affine/env/filter';
-import { Trans } from '@affine/i18n';
-import { useAFFiNEI18N } from '@affine/i18n/hooks';
+import { Trans, useI18n } from '@affine/i18n';
 import {
   CloseIcon,
   FilterIcon,
   PageIcon,
   ViewLayersIcon,
-} from '@blocksuite/icons';
+} from '@blocksuite/icons/rc';
 import { useLiveData, useService, WorkspaceService } from '@toeverything/infra';
 import { useCallback, useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
@@ -31,8 +29,7 @@ export const CollectionDetail = ({
 }: {
   collection: Collection;
 }) => {
-  const config = useAllPageListConfig();
-  const { node, open } = useEditCollection(useAllPageListConfig());
+  const { node, open } = useEditCollection();
   const collectionService = useService(CollectionService);
   const [hideHeaderCreateNew, setHideHeaderCreateNew] = useState(true);
 
@@ -52,7 +49,6 @@ export const CollectionDetail = ({
       <ViewBodyIsland>
         <VirtualizedPageList
           collection={collection}
-          config={config}
           setHideHeaderCreateNewPage={setHideHeaderCreateNew}
         />
       </ViewBodyIsland>
@@ -105,7 +101,7 @@ export const Component = function CollectionPage() {
 const Placeholder = ({ collection }: { collection: Collection }) => {
   const workspace = useService(WorkspaceService).workspace;
   const collectionService = useService(CollectionService);
-  const { node, open } = useEditCollection(useAllPageListConfig());
+  const { node, open } = useEditCollection();
   const { jumpToCollections } = useNavigateHelper();
   const openPageEdit = useAsyncCallback(async () => {
     const ret = await open({ ...collection }, 'page');
@@ -123,7 +119,7 @@ const Placeholder = ({ collection }: { collection: Collection }) => {
     setShowTips(false);
     localStorage.setItem('hide-empty-collection-help-info', 'true');
   }, []);
-  const t = useAFFiNEI18N();
+  const t = useI18n();
 
   const handleJumpToCollections = useCallback(() => {
     jumpToCollections(workspace.id);

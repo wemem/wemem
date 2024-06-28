@@ -1,12 +1,12 @@
 import { Button, Divider, IconButton } from '@affine/component';
 import { SettingHeader } from '@affine/component/setting-components';
 import { openSettingModalAtom } from '@affine/core/atoms';
-import { useAFFiNEI18N } from '@affine/i18n/hooks';
+import { useI18n } from '@affine/i18n';
 import {
   ArrowDownBigIcon,
   ArrowRightBigIcon,
   ArrowUpSmallIcon,
-} from '@blocksuite/icons';
+} from '@blocksuite/icons/rc';
 import * as Collapsible from '@radix-ui/react-collapsible';
 import * as ScrollArea from '@radix-ui/react-scroll-area';
 import { cssVar } from '@toeverything/theme';
@@ -27,7 +27,7 @@ import { settingModalScrollContainerAtom } from '../../atoms';
 import * as styles from './layout.css';
 
 export const SeeAllLink = () => {
-  const t = useAFFiNEI18N();
+  const t = useI18n();
 
   return (
     <a
@@ -82,7 +82,7 @@ export interface PlanLayoutProps {
 }
 
 export const PlanLayout = ({ cloud, ai, aiTip }: PlanLayoutProps) => {
-  const t = useAFFiNEI18N();
+  const t = useI18n();
   const [{ scrollAnchor }, setOpenSettingModal] = useAtom(openSettingModalAtom);
   const aiPricingPlanRef = useRef<HTMLDivElement>(null);
   const aiScrollTipRef = useRef<HTMLDivElement>(null);
@@ -105,7 +105,7 @@ export const PlanLayout = ({ cloud, ai, aiTip }: PlanLayoutProps) => {
     }
   }, [aiTip, settingModalScrollContainer]);
 
-  // TODO: Need a better solution to handle this situation
+  // TODO(@catsjuice): Need a better solution to handle this situation
   useLayoutEffect(() => {
     if (!scrollAnchor) return;
     setTimeout(() => {
@@ -135,7 +135,7 @@ export const PlanLayout = ({ cloud, ai, aiTip }: PlanLayoutProps) => {
 
   return (
     <div className={styles.plansLayoutRoot}>
-      {/* TODO: SettingHeader component shouldn't have margin itself  */}
+      {/* TODO(@catsjuice): SettingHeader component shouldn't have margin itself  */}
       <SettingHeader
         style={{ marginBottom: '0px' }}
         title={t['com.affine.payment.title']()}

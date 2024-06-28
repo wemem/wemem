@@ -1,11 +1,12 @@
 import { notify } from '@affine/component';
 import { authAtom, openSettingModalAtom } from '@affine/core/atoms';
+import { AIProvider } from '@affine/core/blocksuite/presets/ai';
+import { toggleGeneralAIOnboarding } from '@affine/core/components/affine/ai-onboarding/apis';
 import { mixpanel } from '@affine/core/utils';
 import { getBaseUrl } from '@affine/graphql';
 import { Trans } from '@affine/i18n';
 import { UnauthorizedError } from '@blocksuite/blocks';
 import { assertExists } from '@blocksuite/global/utils';
-import { AIProvider } from '@blocksuite/presets';
 import { getCurrentStore } from '@toeverything/infra';
 
 import type { PromptKey } from './prompt';
@@ -397,6 +398,8 @@ Could you make a new website based on these notes and send back just the html fi
       });
     },
   });
+
+  AIProvider.provide('onboarding', toggleGeneralAIOnboarding);
 
   AIProvider.slots.requestUpgradePlan.on(() => {
     getCurrentStore().set(openSettingModalAtom, {

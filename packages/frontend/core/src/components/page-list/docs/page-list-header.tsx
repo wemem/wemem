@@ -13,12 +13,12 @@ import { TagService } from '@affine/core/modules/tag';
 import { useTagI18N } from '@affine/core/modules/tag/entities/internal';
 import { mixpanel } from '@affine/core/utils';
 import type { Collection, Filter } from '@affine/env/filter';
-import { useAFFiNEI18N } from '@affine/i18n/hooks';
+import { useI18n } from '@affine/i18n';
 import {
   ArrowDownSmallIcon,
   SearchIcon,
   ViewLayersIcon,
-} from '@blocksuite/icons';
+} from '@blocksuite/icons/rc';
 import type { Doc as BlockSuiteDoc } from '@blocksuite/store';
 import { useLiveData, useService, WorkspaceService } from '@toeverything/infra';
 import clsx from 'clsx';
@@ -30,7 +30,6 @@ import { CollectionService } from '../../../modules/collection';
 import { usePageHelper } from '../../blocksuite/block-suite-page-list/utils';
 import { createTagFilter } from '../filter/utils';
 import { createEmptyCollection } from '../use-collection-manager';
-import type { AllPageListConfig } from '../view/edit-collection/edit-collection';
 import {
   useEditCollection,
   useEditCollectionName,
@@ -41,7 +40,7 @@ import { PageListNewPageButton } from './page-list-new-page-button';
 
 export const PageListHeader = ({currentFilters,onChangeCurrentFilters}:{currentFilters: Filter[];
                                  onChangeCurrentFilters: (filters: Filter[]) => void;}) => {
-  const t = useAFFiNEI18N();
+  const t = useI18n();
   const workspace = useService(WorkspaceService).workspace;
   const { importFile, createEdgeless, createPage } = usePageHelper(
     workspace.docCollection
@@ -103,13 +102,11 @@ export const PageListHeader = ({currentFilters,onChangeCurrentFilters}:{currentF
 export const CollectionPageListHeader = ({
   collection,
   workspaceId,
-  config,
 }: {
-  config: AllPageListConfig;
   collection: Collection;
   workspaceId: string;
 }) => {
-  const t = useAFFiNEI18N();
+  const t = useI18n();
   const { jumpToCollections } = useNavigateHelper();
 
   const handleJumpToCollections = useCallback(() => {
@@ -117,7 +114,7 @@ export const CollectionPageListHeader = ({
   }, [jumpToCollections, workspaceId]);
 
   const collectionService = useService(CollectionService);
-  const { node, open } = useEditCollection(config);
+  const { node, open } = useEditCollection();
 
   const handleEdit = useAsyncCallback(async () => {
     const ret = await open({ ...collection }, 'page');
@@ -202,8 +199,8 @@ export const TagPageListHeader = ({
   const tagColor = useLiveData(tag.color$);
   const tagTitle = useLiveData(tag.value$);
 
-  const t = useAFFiNEI18N();
   const tt = useTagI18N();
+  const t = useI18n();
   const { jumpToTags, jumpToCollection } = useNavigateHelper();
   const collectionService = useService(CollectionService);
   const [openMenu, setOpenMenu] = useState(false);
@@ -289,7 +286,7 @@ interface SwitchTagProps {
 }
 
 export const SwitchTag = ({ onClick }: SwitchTagProps) => {
-  const t = useAFFiNEI18N();
+  const t = useI18n();
   const [inputValue, setInputValue] = useState('');
   const tagList = useService(TagService).tagList;
   const filteredTags = useLiveData(

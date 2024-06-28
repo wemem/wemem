@@ -3,13 +3,11 @@ import {
   PreconditionStrategy,
   registerAffineCommand,
 } from '@affine/core/commands';
-import { useDocMetaHelper } from '@affine/core/hooks/use-block-suite-page-meta';
 import { FavoriteItemsAdapter } from '@affine/core/modules/properties';
 import { mixpanel } from '@affine/core/utils';
 import { WorkspaceFlavour } from '@affine/env/workspace';
-import { useAFFiNEI18N } from '@affine/i18n/hooks';
-import { assertExists } from '@blocksuite/global/utils';
-import { EdgelessIcon, HistoryIcon, PageIcon } from '@blocksuite/icons';
+import { useI18n } from '@affine/i18n';
+import { EdgelessIcon, HistoryIcon, PageIcon } from '@blocksuite/icons/rc';
 import {
   DocService,
   useLiveData,
@@ -28,18 +26,13 @@ export function useRegisterBlocksuiteEditorCommands() {
   const doc = useService(DocService).doc;
   const docId = doc.id;
   const mode = useLiveData(doc.mode$);
-  const t = useAFFiNEI18N();
+  const t = useI18n();
   const workspace = useService(WorkspaceService).workspace;
   const docCollection = workspace.docCollection;
-  const { getDocMeta } = useDocMetaHelper(docCollection);
-  const currentPage = docCollection.getDoc(docId);
-  assertExists(currentPage);
-  const pageMeta = getDocMeta(docId);
-  assertExists(pageMeta);
 
   const favAdapter = useService(FavoriteItemsAdapter);
   const favorite = useLiveData(favAdapter.isFavorite$(docId, 'doc'));
-  const trash = pageMeta.trash ?? false;
+  const trash = useLiveData(doc.trash$);
 
   const setPageHistoryModalState = useSetAtom(pageHistoryModalAtom);
 
@@ -52,15 +45,18 @@ export function useRegisterBlocksuiteEditorCommands() {
 
   const { restoreFromTrash, duplicate } =
     useBlockSuiteMetaHelper(docCollection);
-  const exportHandler = useExportPage(currentPage);
+  const exportHandler = useExportPage(doc.blockSuiteDoc);
   const { setTrashModal } = useTrashModalHelper(docCollection);
-  const onClickDelete = useCallback(() => {
-    setTrashModal({
-      open: true,
-      pageIds: [docId],
-      pageTitles: [pageMeta.title],
-    });
-  }, [docId, pageMeta.title, setTrashModal]);
+  const onClickDelete = useCallback(
+    (title: string) => {
+      setTrashModal({
+        open: true,
+        pageIds: [docId],
+        pageTitles: [title],
+      });
+    },
+    [docId, setTrashModal]
+  );
 
   const isCloudWorkspace = workspace.flavour === WorkspaceFlavour.AFFINE_CLOUD;
 
@@ -69,7 +65,7 @@ export function useRegisterBlocksuiteEditorCommands() {
     const preconditionStrategy = () =>
       PreconditionStrategy.InPaperOrEdgeless && !trash;
 
-    // TODO: add back when edgeless presentation is ready
+    // TODO(@Peng): add back when edgeless presentation is ready
 
     // this is pretty hack and easy to break. need a better way to communicate with blocksuite editor
     // unsubs.push(
@@ -134,7 +130,7 @@ export function useRegisterBlocksuiteEditorCommands() {
       })
     );
 
-    // todo: should not show duplicate for journal
+    // TODO(@Peng): should not show duplicate for journal
     unsubs.push(
       registerAffineCommand({
         id: `editor:${mode}-duplicate`,
@@ -213,7 +209,7 @@ export function useRegisterBlocksuiteEditorCommands() {
         icon: mode === 'page' ? <PageIcon /> : <EdgelessIcon />,
         label: t['com.affine.moveToTrash.title'](),
         run() {
-          onClickDelete();
+          onClickDelete(doc.title$.value);
         },
       })
     );
@@ -227,7 +223,7 @@ export function useRegisterBlocksuiteEditorCommands() {
         icon: mode === 'page' ? <PageIcon /> : <EdgelessIcon />,
         label: t['com.affine.cmdk.affine.editor.restore-from-trash'](),
         run() {
-          restoreFromTrash(docId);
+          doc.restoreFromTrash();
         },
       })
     );
