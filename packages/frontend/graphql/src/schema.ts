@@ -752,10 +752,10 @@ export enum PublicPageMode {
   Page = 'Page',
 }
 
-export interface PullFeedsInput {
+export interface PullFeedItemsInput {
   feedId: Scalars['String']['input'];
-  latestCreatedAt: InputMaybe<Scalars['DateTime']['input']>;
   latestFeedItemId: InputMaybe<Scalars['ID']['input']>;
+  latestPublishedAt: InputMaybe<Scalars['DateTime']['input']>;
 }
 
 export interface Query {
@@ -825,7 +825,7 @@ export interface QueryListWorkspaceFeaturesArgs {
 }
 
 export interface QueryPullFeedItemsArgs {
-  pullInput: Array<PullFeedsInput>;
+  pullInput: Array<PullFeedItemsInput>;
 }
 
 export interface QuerySearchFeedsArgs {
@@ -1794,7 +1794,7 @@ export type PublishPageMutation = {
 };
 
 export type PullFeedItemsQueryVariables = Exact<{
-  pullInput: Array<PullFeedsInput> | PullFeedsInput;
+  pullInput: Array<PullFeedItemsInput> | PullFeedItemsInput;
 }>;
 
 export type PullFeedItemsQuery = {

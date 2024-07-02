@@ -10,10 +10,20 @@ globalStyle('body', {
   fontSize: cssVar('fontBase'),
 });
 globalStyle('html', {
-  vars: lightCssVariables,
+  vars: {
+    ...lightCssVariables,
+    '--affine-brand-color': 'hsl(240 5.9% 10%)',
+    '--affine-primary-color': 'hsl(240 5.9% 10%)',
+  },
 });
 globalStyle('html[data-theme="dark"]', {
-  vars: darkCssVariables,
+  vars: {
+    ...darkCssVariables,
+    '--affine-brand-color': 'hsl(0 0% 98%)',
+    '--affine-primary-color': 'hsl(0 0% 98%)',
+    '--affine-toggle-circle-background-color': '#000',
+    '--affine-pure-white': '#000',
+  },
 });
 if (process.env.NODE_ENV === 'development') {
   globalStyle('.undefined', {

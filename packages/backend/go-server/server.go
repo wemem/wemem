@@ -2,8 +2,8 @@ package main
 
 import (
 	"context"
+	"errors"
 	"log"
-	"log/slog"
 	"net/http"
 	"os"
 	"os/signal"
@@ -21,25 +21,7 @@ import (
 const defaultPort = "4010"
 
 // Defining the Graphql handler
-func graphqlHandler() gin.HandlerFunc {
-	// NewExecutableSchema and Config are in the generated.go file
-	// Resolver is in the resolver.go file
-
-	adbClient := adb.NewClient()
-	if err := adbClient.Prisma.Connect(); err != nil {
-		panic(err)
-	}
-
-	rdbClient := rdb.NewClient()
-	if err := rdbClient.Prisma.Connect(); err != nil {
-		panic(err)
-	}
-
-	resolver, err := InitializeResolver(adbClient, rdbClient)
-	if err != nil {
-		panic(err)
-	}
-
+func graphqlHandler(resolver *graph.Resolver) gin.HandlerFunc {
 	h := handler.NewDefaultServer(graph.NewExecutableSchema(graph.Config{Resolvers: resolver}))
 
 	return func(c *gin.Context) {
@@ -78,12 +60,25 @@ func main() {
 		port = defaultPort
 	}
 
-	slog.Info("sss")
+	adbClient := adb.NewClient()
+	if err := adbClient.Prisma.Connect(); err != nil {
+		panic(err)
+	}
+
+	rdbClient := rdb.NewClient()
+	if err := rdbClient.Prisma.Connect(); err != nil {
+		panic(err)
+	}
+
+	app, err := InitializeResolver(adbClient, rdbClient)
+	if err != nil {
+		panic(err)
+	}
 
 	// Setting up Gin
 	r := gin.Default()
 	r.Use(GinContextToContextMiddleware())
-	r.POST("/api/v1/graphql", graphqlHandler())
+	r.POST("/api/v1/graphql", graphqlHandler(app.Resolver))
 	r.GET("/", playgroundHandler())
 	log.Printf("connect to http://localhost:%s/ for GraphQL playground", port)
 	srv := &http.Server{
@@ -93,9 +88,13 @@ func main() {
 
 	go func() {
 		// service connections
-		if err := srv.ListenAndServe(); err != nil && err != http.ErrServerClosed {
+		if err := srv.ListenAndServe(); err != nil && !errors.Is(err, http.ErrServerClosed) {
 			log.Fatalf("listen: %s\n", err)
 		}
+	}()
+
+	go func() {
+		app.Worker.Start()
 	}()
 
 	// Wait for interrupt signal to gracefully shutdown the server with

@@ -12,15 +12,22 @@ import (
 	db2 "readflow.ai/goserver/db/rdb"
 	"readflow.ai/goserver/graph"
 	"readflow.ai/goserver/service"
+	"readflow.ai/goserver/workflow"
 )
 
 // Injectors from wire.go:
 
-func InitializeResolver(adb *db.PrismaClient, rdb *db2.PrismaClient) (*graph.Resolver, error) {
+func InitializeResolver(adb *db.PrismaClient, rdb *db2.PrismaClient) (*App, error) {
 	parser := newFeedParser()
 	feedService := service.NewFeedService(rdb, parser)
 	resolver := graph.NewResolver(adb, rdb, feedService)
-	return resolver, nil
+	fetchFeedCronWorkflow := workflow.NewFetchFeedCronWorkflow(rdb, feedService)
+	worker := workflow.NewWorker(fetchFeedCronWorkflow, rdb, feedService)
+	app := &App{
+		Resolver: resolver,
+		Worker:   worker,
+	}
+	return app, nil
 }
 
 // wire.go:

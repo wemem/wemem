@@ -286,6 +286,7 @@ export const CollectionsList = ({
   const t = useI18n();
 
   if (collections.length === 0) {
+    return null;
     return (
       <div className={styles.emptyCollectionWrapper}>
         <div className={styles.emptyCollectionContent}>

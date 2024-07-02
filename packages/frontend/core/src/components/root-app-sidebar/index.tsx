@@ -1,6 +1,7 @@
 import { AnimatedDeleteIcon } from '@affine/component';
 import { AddFeedButton } from '@affine/core/components/app-sidebar/add-feed-button';
 import { FeedList } from '@affine/core/components/pure/workspace-slider-bar/feed';
+import { AppSidebarJournalButton } from '@affine/core/components/root-app-sidebar/journal-button';
 import { getDNDId } from '@affine/core/hooks/affine/use-global-dnd-helper';
 import { useAsyncCallback } from '@affine/core/hooks/affine-async-hooks';
 import { CollectionService } from '@affine/core/modules/collection';
@@ -43,7 +44,6 @@ import { workspaceAndUserWrapper, workspaceWrapper } from './index.css';
 // import { AppSidebarJournalButton } from './journal-button';
 // import { UpdaterButton } from './updater-button';
 import { UserInfo } from './user-info';
-import { AppSidebarJournalButton } from '@affine/core/components/root-app-sidebar/journal-button';
 
 export type RootAppSidebarProps = {
   isPublicWorkspace: boolean;
@@ -93,22 +93,22 @@ RouteMenuLinkItem.displayName = 'RouteMenuLinkItem';
  */
 export const RootAppSidebar = memo(
   ({
-     currentWorkspace,
-     openPage,
-     createPage,
-     paths,
-     onOpenQuickSearchModal,
-     onOpenNewFeedModal,
-     onOpenSettingModal,
-   }: RootAppSidebarProps): ReactElement => {
+    currentWorkspace,
+    openPage,
+    createPage,
+    paths,
+    onOpenQuickSearchModal,
+    onOpenNewFeedModal,
+    onOpenSettingModal,
+  }: RootAppSidebarProps): ReactElement => {
     const currentWorkspaceId = currentWorkspace.id;
     const { appSettings } = useAppSettingHelper();
     const docCollection = currentWorkspace.docCollection;
     const t = useI18n();
     const currentPath = useLiveData(
       useService(WorkbenchService).workbench.location$.map(
-        location => location.pathname,
-      ),
+        location => location.pathname
+      )
     );
 
     const allPageActive = currentPath === '/all';
@@ -204,19 +204,30 @@ export const RootAppSidebar = memo(
             active={laterActive}
             path={paths.later(currentWorkspaceId)}
           >
-              <span data-testid="later-page">
-                {t['ai.readflow.workspaceSubPath.later']()}
-              </span>
+            <span data-testid="later-page">
+              {t['ai.readflow.workspaceSubPath.later']()}
+            </span>
           </RouteMenuLinkItem>
           <RouteMenuLinkItem
             icon={<PiArchive size={20} />}
             active={archiveActive}
             path={paths.archive(currentWorkspaceId)}
           >
-              <span data-testid="archive-page">
-                {t['ai.readflow.workspaceSubPath.archive']()}
-              </span>
+            <span data-testid="archive-page">
+              {t['ai.readflow.workspaceSubPath.archive']()}
+            </span>
           </RouteMenuLinkItem>
+          {runtimeConfig.enableNewSettingModal ? (
+            <MenuItem
+              data-testid="slider-bar-workspace-setting-button"
+              icon={<SettingsIcon />}
+              onClick={onOpenSettingModal}
+            >
+              <span data-testid="settings-modal-trigger">
+                {t['com.affine.settingSidebar.title']()}
+              </span>
+            </MenuItem>
+          ) : null}
         </SidebarContainer>
         <SidebarScrollableContainer>
           <FavoriteList docCollection={docCollection} />
@@ -232,17 +243,6 @@ export const RootAppSidebar = memo(
           {/* fixme: remove the following spacer */}
           <div style={{ height: '4px' }} />
           <div style={{ padding: '0 8px' }}>
-            {runtimeConfig.enableNewSettingModal ? (
-              <MenuItem
-                data-testid="slider-bar-workspace-setting-button"
-                icon={<SettingsIcon />}
-                onClick={onOpenSettingModal}
-              >
-              <span data-testid="settings-modal-trigger">
-                {t['com.affine.settingSidebar.title']()}
-              </span>
-              </MenuItem>
-            ) : null}
             <RouteMenuLinkItem
               ref={trashDroppable.setNodeRef}
               icon={<AnimatedDeleteIcon closed={trashDroppable.isOver} />}
@@ -273,7 +273,7 @@ export const RootAppSidebar = memo(
         </SidebarContainer>
       </AppSidebar>
     );
-  },
+  }
 );
 
 RootAppSidebar.displayName = 'memo(RootAppSidebar)';

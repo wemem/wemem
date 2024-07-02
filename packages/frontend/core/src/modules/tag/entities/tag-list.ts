@@ -1,4 +1,4 @@
-import { InternalTags } from '@affine/core/modules/tag/entities/internal';
+import { InternalTags } from '@affine/core/modules/tag/entities/internal-tag';
 import type { DocsService } from '@toeverything/infra';
 import { Entity, LiveData } from '@toeverything/infra';
 
@@ -8,16 +8,18 @@ import type { TagStore } from '../stores/tag';
 export class TagList extends Entity {
   constructor(
     private readonly store: TagStore,
-    private readonly docs: DocsService,
+    private readonly docs: DocsService
   ) {
     super();
     this.initInternalTags();
   }
 
   readonly tags$ = LiveData.from(this.store.watchTagIds(), []).map(ids => {
-    return ids.map(id => this.framework.createEntity(Tag, { id })).filter(tag => {
-      return tag.ghost$.value === undefined ? true : !tag.ghost$.value;
-    });
+    return ids
+      .map(id => this.framework.createEntity(Tag, { id }))
+      .filter(tag => {
+        return tag.ghost$.value === undefined ? true : !tag.ghost$.value;
+      });
   });
 
   createTag(value: string, color: string) {
@@ -26,8 +28,13 @@ export class TagList extends Entity {
     return newTag;
   }
 
-  createTagWithId(newId: string, value: string, color: string) {
-    this.store.createNewTagWithId(newId, value, color, undefined);
+  createTagWithId(
+    newId: string,
+    value: string,
+    color: string,
+    ghost?: boolean
+  ) {
+    this.store.createNewTagWithId(newId, value, color, ghost);
     const newTag = this.framework.createEntity(Tag, { id: newId });
     return newTag;
   }
@@ -93,10 +100,10 @@ export class TagList extends Entity {
     });
   }
 
-  private initInternalTags() {
+  initInternalTags() {
     InternalTags.forEach(tag => {
-      if(!this.tagByTagId$(tag.id).getValue()){
-        this.createTagWithId(tag.id, tag.value, tag.color);
+      if (!this.tagByTagId$(tag.id).getValue()) {
+        this.createTagWithId(tag.id, tag.value, tag.color, tag.ghost);
       }
     });
   }

@@ -1326,5 +1326,7 @@
   "ai.readflow.internal-tags.wechat": "微信",
   "ai.readflow.internal-tags.rss": "RSS",
   "ai.readflow.workspaceSubPath.later": "稍后读",
-  "ai.readflow.workspaceSubPath.archive": "归档"
+  "ai.readflow.workspaceSubPath.archive": "归档",
+  "ai.readflow.internal-tags.seen": "已读",
+  "ai.readflow.internal-tags.unseen": "未读"
 }

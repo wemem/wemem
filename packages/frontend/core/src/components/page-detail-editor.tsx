@@ -13,10 +13,11 @@ import {
 } from '@toeverything/infra';
 import clsx from 'clsx';
 import type { CSSProperties } from 'react';
-import { memo, Suspense, useCallback, useMemo } from 'react';
+import { memo, Suspense, useCallback, useEffect, useMemo } from 'react';
 import { useLocation } from 'react-router-dom';
 
 import { useAppSettingHelper } from '../hooks/affine/use-app-setting-helper';
+import { SeenTag, UnseenTag } from '../modules/tag/entities/internal-tag';
 import { BlockSuiteEditor as Editor } from './blocksuite/block-suite-editor';
 import * as styles from './page-detail-editor.css';
 
@@ -117,6 +118,20 @@ const PageDetailEditorMain = memo(function PageDetailEditorMain({
 export const PageDetailEditor = (props: PageDetailEditorProps) => {
   const { docCollection, pageId } = props;
   const page = useDocCollectionPage(docCollection, pageId);
+  useEffect(() => {
+    if (!page) {
+      return;
+    }
+    if (page.meta?.tags.includes(UnseenTag.id)) {
+      const tags = page.meta.tags.filter(tag => tag !== UnseenTag.id);
+      tags.push(SeenTag.id);
+      docCollection.setDocMeta(page.id, {
+        ...page.meta,
+        tags,
+      });
+    }
+  }, [page, docCollection]);
+
   if (!page) {
     return null;
   }

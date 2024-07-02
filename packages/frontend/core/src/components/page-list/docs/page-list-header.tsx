@@ -5,12 +5,15 @@ import {
   Scrollable,
   useConfirmModal,
 } from '@affine/component';
-import { AllPageListOperationsMenu, PageDisplayMenu } from '@affine/core/components/page-list';
+import {
+  AllPageListOperationsMenu,
+  PageDisplayMenu,
+} from '@affine/core/components/page-list';
 import { useAsyncCallback } from '@affine/core/hooks/affine-async-hooks';
 import { useNavigateHelper } from '@affine/core/hooks/use-navigate-helper';
 import type { Tag } from '@affine/core/modules/tag';
 import { TagService } from '@affine/core/modules/tag';
-import { useTagI18N } from '@affine/core/modules/tag/entities/internal';
+import { useTagI18N } from '@affine/core/modules/tag/entities/internal-tag';
 import { mixpanel } from '@affine/core/utils';
 import type { Collection, Filter } from '@affine/env/filter';
 import { useI18n } from '@affine/i18n';
@@ -38,8 +41,13 @@ import * as styles from './page-list-header.css';
 import * as feedStyles from './page-list-header-feed.css';
 import { PageListNewPageButton } from './page-list-new-page-button';
 
-export const PageListHeader = ({currentFilters,onChangeCurrentFilters}:{currentFilters: Filter[];
-                                 onChangeCurrentFilters: (filters: Filter[]) => void;}) => {
+export const PageListHeader = ({
+  currentFilters,
+  onChangeCurrentFilters,
+}: {
+  currentFilters: Filter[];
+  onChangeCurrentFilters: (filters: Filter[]) => void;
+}) => {
   const t = useI18n();
   const workspace = useService(WorkspaceService).workspace;
   const { importFile, createEdgeless, createPage } = usePageHelper(

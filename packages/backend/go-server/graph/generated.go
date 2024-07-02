@@ -229,7 +229,7 @@ type ComplexityRoot struct {
 		ListCopilotPrompts    func(childComplexity int) int
 		ListWorkspaceFeatures func(childComplexity int, feature model.FeatureType) int
 		Prices                func(childComplexity int) int
-		PullFeedItems         func(childComplexity int, pullInput []model.PullFeedsInput) int
+		PullFeedItems         func(childComplexity int, pullInput []model.PullFeedItemsInput) int
 		SearchFeeds           func(childComplexity int, keyword string) int
 		ServerConfig          func(childComplexity int) int
 		ServerRuntimeConfig   func(childComplexity int) int
@@ -460,7 +460,7 @@ type QueryResolver interface {
 	Workspace(ctx context.Context, id string) (*model.WorkspaceType, error)
 	Workspaces(ctx context.Context) ([]model.WorkspaceType, error)
 	SearchFeeds(ctx context.Context, keyword string) ([]model.Feed, error)
-	PullFeedItems(ctx context.Context, pullInput []model.PullFeedsInput) ([]model.FeedItem, error)
+	PullFeedItems(ctx context.Context, pullInput []model.PullFeedItemsInput) ([]model.FeedItem, error)
 }
 
 type executableSchema struct {
@@ -1631,7 +1631,7 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 			return 0, false
 		}
 
-		return e.complexity.Query.PullFeedItems(childComplexity, args["pullInput"].([]model.PullFeedsInput)), true
+		return e.complexity.Query.PullFeedItems(childComplexity, args["pullInput"].([]model.PullFeedItemsInput)), true
 
 	case "Query.searchFeeds":
 		if e.complexity.Query.SearchFeeds == nil {
@@ -2502,7 +2502,7 @@ func (e *executableSchema) Exec(ctx context.Context) graphql.ResponseHandler {
 		ec.unmarshalInputCreateUserInput,
 		ec.unmarshalInputDeleteSessionInput,
 		ec.unmarshalInputListUserInput,
-		ec.unmarshalInputPullFeedsInput,
+		ec.unmarshalInputPullFeedItemsInput,
 		ec.unmarshalInputQueryChatHistoriesInput,
 		ec.unmarshalInputUpdateUserInput,
 		ec.unmarshalInputUpdateWorkspaceInput,
@@ -3724,10 +3724,10 @@ func (ec *executionContext) field_Query_listWorkspaceFeatures_args(ctx context.C
 func (ec *executionContext) field_Query_pullFeedItems_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
 	var err error
 	args := map[string]interface{}{}
-	var arg0 []model.PullFeedsInput
+	var arg0 []model.PullFeedItemsInput
 	if tmp, ok := rawArgs["pullInput"]; ok {
 		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("pullInput"))
-		arg0, err = ec.unmarshalNPullFeedsInput2ᚕreadflowᚗaiᚋgoserverᚋgraphᚋmodelᚐPullFeedsInputᚄ(ctx, tmp)
+		arg0, err = ec.unmarshalNPullFeedItemsInput2ᚕreadflowᚗaiᚋgoserverᚋgraphᚋmodelᚐPullFeedItemsInputᚄ(ctx, tmp)
 		if err != nil {
 			return nil, err
 		}
@@ -11299,7 +11299,7 @@ func (ec *executionContext) _Query_pullFeedItems(ctx context.Context, field grap
 	}()
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
 		ctx = rctx // use context from middleware stack in children
-		return ec.resolvers.Query().PullFeedItems(rctx, fc.Args["pullInput"].([]model.PullFeedsInput))
+		return ec.resolvers.Query().PullFeedItems(rctx, fc.Args["pullInput"].([]model.PullFeedItemsInput))
 	})
 	if err != nil {
 		ec.Error(ctx, err)
@@ -18555,14 +18555,14 @@ func (ec *executionContext) unmarshalInputListUserInput(ctx context.Context, obj
 	return it, nil
 }
 
-func (ec *executionContext) unmarshalInputPullFeedsInput(ctx context.Context, obj interface{}) (model.PullFeedsInput, error) {
-	var it model.PullFeedsInput
+func (ec *executionContext) unmarshalInputPullFeedItemsInput(ctx context.Context, obj interface{}) (model.PullFeedItemsInput, error) {
+	var it model.PullFeedItemsInput
 	asMap := map[string]interface{}{}
 	for k, v := range obj.(map[string]interface{}) {
 		asMap[k] = v
 	}
 
-	fieldsInOrder := [...]string{"feedId", "latestFeedItemId", "latestCreatedAt"}
+	fieldsInOrder := [...]string{"feedId", "latestFeedItemId", "latestPublishedAt"}
 	for _, k := range fieldsInOrder {
 		v, ok := asMap[k]
 		if !ok {
@@ -18583,13 +18583,13 @@ func (ec *executionContext) unmarshalInputPullFeedsInput(ctx context.Context, ob
 				return it, err
 			}
 			it.LatestFeedItemID = data
-		case "latestCreatedAt":
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("latestCreatedAt"))
+		case "latestPublishedAt":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("latestPublishedAt"))
 			data, err := ec.unmarshalODateTime2ᚖstring(ctx, v)
 			if err != nil {
 				return it, err
 			}
-			it.LatestCreatedAt = data
+			it.LatestPublishedAt = data
 		}
 	}
 
@@ -22498,21 +22498,21 @@ func (ec *executionContext) marshalNPublicPageMode2readflowᚗaiᚋgoserverᚋgr
 	return v
 }
 
-func (ec *executionContext) unmarshalNPullFeedsInput2readflowᚗaiᚋgoserverᚋgraphᚋmodelᚐPullFeedsInput(ctx context.Context, v interface{}) (model.PullFeedsInput, error) {
-	res, err := ec.unmarshalInputPullFeedsInput(ctx, v)
+func (ec *executionContext) unmarshalNPullFeedItemsInput2readflowᚗaiᚋgoserverᚋgraphᚋmodelᚐPullFeedItemsInput(ctx context.Context, v interface{}) (model.PullFeedItemsInput, error) {
+	res, err := ec.unmarshalInputPullFeedItemsInput(ctx, v)
 	return res, graphql.ErrorOnPath(ctx, err)
 }
 
-func (ec *executionContext) unmarshalNPullFeedsInput2ᚕreadflowᚗaiᚋgoserverᚋgraphᚋmodelᚐPullFeedsInputᚄ(ctx context.Context, v interface{}) ([]model.PullFeedsInput, error) {
+func (ec *executionContext) unmarshalNPullFeedItemsInput2ᚕreadflowᚗaiᚋgoserverᚋgraphᚋmodelᚐPullFeedItemsInputᚄ(ctx context.Context, v interface{}) ([]model.PullFeedItemsInput, error) {
 	var vSlice []interface{}
 	if v != nil {
 		vSlice = graphql.CoerceList(v)
 	}
 	var err error
-	res := make([]model.PullFeedsInput, len(vSlice))
+	res := make([]model.PullFeedItemsInput, len(vSlice))
 	for i := range vSlice {
 		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithIndex(i))
-		res[i], err = ec.unmarshalNPullFeedsInput2readflowᚗaiᚋgoserverᚋgraphᚋmodelᚐPullFeedsInput(ctx, vSlice[i])
+		res[i], err = ec.unmarshalNPullFeedItemsInput2readflowᚗaiᚋgoserverᚋgraphᚋmodelᚐPullFeedItemsInput(ctx, vSlice[i])
 		if err != nil {
 			return nil, err
 		}

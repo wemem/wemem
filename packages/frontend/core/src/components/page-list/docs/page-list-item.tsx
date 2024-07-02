@@ -1,6 +1,7 @@
 import { Checkbox, Tooltip } from '@affine/component';
 import { getDNDId } from '@affine/core/hooks/affine/use-global-dnd-helper';
 import { TagService } from '@affine/core/modules/tag';
+import { UnseenTag } from '@affine/core/modules/tag/entities/internal-tag';
 import { i18nTime } from '@affine/i18n';
 import { useDraggable } from '@dnd-kit/core';
 import { useLiveData, useService } from '@toeverything/infra';
@@ -23,14 +24,25 @@ import { PageTags } from './page-tags';
 const ListTitleCell = ({
   title,
   preview,
-}: Pick<PageListItemProps, 'title' | 'preview'>) => {
+  tags,
+}: Pick<PageListItemProps, 'title' | 'preview' | 'tags'>) => {
   const [displayProperties] = useAllDocDisplayProperties();
+  const unseen = useMemo(
+    () => tags.findLast(tag => tag.id === UnseenTag.id),
+    [tags]
+  );
   return (
     <div data-testid="page-list-item-title" className={styles.titleCell}>
       <div
         data-testid="page-list-item-title-text"
         className={styles.titleCellMain}
       >
+        {unseen && (
+          <div
+            className={styles.unseenLabel}
+            data-testid="current-workspace-label"
+          />
+        )}
         {title}
       </div>
       {preview && displayProperties.displayProperties.bodyNotes ? (
@@ -155,7 +167,11 @@ export const PageListItem = (props: PageListItemProps) => {
           />
           <ListIconCell icon={props.icon} />
         </div>
-        <ListTitleCell title={props.title} preview={props.preview} />
+        <ListTitleCell
+          title={props.title}
+          tags={props.tags}
+          preview={props.preview}
+        />
       </div>
     );
   }, [
@@ -165,6 +181,7 @@ export const PageListItem = (props: PageListItemProps) => {
     props.selectable,
     props.selected,
     props.title,
+    props.tags,
   ]);
 
   const { setNodeRef, attributes, listeners, isDragging } = useDraggable({
@@ -200,7 +217,11 @@ export const PageListItem = (props: PageListItemProps) => {
             />
             <ListIconCell icon={props.icon} />
           </div>
-          <ListTitleCell title={props.title} preview={props.preview} />
+          <ListTitleCell
+            title={props.title}
+            tags={props.tags}
+            preview={props.preview}
+          />
         </ColWrapper>
         <ColWrapper
           flex={4}

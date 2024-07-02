@@ -101,7 +101,7 @@ export const currentWorkspaceLabel = style({
       width: '8px',
       height: '8px',
       borderRadius: '50%',
-      background: cssVar('blue'),
+      background: cssVar('primaryColor'),
     },
   },
 });

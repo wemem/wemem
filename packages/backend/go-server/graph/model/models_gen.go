@@ -213,10 +213,10 @@ type PasswordLimitsType struct {
 	MinLength int `json:"minLength"`
 }
 
-type PullFeedsInput struct {
-	FeedID           string  `json:"feedId"`
-	LatestFeedItemID *string `json:"latestFeedItemId,omitempty"`
-	LatestCreatedAt  *string `json:"latestCreatedAt,omitempty"`
+type PullFeedItemsInput struct {
+	FeedID            string  `json:"feedId"`
+	LatestFeedItemID  *string `json:"latestFeedItemId,omitempty"`
+	LatestPublishedAt *string `json:"latestPublishedAt,omitempty"`
 }
 
 type Query struct {

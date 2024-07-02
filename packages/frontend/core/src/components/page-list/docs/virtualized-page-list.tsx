@@ -138,7 +138,9 @@ export const VirtualizedPageList = ({
           workspaceId={currentWorkspace.id}
           collection={feed}
           propertiesMeta={currentWorkspace.docCollection.meta.properties}
+          // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
           currentFilters={currentFilters!}
+          // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
           onChangeCurrentFilters={onChangeCurrentFilters!}
         />
       );
@@ -148,14 +150,30 @@ export const VirtualizedPageList = ({
         <FeedDocsPageListHeader
           workspaceId={currentWorkspace.id}
           propertiesMeta={currentWorkspace.docCollection.meta.properties}
+          // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
           currentFilters={currentFilters!}
+          // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
           onChangeCurrentFilters={onChangeCurrentFilters!}
         />
       );
     }
-    return <PageListHeader currentFilters={currentFilters!}
-                           onChangeCurrentFilters={onChangeCurrentFilters!}/>;
-  }, [collection, currentFilters, currentWorkspace.docCollection.meta.properties, currentWorkspace.id, feed, feedDocs, onChangeCurrentFilters, tag]);
+    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+    return (
+      <PageListHeader
+        currentFilters={currentFilters!}
+        onChangeCurrentFilters={onChangeCurrentFilters!}
+      />
+    );
+  }, [
+    collection,
+    currentFilters,
+    currentWorkspace.docCollection.meta.properties,
+    currentWorkspace.id,
+    feed,
+    feedDocs,
+    onChangeCurrentFilters,
+    tag,
+  ]);
 
   const { setTrashModal } = useTrashModalHelper(currentWorkspace.docCollection);
 

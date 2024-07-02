@@ -1,4 +1,4 @@
-query PullFeedItems($pullInput: [PullFeedsInput!]!) {
+query PullFeedItems($pullInput: [PullFeedItemsInput!]!) {
   pullFeedItems(pullInput: $pullInput) {
     feedId
     feedItemId

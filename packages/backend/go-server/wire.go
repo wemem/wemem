@@ -10,17 +10,21 @@ import (
 	rdb "readflow.ai/goserver/db/rdb"
 	"readflow.ai/goserver/graph"
 	"readflow.ai/goserver/service"
+	"readflow.ai/goserver/workflow"
 )
 
 func newFeedParser() *gofeed.Parser {
 	return gofeed.NewParser()
 }
 
-func InitializeResolver(adb *adb.PrismaClient, rdb *rdb.PrismaClient) (*graph.Resolver, error) {
+func InitializeResolver(adb *adb.PrismaClient, rdb *rdb.PrismaClient) (*App, error) {
 	wire.Build(
 		graph.NewResolver,
 		service.NewFeedService,
+		workflow.NewWorker,
+		workflow.NewFetchFeedCronWorkflow,
 		newFeedParser,
+		wire.Struct(new(App), "*"),
 	)
-	return &graph.Resolver{}, nil
+	return &App{}, nil
 }

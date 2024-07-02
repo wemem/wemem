@@ -102,6 +102,7 @@ export const titleCellMain = style({
   flex: 1,
   textOverflow: 'ellipsis',
   alignSelf: 'stretch',
+  display: 'flex',
 });
 export const titleCellPreview = style({
   overflow: 'hidden',
@@ -150,4 +151,22 @@ export const operationsCell = style({
   justifyContent: 'flex-end',
   columnGap: '6px',
   flexShrink: 0,
+});
+
+export const unseenLabel = style({
+  width: '20px',
+  minWidth: '20px',
+  height: '20px',
+  display: 'flex',
+  justifyContent: 'center',
+  alignItems: 'center',
+  selectors: {
+    '&::after': {
+      content: '""',
+      width: '8px',
+      height: '8px',
+      borderRadius: '50%',
+      background: cssVar('primaryColor'),
+    },
+  },
 });

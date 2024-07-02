@@ -266,7 +266,7 @@ func (s FeedService) RefreshFeed(ctx context.Context, feedId string) error {
 	var txs []rdb.PrismaTransaction
 	for _, item := range netFeed.Items {
 		_, err = s.rdb.FeedItem.FindFirst(
-			rdb.FeedItem.GUID.Equals(item.GUID),
+			rdb.FeedItem.Link.Equals(item.Link),
 			rdb.FeedItem.FeedID.Equals(feedId)).Exec(ctx)
 
 		// 数据库中已经存在，跳过
@@ -379,8 +379,7 @@ func (s FeedService) PullFeed(ctx context.Context, feedId string, latestFeedItem
 	items, err := s.rdb.FeedItem.FindMany(
 		rdb.FeedItem.FeedID.Equals(feedId),
 		rdb.FeedItem.ID.GtIfPresent(latestFeedItemID),
-	).OrderBy(rdb.FeedItem.ID.Order(rdb.SortOrderDesc)).
-		Take(10).
+	).Take(10).
 		Exec(ctx)
 
 	return items, errors.WithStack(err)

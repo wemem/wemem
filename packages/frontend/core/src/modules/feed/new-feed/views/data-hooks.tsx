@@ -1,26 +1,35 @@
-import { type AffineCommand, type CommandCategory, PreconditionStrategy } from '@affine/core/commands';
-import { useCreateFeed2 } from '@affine/core/components/page-list';
+import { toast } from '@affine/component';
+import {
+  type AffineCommand,
+  type CommandCategory,
+  PreconditionStrategy,
+} from '@affine/core/commands';
+import { useCreateFeed } from '@affine/core/components/page-list';
 import { FeedAvatar } from '@affine/core/components/page-list/feed/avatar';
 import { useNavigateHelper } from '@affine/core/hooks/use-navigate-helper';
 import { type SearchCallbackResult } from '@affine/core/modules/cmdk';
 import { NewFeedService } from '@affine/core/modules/feed/new-feed';
 import { NewFeedCommandRegistry } from '@affine/core/modules/feed/new-feed/commands';
 import type { SearchFeedsQuery } from '@affine/graphql';
-import { GlobalContextService, useLiveData, useService, WorkspaceService } from '@toeverything/infra';
+import { useI18n } from '@affine/i18n';
+import {
+  GlobalContextService,
+  useLiveData,
+  useService,
+  WorkspaceService,
+} from '@toeverything/infra';
 import { atom } from 'jotai';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 
 import { filterSortAndGroupCommands } from './filter-commands';
 import type { CMDKCommand, CommandContext } from './types';
-import { notify, toast } from '@affine/component';
-import { useI18n } from '@affine/i18n';
 
 export type FeedRecord = NonNullable<SearchFeedsQuery['searchFeeds']>[number];
 export const cmdkValueAtom = atom('');
 
 function filterCommandByContext(
   command: AffineCommand,
-  context: CommandContext,
+  context: CommandContext
 ) {
   if (command.preconditionStrategy === PreconditionStrategy.Always) {
     return true;
@@ -53,7 +62,7 @@ function getAllCommand(context: CommandContext) {
 const feedToCommand = (
   category: CommandCategory,
   feed: FeedRecord,
-  run: () => void,
+  run: () => void
 ): CMDKCommand => {
   const commandLabel = {
     title: feed.title,
@@ -72,9 +81,7 @@ const feedToCommand = (
   };
 };
 
-function useSearchedFeedsCommands(
-  onSelect: (feed: FeedRecord) => void,
-) {
+function useSearchedFeedsCommands(onSelect: (feed: FeedRecord) => void) {
   const newFeed = useService(NewFeedService).newFeed;
   const query = useLiveData(newFeed.query$);
   const [cmds, setCmds] = useState<CMDKCommand[]>([]);
@@ -84,17 +91,12 @@ function useSearchedFeedsCommands(
       const feeds = await newFeed.getSearchedFeeds(query);
       const cmds = feeds.map(feed => {
         const category = 'affine:pages';
-        return feedToCommand(
-          category,
-          feed,
-          () => onSelect(feed),
-        );
+        return feedToCommand(category, feed, () => onSelect(feed));
       });
 
       setCmds(cmds);
     };
-    // eslint-disable-next-line
-    // @typescript-eslint/ban-ts-comment
+    // eslint-disable-next-line @typescript-eslint/no-floating-promises
     searchFeeds().then();
   }, [newFeed, onSelect, query]);
 
@@ -104,7 +106,7 @@ function useSearchedFeedsCommands(
 export const useSearchFeedsCommands = () => {
   const workspace = useService(WorkspaceService).workspace;
   const navigationHelper = useNavigateHelper();
-  const createFeed = useCreateFeed2(workspace.docCollection);
+  const createFeed = useCreateFeed(workspace.docCollection);
   const t = useI18n();
 
   const onSelectPage = useCallback(
@@ -118,7 +120,7 @@ export const useSearchFeedsCommands = () => {
       toast(t['ai.readflow.notification.message.feed-added']());
       navigationHelper.jumpToFeed(workspace.id, feed.id);
     },
-    [createFeed, navigationHelper, t, workspace],
+    [createFeed, navigationHelper, t, workspace]
   );
 
   return useSearchedFeedsCommands(onSelectPage);
@@ -129,14 +131,14 @@ export const useSearchCallbackCommands = () => {
   const newFeed = useService(NewFeedService).newFeed;
   const workspace = useService(WorkspaceService).workspace;
   const onSelectPage = useCallback(
-    (searchResult: SearchCallbackResult) => {
+    (feed: FeedRecord) => {
       if (!workspace) {
         console.error('current workspace not found');
         return;
       }
-      newFeed.setSearchCallbackResult(searchResult);
+      newFeed.setSearchCallbackResult(feed);
     },
-    [newFeed, workspace],
+    [newFeed, workspace]
   );
 
   return useSearchedFeedsCommands(onSelectPage);
@@ -156,10 +158,7 @@ export const useCMDKCommandGroups = () => {
   const query = useLiveData(quickSearch.query$).trim();
 
   return useMemo(() => {
-    const commands = [
-      ...searchFeedsCommands,
-      ...newFeedsDefaultCommands,
-    ];
+    const commands = [...searchFeedsCommands, ...newFeedsDefaultCommands];
     return filterSortAndGroupCommands(commands, query);
   }, [newFeedsDefaultCommands, searchFeedsCommands, query]);
 };

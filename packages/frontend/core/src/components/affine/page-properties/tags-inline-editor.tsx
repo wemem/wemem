@@ -3,6 +3,7 @@ import { IconButton, Input, Menu, Scrollable } from '@affine/component';
 import { useNavigateHelper } from '@affine/core/hooks/use-navigate-helper';
 import { WorkspaceLegacyProperties } from '@affine/core/modules/properties';
 import { DeleteTagConfirmModal, TagService } from '@affine/core/modules/tag';
+import { isInternalTag } from '@affine/core/modules/tag/entities/internal-tag';
 import { useI18n } from '@affine/i18n';
 import { DeleteIcon, MoreHorizontalIcon, TagsIcon } from '@blocksuite/icons/rc';
 import { useLiveData, useService } from '@toeverything/infra';
@@ -15,7 +16,6 @@ import { tagColors } from './common';
 import type { MenuItemOption } from './menu-items';
 import { renderMenuItemOptions } from './menu-items';
 import * as styles from './tags-inline-editor.css';
-import { isInternalTag } from '@affine/core/modules/tag/entities/internal';
 
 interface TagsEditorProps {
   pageId: string;
@@ -311,14 +311,15 @@ export const TagsEditor = ({ pageId, readonly }: TagsEditorProps) => {
                 >
                   <TagItem maxWidth="100%" tag={tag} mode="inline" />
                   <div className={styles.spacer} />
-                  {!isInternalTag(tag.value$.getValue()) && <EditTagMenu tagId={tag.id} onTagDelete={onTagDelete}>
-                    <IconButton
-                      className={styles.tagEditIcon}
-                      type="plain"
-                      icon={<MoreHorizontalIcon />}
-                    />
-                  </EditTagMenu>
-                  }
+                  {!isInternalTag(tag.value$.getValue()) && (
+                    <EditTagMenu tagId={tag.id} onTagDelete={onTagDelete}>
+                      <IconButton
+                        className={styles.tagEditIcon}
+                        type="plain"
+                        icon={<MoreHorizontalIcon />}
+                      />
+                    </EditTagMenu>
+                  )}
                 </div>
               );
             })}

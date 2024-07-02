@@ -1,13 +1,18 @@
-import { type CollectionMeta, useCreateFeed } from '@affine/core/components/page-list';
-import { FeedListHeader, VirtualizedFeedList } from '@affine/core/components/page-list/feeds';
+import { type CollectionMeta } from '@affine/core/components/page-list';
+import {
+  FeedListHeader,
+  VirtualizedFeedList,
+} from '@affine/core/components/page-list/feeds';
+import { NewFeedService } from '@affine/core/modules/feed/new-feed';
 import { FeedService } from '@affine/core/modules/feed/services/feed';
-import { useLiveData, useService, WorkspaceService } from '@toeverything/infra';
-import { useMemo, useState } from 'react';
+import { mixpanel } from '@affine/core/utils';
+import { useLiveData, useService } from '@toeverything/infra';
+import { useCallback, useMemo, useState } from 'react';
 
 import { ViewBodyIsland, ViewHeaderIsland } from '../../../modules/workbench';
+import { EmptyFeedList } from '../page-list-empty-feed';
 import { AllFeedHeader } from './header';
 import * as styles from './index.css';
-import { EmptyFeedList } from '../page-list-empty-feed';
 
 export const AllCollection = () => {
   const [hideHeaderCreateNew, setHideHeaderCreateNew] = useState(true);
@@ -23,13 +28,20 @@ export const AllCollection = () => {
     });
     return collectionsList;
   }, [feeds]);
-  const { node, handleCreateFeed } = useCreateFeed(useService(WorkspaceService).workspace.docCollection);
+  const newFeed = useService(NewFeedService).newFeed;
+  const handleOpenNewFeedModal = useCallback(() => {
+    newFeed.show();
+    mixpanel.track('NewOpened', {
+      segment: 'navigation panel',
+      control: 'new feed button',
+    });
+  }, [newFeed]);
   return (
     <>
       <ViewHeaderIsland>
         <AllFeedHeader
           showCreateNew={!hideHeaderCreateNew}
-          handleCreateFeed={handleCreateFeed}
+          handleCreateFeed={handleOpenNewFeedModal}
         />
       </ViewHeaderIsland>
       <ViewBodyIsland>
@@ -39,17 +51,11 @@ export const AllCollection = () => {
               collections={feeds}
               collectionMetas={feedMetas}
               setHideHeaderCreateNewFeed={setHideHeaderCreateNew}
-              node={node}
-              handleCreateFeed={handleCreateFeed}
+              handleCreateFeed={handleOpenNewFeedModal}
             />
           ) : (
             <EmptyFeedList
-              heading={
-                <FeedListHeader
-                  node={node}
-                  onCreate={handleCreateFeed}
-                />
-              }
+              heading={<FeedListHeader onCreate={handleOpenNewFeedModal} />}
             />
           )}
         </div>

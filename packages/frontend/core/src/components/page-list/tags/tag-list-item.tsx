@@ -1,5 +1,6 @@
 import { Checkbox } from '@affine/component';
 import { getDNDId } from '@affine/core/hooks/affine/use-global-dnd-helper';
+import { useTagI18N } from '@affine/core/modules/tag/entities/internal-tag';
 import { WorkbenchLink } from '@affine/core/modules/workbench';
 import { useI18n } from '@affine/i18n';
 import { useDraggable } from '@dnd-kit/core';
@@ -10,7 +11,6 @@ import { selectionStateAtom, useAtom } from '../scoped-atoms';
 import type { DraggableTitleCellData, TagListItemProps } from '../types';
 import { ColWrapper, stopPropagation } from '../utils';
 import * as styles from './tag-list-item.css';
-import { useTagI18N } from '@affine/core/modules/tag/entities/internal';
 
 const TagListTitleCell = ({
   title,

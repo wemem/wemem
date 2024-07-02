@@ -20,7 +20,7 @@ import { Fragment, useCallback, useMemo } from 'react';
 import { CollectionSidebarNavItem } from '../collections';
 import type { FavoriteListProps } from '../index';
 import { AddFavouriteButton } from './add-favourite-button';
-import EmptyItem from './empty-item';
+// import EmptyItem from './empty-item';
 import { FavouriteDocSidebarNavItem } from './favourite-nav-item';
 import * as styles from './styles.css';
 
@@ -112,7 +112,7 @@ const FavoriteListInner = ({ docCollection: workspace }: FavoriteListProps) => {
       {favourites.map(item => {
         return <Fragment key={item.id}>{renderFavItem(item)}</Fragment>;
       })}
-      {favourites.length === 0 && <EmptyItem />}
+      {/* {favourites.length === 0 && <EmptyItem />} */}
     </div>
   );
 };

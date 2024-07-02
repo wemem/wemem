@@ -162,6 +162,10 @@ export const viewRoutes = [
     lazy: () => import('./pages/workspace/detail-page/detail-page'),
   },
   {
+    path: '/:pageId/json',
+    lazy: () => import('./pages/workspace/detail-page/detail-page-json'),
+  },
+  {
     path: '*',
     lazy: () => import('./pages/404'),
   },

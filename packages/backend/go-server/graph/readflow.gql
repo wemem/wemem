@@ -8,13 +8,13 @@ type Feed {
   updated: DateTime!
 }
 
-input PullFeedsInput{
+input PullFeedItemsInput {
   feedId: String!
   latestFeedItemId: ID
-  latestCreatedAt: DateTime
+  latestPublishedAt: DateTime
 }
 
-type FeedItem{
+type FeedItem {
   feedId: ID!
   feedItemId: ID!
   title: String!
@@ -27,7 +27,7 @@ type FeedItem{
 
 extend type Query {
   searchFeeds(keyword: String!): [Feed!]
-  pullFeedItems(pullInput: [PullFeedsInput!]!): [FeedItem!]
+  pullFeedItems(pullInput: [PullFeedItemsInput!]!): [FeedItem!]
 }
 
 extend type Mutation {

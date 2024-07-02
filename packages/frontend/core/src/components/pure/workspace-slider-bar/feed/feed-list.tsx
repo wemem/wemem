@@ -1,10 +1,11 @@
-import {
-  toast,
-} from '@affine/component';
+import { toast } from '@affine/component';
 import { RenameModal } from '@affine/component/rename-modal';
-import { Button, IconButton } from '@affine/component/ui/button';
+import { IconButton } from '@affine/component/ui/button';
 import {
-  FeedOperations, filterPage, filterPageByRules, stopPropagation, useCreateFeed,
+  FeedOperations,
+  filterPage,
+  filterPageByRules,
+  stopPropagation,
 } from '@affine/core/components/page-list';
 import { FeedAvatar } from '@affine/core/components/page-list/feed/avatar';
 import { Doc } from '@affine/core/components/pure/workspace-slider-bar/collections';
@@ -12,15 +13,15 @@ import { AddFeedButton } from '@affine/core/components/pure/workspace-slider-bar
 import { useAllPageListConfig } from '@affine/core/hooks/affine/use-all-page-list-config';
 import { getDNDId } from '@affine/core/hooks/affine/use-global-dnd-helper';
 import { useBlockSuiteDocMeta } from '@affine/core/hooks/use-block-suite-page-meta';
+import { NewFeedService } from '@affine/core/modules/feed/new-feed';
 import { FeedService } from '@affine/core/modules/feed/services/feed';
 import { FavoriteItemsAdapter } from '@affine/core/modules/properties';
 import { WorkbenchLink } from '@affine/core/modules/workbench';
 import { UnseenFilter } from '@affine/core/pages/workspace/feed-docs';
+import { mixpanel } from '@affine/core/utils';
 import type { Collection } from '@affine/env/filter';
 import { useI18n } from '@affine/i18n';
-import {
-  MoreHorizontalIcon,
-} from '@blocksuite/icons/rc';
+import { MoreHorizontalIcon } from '@blocksuite/icons/rc';
 import type { DocCollection } from '@blocksuite/store';
 import * as Collapsible from '@radix-ui/react-collapsible';
 import { useLiveData, useService } from '@toeverything/infra';
@@ -29,16 +30,19 @@ import { PiRss } from 'react-icons/pi';
 import { VscSettings } from 'react-icons/vsc';
 
 import { WorkbenchService } from '../../../../modules/workbench';
-import { CategoryDivider, MenuLinkItem as SidebarMenuLinkItem } from '../../../app-sidebar';
+import {
+  CategoryDivider,
+  MenuLinkItem as SidebarMenuLinkItem,
+} from '../../../app-sidebar';
 import * as draggableMenuItemStyles from '../components/draggable-menu-item.css';
 import type { FeedsListProps } from '../index';
 import * as styles from './styles.css';
 
 export const FeedSidebarNavItem = ({
-                                     feed,
-                                     docCollection,
-                                     className,
-                                   }: {
+  feed,
+  docCollection,
+  className,
+}: {
   feed: Collection;
   docCollection: DocCollection;
   className?: string;
@@ -51,17 +55,12 @@ export const FeedSidebarNavItem = ({
   const favAdapter = useService(FavoriteItemsAdapter);
   const favourites = useLiveData(favAdapter.favorites$);
   const t = useI18n();
-  const dndId = getDNDId(
-    'sidebar-collections',
-    'collection',
-    feed.id,
-  );
-
+  const dndId = getDNDId('sidebar-collections', 'collection', feed.id);
 
   const currentPath = useLiveData(
     useService(WorkbenchService).workbench.location$.map(
-      location => location.pathname,
-    ),
+      location => location.pathname
+    )
   );
   const path = `/feed/${feed.id}`;
 
@@ -73,7 +72,7 @@ export const FeedSidebarNavItem = ({
       }));
       toast(t['com.affine.toastMessage.rename']());
     },
-    [feed, feedService, t],
+    [feed, feedService, t]
   );
   const handleOpen = useCallback(() => {
     setOpen(true);
@@ -81,7 +80,7 @@ export const FeedSidebarNavItem = ({
 
   const allPagesMeta = useMemo(
     () => Object.fromEntries(pages.map(v => [v.id, v])),
-    [pages],
+    [pages]
   );
 
   const pagesToRender = pages.filter(meta => {
@@ -95,10 +94,7 @@ export const FeedSidebarNavItem = ({
   });
 
   return (
-    <Collapsible.Root
-      open={!collapsed}
-      className={className}
-    >
+    <Collapsible.Root open={!collapsed} className={className}>
       <SidebarMenuLinkItem
         className={draggableMenuItemStyles.draggableMenuItem}
         data-testid="feed-item"
@@ -118,10 +114,7 @@ export const FeedSidebarNavItem = ({
             }}
             style={{ display: 'flex', alignItems: 'center' }}
           >
-            <FeedOperations
-              feed={feed}
-              openRenameModal={handleOpen}
-            >
+            <FeedOperations feed={feed} openRenameModal={handleOpen}>
               <IconButton
                 data-testid="feed-options"
                 type="plain"
@@ -150,8 +143,7 @@ export const FeedSidebarNavItem = ({
               <Doc
                 parentId={dndId}
                 inAllowList={false}
-                removeFromAllowList={() => {
-                }}
+                removeFromAllowList={() => {}}
                 allPageMeta={allPagesMeta}
                 doc={page}
                 key={page.id}
@@ -165,14 +157,13 @@ export const FeedSidebarNavItem = ({
   );
 };
 
-
 const unseenPath = `/feed/seen/false`;
 const seenPath = `/feed/seen/true`;
 
 export const FeedSidebarReadFeeds = ({
-                                       docCollection,
-                                       className,
-                                     }: {
+  docCollection,
+  className,
+}: {
   docCollection: DocCollection;
   className?: string;
 }) => {
@@ -182,22 +173,17 @@ export const FeedSidebarReadFeeds = ({
   const favAdapter = useService(FavoriteItemsAdapter);
   const favourites = useLiveData(favAdapter.favorites$);
   const t = useI18n();
-  const dndId = getDNDId(
-    'sidebar-collections',
-    'collection',
-    'unseed',
-  );
-
+  const dndId = getDNDId('sidebar-collections', 'collection', 'unseed');
 
   const currentPath = useLiveData(
     useService(WorkbenchService).workbench.location$.map(
-      location => location.pathname,
-    ),
+      location => location.pathname
+    )
   );
 
   const allPagesMeta = useMemo(
     () => Object.fromEntries(pages.map(v => [v.id, v])),
-    [pages],
+    [pages]
   );
 
   const pagesToRender = pages.filter(meta => {
@@ -211,15 +197,14 @@ export const FeedSidebarReadFeeds = ({
   });
 
   return (
-    <Collapsible.Root
-      open={!collapsed}
-      className={className}
-    >
+    <Collapsible.Root open={!collapsed} className={className}>
       <SidebarMenuLinkItem
         className={draggableMenuItemStyles.draggableMenuItem}
         data-testid="feed-docs-unseen"
         data-type="feed-docs-unseen"
-        active={currentPath.includes(unseenPath) || currentPath.includes(seenPath)}
+        active={
+          currentPath.includes(unseenPath) || currentPath.includes(seenPath)
+        }
         icon={<PiRss />}
         to={unseenPath}
         onCollapsedChange={setCollapsed}
@@ -235,8 +220,7 @@ export const FeedSidebarReadFeeds = ({
               <Doc
                 parentId={dndId}
                 inAllowList={false}
-                removeFromAllowList={() => {
-                }}
+                removeFromAllowList={() => {}}
                 allPageMeta={allPagesMeta}
                 doc={page}
                 key={page.id}
@@ -250,27 +234,27 @@ export const FeedSidebarReadFeeds = ({
   );
 };
 
-
-export const FeedSidebarManageFeeds = ({ feeds, docCollection, className }: {
-  feeds: Collection[],
-  docCollection: DocCollection,
-  className?: string
+export const FeedSidebarManageFeeds = ({
+  feeds,
+  docCollection,
+  className,
+}: {
+  feeds: Collection[];
+  docCollection: DocCollection;
+  className?: string;
 }) => {
   const [collapsed, setCollapsed] = useState(true);
   const t = useI18n();
 
   const currentPath = useLiveData(
     useService(WorkbenchService).workbench.location$.map(
-      location => location.pathname,
-    ),
+      location => location.pathname
+    )
   );
   const path = '/feed/manage';
 
   return (
-    <Collapsible.Root
-      open={!collapsed}
-      className={className}
-    >
+    <Collapsible.Root open={!collapsed} className={className}>
       <SidebarMenuLinkItem
         className={draggableMenuItemStyles.draggableMenuItem}
         data-testid="feed-item"
@@ -301,40 +285,29 @@ export const FeedSidebarManageFeeds = ({ feeds, docCollection, className }: {
   );
 };
 
-
 export const FeedList = ({ docCollection }: FeedsListProps) => {
   const feeds = useLiveData(useService(FeedService).feeds$);
   const t = useI18n();
-  const { node, handleCreateFeed } = useCreateFeed(docCollection);
+  const newFeed = useService(NewFeedService).newFeed;
+  const handleOpenNewFeedModal = useCallback(() => {
+    newFeed.show();
+    mixpanel.track('NewOpened', {
+      segment: 'navigation panel',
+      control: 'new feed button',
+    });
+  }, [newFeed]);
+
   if (feeds.length === 0) {
     return (
-      <>
-        <CategoryDivider label={t['ai.readflow.rootAppSidebar.feeds']()}>
-          <AddFeedButton node={node} onClick={handleCreateFeed} />
-        </CategoryDivider>
-        <div className={styles.emptyFeedWrapper}>
-          <div className={styles.emptyFeedContent}>
-            <div className={styles.emptyFeedIconWrapper}>
-              <PiRss className={styles.emptyFeedIcon} />
-            </div>
-            <div
-              data-testid="slider-bar-feed-null-description"
-              className={styles.emptyFeedMessage}
-            >
-              {t['ai.readflow.feeds.empty.message']()}
-            </div>
-          </div>
-          <Button className={styles.emptyFeedNewButton} onClick={handleCreateFeed}>
-            {t['ai.readflow.feeds.empty.new-feed-button']()}
-          </Button>
-        </div>
-      </>
+      <CategoryDivider label={t['ai.readflow.rootAppSidebar.feeds']()}>
+        <AddFeedButton onClick={handleOpenNewFeedModal} />
+      </CategoryDivider>
     );
   }
   return (
     <>
       <CategoryDivider label={t['ai.readflow.rootAppSidebar.feeds']()}>
-        <AddFeedButton node={node} onClick={handleCreateFeed} />
+        <AddFeedButton onClick={handleOpenNewFeedModal} />
       </CategoryDivider>
       <div data-testid="feeds" className={styles.wrapper}>
         <FeedSidebarReadFeeds docCollection={docCollection} />

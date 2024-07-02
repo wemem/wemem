@@ -61,10 +61,10 @@ func (r *queryResolver) SearchFeeds(ctx context.Context, keyword string) ([]mode
 }
 
 // PullFeeds is the resolver for the pullFeeds field.
-func (r *queryResolver) PullFeedItems(ctx context.Context, pullInput []model.PullFeedsInput) ([]model.FeedItem, error) {
+func (r *queryResolver) PullFeedItems(ctx context.Context, pullInput []model.PullFeedItemsInput) ([]model.FeedItem, error) {
 	var res []model.FeedItem
 	for _, fetch := range pullInput {
-		dbItems, err := r.feedService.PullFeed(ctx, fetch.FeedID, fetch.LatestFeedItemID, fetch.LatestCreatedAt)
+		dbItems, err := r.feedService.PullFeed(ctx, fetch.FeedID, fetch.LatestFeedItemID, fetch.LatestPublishedAt)
 		if err != nil {
 			return nil, err
 		}
@@ -72,11 +72,11 @@ func (r *queryResolver) PullFeedItems(ctx context.Context, pullInput []model.Pul
 		for _, item := range dbItems {
 			var publishedAt string
 			if published, ok := item.Published(); ok {
-				publishedAt = published.String()
+				publishedAt = published.UTC().Format("2006-01-02T15:04:05.999Z")
 			} else if updated, ok := item.Updated(); ok {
-				publishedAt = updated.String()
+				publishedAt = updated.UTC().Format("2006-01-02T15:04:05.999Z")
 			} else {
-				publishedAt = item.CreatedAt.String()
+				publishedAt = item.CreatedAt.UTC().Format("2006-01-02T15:04:05.999Z")
 			}
 			res = append(res, model.FeedItem{
 				FeedID:              item.FeedID,

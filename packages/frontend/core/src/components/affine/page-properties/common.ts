@@ -19,6 +19,7 @@ const tagColorIds: TagColorName[] = [
   'Blue',
   'Purple',
   'Grey',
+  'Black',
 ];
 
 export const tagColors = tagColorIds.map(

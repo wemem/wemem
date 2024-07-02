@@ -680,7 +680,7 @@ export const pullFeedItemsQuery = {
   definitionName: 'pullFeedItems',
   containsFile: false,
   query: `
-query PullFeedItems($pullInput: [PullFeedsInput!]!) {
+query PullFeedItems($pullInput: [PullFeedItemsInput!]!) {
   pullFeedItems(pullInput: $pullInput) {
     feedId
     feedItemId
