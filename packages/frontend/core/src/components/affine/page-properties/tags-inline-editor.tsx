@@ -198,7 +198,8 @@ export const TagsEditor = ({ pageId, readonly }: TagsEditorProps) => {
     [setOpen, setSelectedTagIds]
   );
 
-  const exactMatch = useLiveData(tagList.tagByTagValue$(inputValue));
+  const match = useLiveData(tagList.tagByTagValue$(inputValue));
+  const exactMatch = useLiveData(tagList.excactTagByValue$(inputValue));
 
   const filteredTags = useLiveData(
     inputValue ? tagList.filterTagsByName$(inputValue) : tagList.tags$
@@ -267,7 +268,7 @@ export const TagsEditor = ({ pageId, readonly }: TagsEditorProps) => {
         tags.find(tag => tag.id === lastTagId)?.untag(pageId);
       }
     },
-    [exactMatch, inputValue, onAddTag, onCreateTag, pageId, tagIds, tags]
+    [inputValue, tagIds, exactMatch, onAddTag, onCreateTag, tags, pageId]
   );
 
   return (
@@ -323,7 +324,7 @@ export const TagsEditor = ({ pageId, readonly }: TagsEditorProps) => {
                 </div>
               );
             })}
-            {exactMatch || !inputValue ? null : (
+            {match || !inputValue ? null : (
               <div
                 data-testid="tag-selector-item"
                 className={styles.tagSelectorItem}

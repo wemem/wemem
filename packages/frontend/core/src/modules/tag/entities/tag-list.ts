@@ -86,6 +86,12 @@ export class TagList extends Entity {
     return trimmedValue.includes(trimmedQuery);
   }
 
+  private findfn(value: string, query?: string) {
+    const trimmedTagValue = query?.trim().toLowerCase();
+    const trimmedInputValue = value.trim().toLowerCase();
+    return trimmedTagValue === trimmedInputValue;
+  }
+
   filterTagsByName$(name: string) {
     return LiveData.computed(get => {
       return get(this.tags$).filter(tag =>
@@ -105,6 +111,12 @@ export class TagList extends Entity {
       if (!this.tagByTagId$(tag.id).getValue()) {
         this.createTagWithId(tag.id, tag.value, tag.color, tag.ghost);
       }
+    });
+  }
+
+  excactTagByValue$(value: string) {
+    return LiveData.computed(get => {
+      return get(this.tags$).find(tag => this.findfn(get(tag.value$), value));
     });
   }
 }
