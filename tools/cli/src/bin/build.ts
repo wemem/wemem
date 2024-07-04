@@ -1,6 +1,6 @@
 import webpack from 'webpack';
 
-import { getCwdFromDistribution } from '../config/cwd.cjs';
+import { getCwdFromDistribution, projectRoot } from '../config/cwd.cjs';
 import type { BuildFlags } from '../config/index.js';
 import { buildI18N } from '../util/i18n.js';
 import { createWebpackConfig } from '../webpack/webpack.config.js';
@@ -45,6 +45,7 @@ const flags = {
   channel: getChannel(),
   coverage: process.env.COVERAGE === 'true',
   entry,
+  localBlockSuite: `${projectRoot}/submodules/blocksuite`,
 } satisfies BuildFlags;
 
 buildI18N();
