@@ -9,6 +9,7 @@ import { merge } from 'webpack-merge';
 
 import { createConfiguration, rootPath, workspaceRoot } from './config.js';
 import { getRuntimeConfig } from './runtime-config.js';
+import { exit } from 'node:process';
 
 const DESCRIPTION = `There can be more than Notion and Miro. AFFiNE is a next-gen knowledge base that brings planning, sorting and creating all together.`;
 

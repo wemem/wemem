@@ -1,0 +1,78 @@
+# 第一阶段：构建阶段
+FROM node:18 as builder
+
+# 设置工作目录
+WORKDIR /app
+
+# 将项目代码复制到工作目录中
+COPY . .
+
+# 设置环境变量
+ARG FLAVOR
+ENV BUILD_TYPE=$FLAVOR
+ENV SHOULD_REPORT_TRACE=false
+ENV PUBLIC_PATH=/
+ENV SELF_HOSTED=true
+
+# 设置 Mixpanel Token 作为构建参数传递
+ARG MIXPANEL_TOKEN
+ENV MIXPANEL_TOKEN=$MIXPANEL_TOKEN
+
+# 安装依赖
+RUN yarn install
+
+# 执行版本设置脚本
+RUN if [ "$(git rev-parse --is-shallow-repository)" = "true" ]; then \
+      git fetch --unshallow; \
+    fi && \
+    if [ "$(git rev-parse --is-inside-work-tree 2>/dev/null)" = "true" ]; then \
+      if [ "$(git symbolic-ref --short HEAD 2>/dev/null)" != "" ]; then \
+        echo "Running in a git repository"; \
+      else \
+        echo "Running in a detached HEAD state"; \
+      fi; \
+    fi
+
+RUN bash -c '\
+  if [ "${GITHUB_REF_TYPE}" == "tag" ]; then \
+    APP_VERSION=$(echo "${GITHUB_REF_NAME}" | sed "s/^v//"); \
+  else \
+    PACKAGE_VERSION=$(node -p "require(\"./package.json\").version"); \
+    TIME_VERSION=$(date +%Y%m%d%H%M); \
+    GIT_SHORT_HASH=$(git rev-parse --short HEAD); \
+    APP_VERSION=$PACKAGE_VERSION-nightly-$TIME_VERSION-$GIT_SHORT_HASH; \
+  fi && \
+  echo $APP_VERSION && \
+  export APP_VERSION=$APP_VERSION && \
+  ./scripts/set-version.sh $APP_VERSION'
+
+# 构建核心应用
+RUN yarn nx build @affine/web --skip-nx-cache
+RUN yarn nx build @affine/admin --skip-nx-cache
+
+# 下载自托管字体
+RUN node ./scripts/download-blocksuite-fonts.mjs
+
+# 第二阶段：运行阶段
+FROM openresty/openresty:1.25.3.1-0-buster
+
+# 设置工作目录
+WORKDIR /app
+
+# 从构建阶段拷贝构建产物
+COPY --from=builder /app/packages/frontend/web/dist ./dist
+COPY --from=builder /app/packages/frontend/admin/dist ./admin
+
+# 拷贝Nginx配置
+COPY ./.github/deployment/front/nginx.conf /usr/local/openresty/nginx/conf/nginx.conf
+COPY ./.github/deployment/front/affine.nginx.conf /etc/nginx/conf.d/affine.nginx.conf
+
+# 创建日志目录并删除默认配置
+RUN mkdir -p /var/log/nginx && \
+    rm /etc/nginx/conf.d/default.conf
+
+# 暴露端口
+EXPOSE 8080
+
+# 启动命令
+CMD ["/usr/local/openresty/bin/openresty", "-g", "daemon off;"]
