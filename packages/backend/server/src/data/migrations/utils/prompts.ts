@@ -6,7 +6,7 @@ type PromptMessage = {
   params?: Record<string, string | string[]>;
 };
 
-type Prompt = {
+export type Prompt = {
   name: string;
   action?: string;
   model: string;

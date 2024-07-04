@@ -3,6 +3,8 @@ import { Injectable, Logger } from '@nestjs/common';
 import { AiPrompt, PrismaClient } from '@prisma/client';
 import Mustache from 'mustache';
 
+import { prompts } from '../../data/migrations/utils/prompts';
+import { enhancePrompt } from './enhance';
 import {
   getTokenEncoder,
   PromptMessage,
@@ -28,8 +30,8 @@ function extractMustacheParams(template: string) {
 const EXCLUDE_MISSING_WARN_PARAMS = ['lora'];
 
 const modelChanges = new Map<string, string>([
-  ['gpt-4o', 'qwen-plus'],
-  ['gpt-3.5-turbo', 'qwen-plus'],
+  ['gpt-4o', 'ep-20240704082349-bsvgs'],
+  ['gpt-3.5-turbo', 'ep-20240704082349-bsvgs'],
 ]);
 
 export class ChatPrompt {
@@ -48,7 +50,7 @@ export class ChatPrompt {
       options.name,
       options.action || undefined,
       modelChanges.get(options.model) ?? options.model,
-      options.messages,
+      options.messages
     );
   }
 
@@ -109,7 +111,7 @@ export class ChatPrompt {
             ? `Invalid param value: ${key}=${income}`
             : `Missing param value: ${key}`;
           this.logger.warn(
-            `${prefix} in session ${sessionId}, use default options: ${options[0]}`,
+            `${prefix} in session ${sessionId}, use default options: ${options[0]}`
           );
         }
         if (Array.isArray(options)) {
@@ -142,6 +144,16 @@ export class PromptService {
   private readonly cache = new Map<string, ChatPrompt>();
 
   constructor(private readonly db: PrismaClient) {
+    for (const _prompt of prompts) {
+      const prompt = enhancePrompt(_prompt);
+      this.cache.set(
+        prompt.name,
+        ChatPrompt.createFromPrompt({
+          ...prompt,
+          action: prompt.action || null,
+        })
+      );
+    }
   }
 
   /**

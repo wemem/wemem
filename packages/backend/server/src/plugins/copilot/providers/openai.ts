@@ -45,9 +45,13 @@ export class OpenAIProvider
     'gpt-4-vision-preview',
     'gpt-4-turbo-preview',
     'gpt-3.5-turbo',
+    // 千问
     'qwen-turbo',
     'qwen-plus',
+    'qwen-plus-0624',
     'qwen-max',
+    // 豆包
+    'ep-20240704082349-bsvgs',
     // embeddings
     'text-embedding-3-large',
     'text-embedding-3-small',
@@ -64,7 +68,13 @@ export class OpenAIProvider
   private existsModels: string[] | undefined;
 
   constructor(config: ClientOptions) {
-    this.instance = new OpenAI(config);
+    this.instance = new OpenAI({
+      ...config,
+      fetch: (url, options) => {
+        // console.log('url', url, options);
+        return fetch(url, options);
+      },
+    });
   }
 
   static assetsConfig(config: ClientOptions) {
