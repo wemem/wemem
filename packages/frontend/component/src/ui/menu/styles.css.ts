@@ -92,7 +92,7 @@ export const menuTrigger = style({
     [triggerWidthVar]: 'auto',
   },
   width: triggerWidthVar,
-  height: 28,
+  height: 32,
   lineHeight: '22px',
   padding: '0 10px',
   color: cssVar('textPrimaryColor'),
