@@ -14,6 +14,7 @@ globalStyle('html', {
     ...lightCssVariables,
     '--affine-brand-color': 'hsl(240 5.9% 10%)',
     '--affine-primary-color': 'hsl(240 5.9% 10%)',
+    '--affine-active-shadow': '#000',
   },
 });
 globalStyle('html[data-theme="dark"]', {
@@ -23,6 +24,7 @@ globalStyle('html[data-theme="dark"]', {
     '--affine-primary-color': 'hsl(0 0% 98%)',
     '--affine-toggle-circle-background-color': '#000',
     '--affine-pure-white': '#000',
+    '--affine-active-shadow': 'rgba(0,0,0,.05)',
   },
 });
 if (process.env.NODE_ENV === 'development') {

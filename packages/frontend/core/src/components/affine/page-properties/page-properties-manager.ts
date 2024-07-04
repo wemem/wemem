@@ -10,6 +10,7 @@ import { DebugLogger } from '@affine/debug';
 import { nanoid } from 'nanoid';
 
 import { getDefaultIconName } from './icons-mapping';
+import { AuthorProperty, OriginalProperty } from './internal-properties';
 
 const logger = new DebugLogger('PagePropertiesManager');
 
@@ -80,8 +81,9 @@ export class PagePropertiesMetaManager {
     name: string;
     type: PagePropertyType;
     icon?: string;
+    id?: string;
   }) {
-    const id = nanoid();
+    const id = schema.id ?? nanoid();
     const { type, icon } = schema;
     const newOrder =
       Math.max(
@@ -134,6 +136,15 @@ export class PagePropertiesMetaManager {
 
   getPropertyRelatedPages(id: string) {
     return this.getPropertyStatistics().get(id);
+  }
+
+  initInternalProperties() {
+    if (!this.checkPropertyExists(AuthorProperty.id)) {
+      this.addPropertyMeta(AuthorProperty);
+    }
+    if (!this.checkPropertyExists(OriginalProperty.id)) {
+      this.addPropertyMeta(OriginalProperty);
+    }
   }
 }
 

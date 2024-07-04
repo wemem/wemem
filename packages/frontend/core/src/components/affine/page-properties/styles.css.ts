@@ -312,7 +312,7 @@ export const propertyRowValueTextCell = style([
     padding: 0,
     position: 'relative',
     ':focus-within': {
-      border: `1px solid ${cssVar('blue700')}`,
+      border: `1px solid ${cssVar('black')}`,
       boxShadow: cssVar('activeShadow'),
     },
   },

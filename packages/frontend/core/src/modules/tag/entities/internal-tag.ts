@@ -3,7 +3,7 @@ import type { Tag } from '@affine/env/filter';
 import { useI18n } from '@affine/i18n';
 import { useCallback } from 'react';
 
-export const InternalTagPrefix = 'ai.readflow.internal-tags.';
+export const InternalTagPrefix = 'ai.readease.internal-tags.';
 
 export const FeedTag: Tag = {
   id: 'Feed',
@@ -55,12 +55,15 @@ export const useTagI18N = () => {
   const t = useI18n();
   return useCallback(
     (tagName: any) => {
+      if (!tagName) {
+        return t['Untitled']();
+      }
       if (isInternalTag(tagName)) {
         // eslint-disable-next-line @typescript-eslint/ban-ts-comment
         return t[tagName as string]();
       }
 
-      return tagName || t['Untitled']();
+      return tagName;
     },
     [t]
   );

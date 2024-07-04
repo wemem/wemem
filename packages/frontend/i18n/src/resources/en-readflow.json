@@ -1380,6 +1380,8 @@
   "ai.readflow.internal-tags.rss": "RSS",
   "ai.readflow.internal-tags.seen": "Seen",
   "ai.readflow.internal-tags.unseen": "Unseen",
+  "ai.readease.internal-properties.author": "Author",
+  "ai.readease.internal-properties.original": "Original",
   "ai.readflow.notification.message.feed-added": "Feed added",
   "ai.readflow.notification.action.feed-added": "Read newest items",
   "ai.readflow.workspaceSubPath.later": "Later",

@@ -9,9 +9,13 @@ import { pullFeedItemsQuery } from '@affine/graphql';
 import { importMarkDown } from '@blocksuite/blocks';
 import type { JobMiddleware } from '@blocksuite/store';
 import { useService, WorkspaceService } from '@toeverything/infra';
-import { useEffect, useRef } from 'react';
+import { useEffect, useMemo, useRef } from 'react';
 
+import { PagePropertiesMetaManager } from '../components/affine/page-properties';
+import { PagePropertyType } from '../modules/properties/services/schema';
 import { TagService } from '../modules/tag/service/tag';
+import { useCurrentWorkspacePropertiesAdapter } from './use-affine-adapter';
+import { usePagePropertiesMetaManager } from './use-page-properties-meta-manager';
 
 const logger = new DebugLogger('usePullFeedItemsInterval');
 export const usePullFeedItemsInterval = () => {
@@ -21,6 +25,12 @@ export const usePullFeedItemsInterval = () => {
   const tagList = useService(TagService).tagList;
   const timerRef = useRef<NodeJS.Timeout | null>(null);
   const isRunning = useRef(false);
+  const adapter = useCurrentWorkspacePropertiesAdapter();
+  const metaManager = usePagePropertiesMetaManager();
+  useEffect(() => {
+    metaManager.initInternalProperties();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
   useEffect(() => {
     tagList.initInternalTags();
   }, [tagList]);

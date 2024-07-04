@@ -87,6 +87,7 @@ import {
   TagsValue,
 } from './property-row-value-renderer';
 import * as styles from './styles.css';
+import { isInternalProperty, usePropertyI18n } from './internal-properties';
 
 type PagePropertiesSettingsPopupProps = PropsWithChildren<{
   className?: string;
@@ -318,6 +319,7 @@ export const PagePropertiesSettingsPopup = ({
 }: PagePropertiesSettingsPopupProps) => {
   const manager = useContext(managerContext);
   const t = useI18n();
+  const pt = usePropertyI18n();
 
   const menuItems = useMemo(() => {
     const options: MenuItemOption[] = [];
@@ -353,7 +355,7 @@ export const PagePropertiesSettingsPopup = ({
                   data-testid="page-property-setting-row-name"
                   className={styles.propertyRowName}
                 >
-                  {name}
+                  {pt(name)}
                 </div>
                 <VisibilityModeSelector property={property} />
               </SortablePropertyRow>
@@ -741,18 +743,21 @@ const PagePropertyRow = ({ property }: PagePropertyRowProps) => {
   const meta = manager.getCustomPropertyMeta(property.id);
 
   assertExists(meta, 'meta should exist for property');
-
+  const pt = usePropertyI18n();
   const Icon = nameToIcon(meta.icon, meta.type);
   const name = meta.name;
   const ValueRenderer = propertyValueRenderers[meta.type];
   const [editingMeta, setEditingMeta] = useState(false);
   const setEditingItem = useSetAtom(editingPropertyAtom);
   const handleEditMeta = useCallback(() => {
+    if (isInternalProperty(name)) {
+      return;
+    }
     if (!manager.readonly) {
       setEditingMeta(true);
     }
     setEditingItem(property.id);
-  }, [manager.readonly, property.id, setEditingItem]);
+  }, [name, manager.readonly, setEditingItem, property.id]);
   const handleFinishEditingMeta = useCallback(() => {
     setEditingMeta(false);
     setEditingItem(null);
@@ -778,7 +783,7 @@ const PagePropertyRow = ({ property }: PagePropertyRowProps) => {
                 <div className={styles.propertyRowIconContainer}>
                   <Icon />
                 </div>
-                <div className={styles.propertyRowName}>{name}</div>
+                <div className={styles.propertyRowName}>{pt(name)}</div>
               </div>
             </div>
           </PagePropertyRowNameMenu>
@@ -946,6 +951,7 @@ const PagePropertiesAddPropertyMenuItems = ({
   const manager = useContext(managerContext);
 
   const t = useI18n();
+  const pt = usePropertyI18n();
   const metaList = manager.metaManager.getOrderedPropertiesSchema();
   const nonRequiredMetaList = metaList.filter(meta => !meta.required);
   const isChecked = useCallback(
@@ -981,7 +987,7 @@ const PagePropertiesAddPropertyMenuItems = ({
       const nonRequiredMetaOptions: MenuItemOption = nonRequiredMetaList.map(
         meta => {
           const Icon = nameToIcon(meta.icon, meta.type);
-          const name = meta.name;
+          const name = pt(meta.name);
           return {
             icon: <Icon />,
             text: name,
@@ -1000,7 +1006,7 @@ const PagePropertiesAddPropertyMenuItems = ({
     });
 
     return renderMenuItemOptions(options);
-  }, [isChecked, nonRequiredMetaList, onClickProperty, onCreateClicked, t]);
+  }, [isChecked, nonRequiredMetaList, onClickProperty, onCreateClicked, pt, t]);
 
   return menuItems;
 };
