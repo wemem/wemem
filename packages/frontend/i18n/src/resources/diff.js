@@ -9,7 +9,10 @@ const __dirname = dirname(fileURLToPath(import.meta.url));
 
 // 读取JSON文件内容
 const fileA = fs.readFileSync(path.resolve(__dirname, 'en.json'), 'utf-8');
-const fileB = fs.readFileSync(path.resolve(__dirname, 'en-readflow.json'), 'utf-8');
+const fileB = fs.readFileSync(
+  path.resolve(__dirname, 'en-readease.json'),
+  'utf-8'
+);
 
 // 解析JSON文件内容为对象
 const dataA = JSON.parse(fileA);
