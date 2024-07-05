@@ -63,8 +63,8 @@ COPY --from=builder /app/packages/frontend/web/dist ./dist
 COPY --from=builder /app/packages/frontend/admin/dist ./admin
 
 # 拷贝Nginx配置
-COPY ./.zeabur/deployment/front/nginx.conf /usr/local/openresty/nginx/conf/nginx.conf
-COPY ./.zeabur/deployment/front/readease.nginx.conf /etc/nginx/conf.d/readease.nginx.conf
+COPY ./deployment/front/nginx.conf /usr/local/openresty/nginx/conf/nginx.conf
+COPY ./deployment/front/readease.nginx.conf /etc/nginx/conf.d/readease.nginx.conf
 
 # 创建日志目录并删除默认配置
 RUN mkdir -p /var/log/nginx && \
