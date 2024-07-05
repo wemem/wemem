@@ -16,6 +16,10 @@ import { serverTimingAndCache } from './middleware/timing';
 export async function createApp() {
   const { AppModule } = await import('./app.module');
 
+  console.log(
+    'AFFiNE.affine.stable ',
+    AFFiNE.affine.stable ? ['log'] : ['verbose']
+  );
   const app = await NestFactory.create<NestExpressApplication>(AppModule, {
     cors: true,
     rawBody: true,
