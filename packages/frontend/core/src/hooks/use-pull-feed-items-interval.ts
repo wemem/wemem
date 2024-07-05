@@ -115,7 +115,7 @@ export const usePullFeedItemsInterval = () => {
       fetchFeedItems();
     };
 
-    timerRef.current = setInterval(intervalCallback, 5000);
+    timerRef.current = setInterval(intervalCallback, 300000);
 
     return () => {
       if (timerRef.current) {
