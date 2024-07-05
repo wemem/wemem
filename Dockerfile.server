@@ -57,6 +57,7 @@ FROM node:18
 
 WORKDIR /app
 
+COPY --from=builder /app/packages/backend/native /app
 COPY --from=builder /app/packages/backend/server /app
 
 RUN apt-get update && \
