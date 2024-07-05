@@ -4,7 +4,8 @@ import type { I18nextProviderProps } from 'react-i18next';
 import { I18nextProvider, initReactI18next, Trans } from 'react-i18next';
 
 import { LOCALES } from './resources';
-import type en_US from './resources/en-readflow.json';
+import type en_US from './resources/en.json';
+import type en_US_Readease from './resources/en-readease.json';
 
 export * from './i18n';
 export * from './utils';
@@ -30,7 +31,7 @@ declare module 'react-i18next' {
     // custom resources type
     allowObjectInHTMLChildren: true;
     resources: {
-      en: typeof en_US;
+      en: typeof en_US & typeof en_US_Readease;
     };
   }
 }

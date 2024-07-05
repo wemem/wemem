@@ -234,6 +234,7 @@ __metadata:
     "@perfsee/webpack": "npm:^1.12.2"
     "@pmmmwh/react-refresh-webpack-plugin": "npm:^0.5.11"
     "@sentry/webpack-plugin": "npm:^2.16.1"
+    "@types/jscodeshift": "npm:^0"
     "@types/webpack-env": "npm:^1.18.4"
     "@vanilla-extract/webpack-plugin": "npm:^2.3.7"
     autoprefixer: "npm:^10.4.19"
@@ -242,6 +243,7 @@ __metadata:
     cssnano: "npm:^7.0.0"
     dotenv: "npm:^16.4.5"
     html-webpack-plugin: "npm:^5.6.0"
+    jscodeshift: "npm:^0.16.1"
     lodash-es: "npm:^4.17.21"
     mime-types: "npm:^2.1.35"
     mini-css-extract-plugin: "npm:^2.8.1"
@@ -2562,7 +2564,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@babel/core@npm:^7.11.6, @babel/core@npm:^7.12.3, @babel/core@npm:^7.14.0, @babel/core@npm:^7.18.5, @babel/core@npm:^7.18.9, @babel/core@npm:^7.20.12, @babel/core@npm:^7.22.1, @babel/core@npm:^7.22.5, @babel/core@npm:^7.22.9, @babel/core@npm:^7.23.0, @babel/core@npm:^7.23.2, @babel/core@npm:^7.23.9, @babel/core@npm:^7.7.5":
+"@babel/core@npm:^7.11.6, @babel/core@npm:^7.12.3, @babel/core@npm:^7.14.0, @babel/core@npm:^7.18.5, @babel/core@npm:^7.18.9, @babel/core@npm:^7.20.12, @babel/core@npm:^7.22.1, @babel/core@npm:^7.22.5, @babel/core@npm:^7.22.9, @babel/core@npm:^7.23.0, @babel/core@npm:^7.23.2, @babel/core@npm:^7.23.9, @babel/core@npm:^7.24.7, @babel/core@npm:^7.7.5":
   version: 7.24.7
   resolution: "@babel/core@npm:7.24.7"
   dependencies:
@@ -3985,7 +3987,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@babel/preset-flow@npm:^7.22.15":
+"@babel/preset-flow@npm:^7.22.15, @babel/preset-flow@npm:^7.24.7":
   version: 7.24.7
   resolution: "@babel/preset-flow@npm:7.24.7"
   dependencies:
@@ -4011,7 +4013,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@babel/preset-typescript@npm:^7.22.5, @babel/preset-typescript@npm:^7.23.0":
+"@babel/preset-typescript@npm:^7.22.5, @babel/preset-typescript@npm:^7.23.0, @babel/preset-typescript@npm:^7.24.7":
   version: 7.24.7
   resolution: "@babel/preset-typescript@npm:7.24.7"
   dependencies:
@@ -4026,7 +4028,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@babel/register@npm:^7.22.15":
+"@babel/register@npm:^7.22.15, @babel/register@npm:^7.24.6":
   version: 7.24.6
   resolution: "@babel/register@npm:7.24.6"
   dependencies:
@@ -16297,6 +16299,16 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@types/jscodeshift@npm:^0":
+  version: 0.11.11
+  resolution: "@types/jscodeshift@npm:0.11.11"
+  dependencies:
+    ast-types: "npm:^0.14.1"
+    recast: "npm:^0.20.3"
+  checksum: 10/9e3c7c3e61f9a37d792b7c7cccb0f1383d8b52abc56a492a481a8c340bcbbbd12341e6a69570fa057c12e77abdd4bb6592d44baf2c678f4f950d0c9f79594204
+  languageName: node
+  linkType: hard
+
 "@types/json-schema@npm:*, @types/json-schema@npm:^7.0.8, @types/json-schema@npm:^7.0.9":
   version: 7.0.15
   resolution: "@types/json-schema@npm:7.0.15"
@@ -18446,6 +18458,15 @@ __metadata:
   version: 1.1.0
   resolution: "assertion-error@npm:1.1.0"
   checksum: 10/fd9429d3a3d4fd61782eb3962ae76b6d08aa7383123fca0596020013b3ebd6647891a85b05ce821c47d1471ed1271f00b0545cf6a4326cf2fc91efcc3b0fbecf
+  languageName: node
+  linkType: hard
+
+"ast-types@npm:0.14.2, ast-types@npm:^0.14.1":
+  version: 0.14.2
+  resolution: "ast-types@npm:0.14.2"
+  dependencies:
+    tslib: "npm:^2.0.1"
+  checksum: 10/7c74b3090c90aa600b49a7a8cecc99e329f190600bcaa75ad087472a1a5a7ef23795a17ea00a74c2a8e822b336cd4f874e2e1b815a9877b4dba5e401566b0433
   languageName: node
   linkType: hard
 
@@ -28018,6 +28039,40 @@ __metadata:
   languageName: node
   linkType: hard
 
+"jscodeshift@npm:^0.16.1":
+  version: 0.16.1
+  resolution: "jscodeshift@npm:0.16.1"
+  dependencies:
+    "@babel/core": "npm:^7.24.7"
+    "@babel/parser": "npm:^7.24.7"
+    "@babel/plugin-transform-class-properties": "npm:^7.24.7"
+    "@babel/plugin-transform-modules-commonjs": "npm:^7.24.7"
+    "@babel/plugin-transform-nullish-coalescing-operator": "npm:^7.24.7"
+    "@babel/plugin-transform-optional-chaining": "npm:^7.24.7"
+    "@babel/plugin-transform-private-methods": "npm:^7.24.7"
+    "@babel/preset-flow": "npm:^7.24.7"
+    "@babel/preset-typescript": "npm:^7.24.7"
+    "@babel/register": "npm:^7.24.6"
+    chalk: "npm:^4.1.2"
+    flow-parser: "npm:0.*"
+    graceful-fs: "npm:^4.2.4"
+    micromatch: "npm:^4.0.7"
+    neo-async: "npm:^2.5.0"
+    node-dir: "npm:^0.1.17"
+    recast: "npm:^0.23.9"
+    temp: "npm:^0.9.4"
+    write-file-atomic: "npm:^5.0.1"
+  peerDependencies:
+    "@babel/preset-env": ^7.1.6
+  peerDependenciesMeta:
+    "@babel/preset-env":
+      optional: true
+  bin:
+    jscodeshift: bin/jscodeshift.js
+  checksum: 10/654c9092dc9752f40e6640443e72106624883b0c45db3daebc78e1241e17d969d984f76be36fc481994da4c1111ff61271c8259f48e32c44d468901b173c95aa
+  languageName: node
+  linkType: hard
+
 "jsesc@npm:^2.5.1":
   version: 2.5.2
   resolution: "jsesc@npm:2.5.2"
@@ -30298,7 +30353,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"micromatch@npm:^4.0.2, micromatch@npm:^4.0.4, micromatch@npm:^4.0.5, micromatch@npm:~4.0.7":
+"micromatch@npm:^4.0.2, micromatch@npm:^4.0.4, micromatch@npm:^4.0.5, micromatch@npm:^4.0.7, micromatch@npm:~4.0.7":
   version: 4.0.7
   resolution: "micromatch@npm:4.0.7"
   dependencies:
@@ -34286,7 +34341,19 @@ __metadata:
   languageName: node
   linkType: hard
 
-"recast@npm:^0.23.1, recast@npm:^0.23.2, recast@npm:^0.23.3, recast@npm:^0.23.5":
+"recast@npm:^0.20.3":
+  version: 0.20.5
+  resolution: "recast@npm:0.20.5"
+  dependencies:
+    ast-types: "npm:0.14.2"
+    esprima: "npm:~4.0.0"
+    source-map: "npm:~0.6.1"
+    tslib: "npm:^2.0.1"
+  checksum: 10/7b270187e12f06ba0f5695590158005170a49a5996ab5d30ec4af2a2b1db8b0f74b1449b7eb6984f6d381438448e05cb46dcbf9b647fc49c6fc5139b2e40fca0
+  languageName: node
+  linkType: hard
+
+"recast@npm:^0.23.1, recast@npm:^0.23.2, recast@npm:^0.23.3, recast@npm:^0.23.5, recast@npm:^0.23.9":
   version: 0.23.9
   resolution: "recast@npm:0.23.9"
   dependencies:
@@ -37059,7 +37126,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"temp@npm:^0.9.0":
+"temp@npm:^0.9.0, temp@npm:^0.9.4":
   version: 0.9.4
   resolution: "temp@npm:0.9.4"
   dependencies:

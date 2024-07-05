@@ -183,10 +183,10 @@ export const RootAppSidebar = memo(
           {/*  </div>*/}
           {/*  <UserInfo />*/}
           {/*</div>*/}
-          {/*<QuickSearchInput*/}
-          {/*  data-testid="slider-bar-quick-search-button"*/}
-          {/*  onClick={onOpenQuickSearchModal}*/}
-          {/*/>*/}
+          <QuickSearchInput
+            data-testid="slider-bar-quick-search-button"
+            onClick={onOpenQuickSearchModal}
+          />
           <RouteMenuLinkItem
             icon={<FolderIcon />}
             active={allPageActive}
@@ -260,10 +260,6 @@ export const RootAppSidebar = memo(
           {/*{environment.isDesktop ? <UpdaterButton /> : <AppDownloadButton />}*/}
           <div style={{ height: '4px' }} />
           <AddFeedButton onClick={onOpenNewFeedModal} />
-          <QuickSearchInput
-            data-testid="slider-bar-quick-search-button"
-            onClick={onOpenQuickSearchModal}
-          />
           <div className={workspaceAndUserWrapper}>
             <div className={workspaceWrapper}>
               <WorkspaceSelector />
