@@ -1,0 +1,64 @@
+# 第一阶段：构建阶段
+FROM node:18 as builder
+
+RUN apt-get update && apt-get install -y jq
+
+# 设置工作目录
+WORKDIR /app
+
+# 将项目代码复制到工作目录中
+COPY . .
+
+# 设置环境变量
+ARG BUILD_TYPE
+ENV BUILD_TYPE=$BUILD_TYPE
+ENV SHOULD_REPORT_TRACE=false
+ENV PUBLIC_PATH=/
+ENV SELF_HOSTED=true
+
+# 设置 Mixpanel Token 作为构建参数传递
+ARG MIXPANEL_TOKEN
+ENV MIXPANEL_TOKEN=$MIXPANEL_TOKEN
+
+# 安装依赖
+RUN yarn install
+
+# 执行版本设置脚本
+RUN if [ "$(git rev-parse --is-inside-work-tree 2>/dev/null)" = "true" ]; then \
+      if [ "$(git symbolic-ref --short HEAD 2>/dev/null)" != "" ]; then \
+        echo "Running in a git repository"; \
+      else \
+        echo "Running in a detached HEAD state"; \
+      fi; \
+    fi
+
+RUN bash -c '\
+  if [ "${GITHUB_REF_TYPE}" == "tag" ]; then \
+    APP_VERSION=$(echo "${GITHUB_REF_NAME}" | sed "s/^v//"); \
+  else \
+    PACKAGE_VERSION=$(node -p "require(\"./package.json\").version"); \
+    TIME_VERSION=$(date +%Y%m%d%H%M); \
+    GIT_SHORT_HASH=$(git rev-parse --short HEAD); \
+    APP_VERSION=$PACKAGE_VERSION-nightly-$TIME_VERSION-$GIT_SHORT_HASH; \
+  fi && \
+  echo $APP_VERSION && \
+  export APP_VERSION=$APP_VERSION && \
+  ./scripts/set-version.sh $APP_VERSION'
+
+# 构建核心应用
+RUN yarn build:server-native --skip-nx-cache
+RUN yarn workspace @affine/server build
+  
+FROM node:18
+
+WORKDIR /app
+
+COPY --from=builder /app/packages/backend/server /app
+
+RUN apt-get update && \
+  apt-get install -y --no-install-recommends openssl && \
+  rm -rf /var/lib/apt/lists/*
+
+EXPOSE 3010
+
+CMD ["node", "--import", "./scripts/register.js", "./dist/index.js"]
