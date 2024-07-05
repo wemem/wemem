@@ -1,7 +1,11 @@
 # 第一阶段：构建阶段
 FROM node:18 as builder
 
-RUN apt-get update && apt-get install -y jq
+RUN apt-get update && apt-get install -y jq curl
+
+# 安装 Rust 和 Cargo
+RUN curl https://sh.rustup.rs -sSf | sh -s -- -y
+ENV PATH="/root/.cargo/bin:${PATH}"
 
 # 设置工作目录
 WORKDIR /app
