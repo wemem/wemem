@@ -63,8 +63,8 @@ RUN yarn config set --json supportedArchitectures.libc '["glibc"]'
 RUN yarn workspaces focus @affine/server --production
 RUN yarn workspace @affine/server prisma generate
 
-RUN cp ./packages/frontend/web/dist ./packages/backend/server/static
-RUN cp ./packages/frontend/admin/dist ./packages/backend/server/static/admin
+RUN cp -r ./packages/frontend/web/dist ./packages/backend/server/static
+RUN cp -r ./packages/frontend/admin/dist ./packages/backend/server/static/admin
 
 WORKDIR /app/packages/backend/server
 
