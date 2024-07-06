@@ -53,7 +53,7 @@ RUN bash -c '\
 RUN yarn nx build @affine/web --skip-nx-cache
 RUN yarn nx build @affine/admin --skip-nx-cache
 RUN yarn workspace @affine/server build
-RUN yarn build:server-native --skip-nx-cache
+# RUN yarn build:server-native --skip-nx-cache
 
 # 下载自托管字体
 RUN node ./scripts/download-blocksuite-fonts.mjs
