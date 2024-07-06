@@ -49,8 +49,9 @@ jobs:
     environment: ${{ github.event.inputs.flavor }}
     steps:
       - uses: actions/checkout@v4
-      - name: Initialize and update submodules
-        run: git submodule update --init --recursive
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          submodules: recursive
       - name: Setup Version
         id: version
         uses: ./.github/actions/setup-version
@@ -79,8 +80,9 @@ jobs:
     environment: ${{ github.event.inputs.flavor }}
     steps:
       - uses: actions/checkout@v4
-      - name: Initialize and update submodules
-        run: git submodule update --init --recursive
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          submodules: recursive
       - name: Setup Version
         id: version
         uses: ./.github/actions/setup-version
