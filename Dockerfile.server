@@ -65,6 +65,10 @@ RUN yarn workspace @affine/server prisma generate
 
 RUN cp -r ./packages/frontend/web/dist ./packages/backend/server/static
 RUN cp -r ./packages/frontend/admin/dist ./packages/backend/server/static/admin
+RUN cp -r ./packages/backend/native/server-native.node ./packages/backend/server/server-native.node
+RUN cp -r ./packages/backend/native/server-native.node ./packages/backend/server/server-native.arm64.node
+RUN cp -r ./packages/backend/native/server-native.node ./packages/backend/server/server-native.armv7.node
+
 
 WORKDIR /app/packages/backend/server
 

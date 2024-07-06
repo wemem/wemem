@@ -49,6 +49,8 @@ jobs:
     environment: ${{ github.event.inputs.flavor }}
     steps:
       - uses: actions/checkout@v4
+      - name: Initialize and update submodules
+        run: git submodule update --init --recursive
       - name: Setup Version
         id: version
         uses: ./.github/actions/setup-version
@@ -77,6 +79,8 @@ jobs:
     environment: ${{ github.event.inputs.flavor }}
     steps:
       - uses: actions/checkout@v4
+      - name: Initialize and update submodules
+        run: git submodule update --init --recursive
       - name: Setup Version
         id: version
         uses: ./.github/actions/setup-version
@@ -231,4 +235,4 @@ jobs:
           platforms: linux/amd64,linux/arm64,linux/arm/v7
           provenance: true
           file: .github/deployment/node/Dockerfile
-          tags: ghcr.io/toeverything/affine-graphql:${{env.RELEASE_FLAVOR}}-${{ env.GIT_SHORT_HASH }},ghcr.io/toeverything/affine-graphql:${{env.RELEASE_FLAVOR}}
+          tags: ghcr.io/ReadeaseAI/readease:${{env.RELEASE_FLAVOR}}-${{ env.GIT_SHORT_HASH }},ghcr.io/readease/readease:${{env.RELEASE_FLAVOR}}
