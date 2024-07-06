@@ -237,4 +237,4 @@ jobs:
           platforms: linux/amd64,linux/arm64,linux/arm/v7
           provenance: true
           file: .github/deployment/node/Dockerfile
-          tags: ghcr.io/ReadeaseAI/readease:${{env.RELEASE_FLAVOR}}-${{ env.GIT_SHORT_HASH }},ghcr.io/readease/readease:${{env.RELEASE_FLAVOR}}
+          tags: ghcr.io/readeaseai/readease:${{env.RELEASE_FLAVOR}}-${{ env.GIT_SHORT_HASH }},ghcr.io/readeaseai/readease:${{env.RELEASE_FLAVOR}}
