@@ -1,26 +1,30 @@
 import { IconButton } from '@affine/component/ui/button';
 import { useAsyncCallback } from '@affine/core/hooks/affine-async-hooks';
 import { FavoriteItemsAdapter } from '@affine/core/modules/properties';
+import { TelemetryWorkspaceContextService } from '@affine/core/modules/telemetry/services/telemetry';
 import { mixpanel } from '@affine/core/utils';
 import { PlusIcon } from '@blocksuite/icons/rc';
-import type { DocCollection } from '@blocksuite/store';
-import { useService } from '@toeverything/infra';
+import { useService, useServices, WorkspaceService } from '@toeverything/infra';
 
 import { usePageHelper } from '../../../blocksuite/block-suite-page-list/utils';
 
 type AddFavouriteButtonProps = {
-  docCollection: DocCollection;
   pageId?: string;
 };
 
-export const AddFavouriteButton = ({
-  docCollection,
-  pageId,
-}: AddFavouriteButtonProps) => {
-  const { createPage, createLinkedPage } = usePageHelper(docCollection);
+export const AddFavouriteButton = ({ pageId }: AddFavouriteButtonProps) => {
+  const { workspaceService } = useServices({
+    WorkspaceService,
+  });
+  const { createPage, createLinkedPage } = usePageHelper(
+    workspaceService.workspace.docCollection
+  );
   const favAdapter = useService(FavoriteItemsAdapter);
+  const telemetry = useService(TelemetryWorkspaceContextService);
   const handleAddFavorite = useAsyncCallback(
     async e => {
+      const page = telemetry.getPageContext();
+
       if (pageId) {
         e.stopPropagation();
         e.preventDefault();
@@ -32,6 +36,7 @@ export const AddFavouriteButton = ({
           control: 'new fav sub doc',
           type: 'doc',
           category: 'page',
+          page: page,
         });
       } else {
         const page = createPage();
@@ -44,10 +49,11 @@ export const AddFavouriteButton = ({
           control: 'new fav doc',
           type: 'doc',
           category: 'page',
+          page: page,
         });
       }
     },
-    [pageId, createLinkedPage, createPage, favAdapter]
+    [telemetry, pageId, createLinkedPage, createPage, favAdapter]
   );
 
   return (

@@ -350,6 +350,12 @@ export class SubscriptionPlanNotFound extends UserFriendlyError {
   }
 }
 
+export class CantUpdateLifetimeSubscription extends UserFriendlyError {
+  constructor(message?: string) {
+    super('action_forbidden', 'cant_update_lifetime_subscription', message);
+  }
+}
+
 export class CopilotSessionNotFound extends UserFriendlyError {
   constructor(message?: string) {
     super('resource_not_found', 'copilot_session_not_found', message);
@@ -391,10 +397,14 @@ export class CopilotActionTaken extends UserFriendlyError {
     super('action_forbidden', 'copilot_action_taken', message);
   }
 }
+@ObjectType()
+class CopilotMessageNotFoundDataType {
+  @Field() messageId!: string
+}
 
 export class CopilotMessageNotFound extends UserFriendlyError {
-  constructor(message?: string) {
-    super('resource_not_found', 'copilot_message_not_found', message);
+  constructor(args: CopilotMessageNotFoundDataType, message?: string | ((args: CopilotMessageNotFoundDataType) => string)) {
+    super('resource_not_found', 'copilot_message_not_found', message, args);
   }
 }
 @ObjectType()
@@ -517,6 +527,7 @@ export enum ErrorNames {
   SAME_SUBSCRIPTION_RECURRING,
   CUSTOMER_PORTAL_CREATE_FAILED,
   SUBSCRIPTION_PLAN_NOT_FOUND,
+  CANT_UPDATE_LIFETIME_SUBSCRIPTION,
   COPILOT_SESSION_NOT_FOUND,
   COPILOT_SESSION_DELETED,
   NO_COPILOT_PROVIDER_AVAILABLE,
@@ -542,5 +553,5 @@ registerEnumType(ErrorNames, {
 export const ErrorDataUnionType = createUnionType({
   name: 'ErrorDataUnion',
   types: () =>
-    [UnknownOauthProviderDataType, MissingOauthQueryParameterDataType, InvalidPasswordLengthDataType, WorkspaceNotFoundDataType, NotInWorkspaceDataType, WorkspaceAccessDeniedDataType, WorkspaceOwnerNotFoundDataType, DocNotFoundDataType, DocAccessDeniedDataType, VersionRejectedDataType, InvalidHistoryTimestampDataType, DocHistoryNotFoundDataType, BlobNotFoundDataType, SubscriptionAlreadyExistsDataType, SubscriptionNotExistsDataType, SameSubscriptionRecurringDataType, SubscriptionPlanNotFoundDataType, CopilotPromptNotFoundDataType, CopilotProviderSideErrorDataType, RuntimeConfigNotFoundDataType, InvalidRuntimeConfigTypeDataType] as const,
+    [UnknownOauthProviderDataType, MissingOauthQueryParameterDataType, InvalidPasswordLengthDataType, WorkspaceNotFoundDataType, NotInWorkspaceDataType, WorkspaceAccessDeniedDataType, WorkspaceOwnerNotFoundDataType, DocNotFoundDataType, DocAccessDeniedDataType, VersionRejectedDataType, InvalidHistoryTimestampDataType, DocHistoryNotFoundDataType, BlobNotFoundDataType, SubscriptionAlreadyExistsDataType, SubscriptionNotExistsDataType, SameSubscriptionRecurringDataType, SubscriptionPlanNotFoundDataType, CopilotMessageNotFoundDataType, CopilotPromptNotFoundDataType, CopilotProviderSideErrorDataType, RuntimeConfigNotFoundDataType, InvalidRuntimeConfigTypeDataType] as const,
 });

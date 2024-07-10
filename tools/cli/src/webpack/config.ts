@@ -1,4 +1,3 @@
-import { createRequire } from 'node:module';
 import { join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
@@ -23,8 +22,6 @@ const IN_CI = !!process.env.CI;
 
 export const rootPath = join(fileURLToPath(import.meta.url), '..', '..');
 export const workspaceRoot = join(rootPath, '..', '..', '..');
-
-const require = createRequire(rootPath);
 
 const OptimizeOptionOptions: (
   buildFlags: BuildFlags
@@ -112,10 +109,12 @@ export const createConfiguration: (
           ? 'js/[name]-[contenthash:8].js'
           : 'js/[name].js',
       // In some cases webpack will emit files starts with "_" which is reserved in web extension.
-      chunkFilename:
-        buildFlags.mode === 'production'
-          ? 'js/chunk.[name]-[contenthash:8].js'
-          : 'js/chunk.[name].js',
+      chunkFilename: pathData =>
+        pathData.chunk?.name === 'worker'
+          ? 'js/worker.[contenthash:8].js'
+          : buildFlags.mode === 'production'
+            ? 'js/chunk.[name]-[contenthash:8].js'
+            : 'js/chunk.[name].js',
       assetModuleFilename:
         buildFlags.mode === 'production'
           ? 'assets/[name]-[contenthash:8][ext][query]'
@@ -127,6 +126,7 @@ export const createConfiguration: (
       clean: buildFlags.mode === 'production',
       globalObject: 'globalThis',
       publicPath: getPublicPath(buildFlags),
+      workerPublicPath: '/',
     },
     target: ['web', 'es2022'],
 
@@ -151,7 +151,7 @@ export const createConfiguration: (
               events: false,
             },
       alias: {
-        yjs: require.resolve('yjs'),
+        yjs: join(workspaceRoot, 'node_modules', 'yjs'),
         lit: join(workspaceRoot, 'node_modules', 'lit'),
         '@blocksuite/block-std': blocksuiteBaseDir
           ? join(blocksuiteBaseDir, 'packages', 'framework', 'block-std', 'src')
@@ -325,20 +325,20 @@ export const createConfiguration: (
                 {
                   loader: 'string-replace-loader',
                   options: {
-                    search:  /(['"])AFFiNE\1/g,  // 要查找的字符串
+                    search: /(['"])AFFiNE\1/g, // 要查找的字符串
                     replace: 'Readflow', // 替换成的字符串
-                    flags: 'gi' // 全局替换的标志。如果需要区分大小写可添加 'i' （如 'gi'）
-                  }
+                    flags: 'gi', // 全局替换的标志。如果需要区分大小写可添加 'i' （如 'gi'）
+                  },
                 },
                 {
                   loader: 'string-replace-loader',
                   options: {
-                    search: 'affine.pro',  // 要查找的字符串
+                    search: 'affine.pro', // 要查找的字符串
                     replace: 'readflow.ai', // 替换成的字符串
-                    flags: 'gi' // 全局替换的标志。如果需要区分大小写可添加 'i' （如 'gi'）
-                  }
-                }
-              ]
+                    flags: 'gi', // 全局替换的标志。如果需要区分大小写可添加 'i' （如 'gi'）
+                  },
+                },
+              ],
             },
           ],
         },

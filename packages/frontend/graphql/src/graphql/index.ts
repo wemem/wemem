@@ -241,6 +241,17 @@ mutation removeEarlyAccess($email: String!) {
 }`,
 };
 
+export const forkCopilotSessionMutation = {
+  id: 'forkCopilotSessionMutation' as const,
+  operationName: 'forkCopilotSession',
+  definitionName: 'forkCopilotSession',
+  containsFile: false,
+  query: `
+mutation forkCopilotSession($options: ForkChatSessionInput!) {
+  forkCopilotSession(options: $options)
+}`,
+};
+
 export const getCopilotHistoriesQuery = {
   id: 'getCopilotHistoriesQuery' as const,
   operationName: 'getCopilotHistories',
@@ -256,6 +267,7 @@ query getCopilotHistories($workspaceId: String!, $docId: String, $options: Query
         action
         createdAt
         messages {
+          id
           role
           content
           attachments
@@ -656,6 +668,7 @@ query prices {
     currency
     amount
     yearlyAmount
+    lifetimeAmount
   }
 }`,
 };

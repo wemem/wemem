@@ -17,6 +17,7 @@ import {
   CopilotTextToEmbeddingProvider,
   CopilotTextToImageProvider,
   CopilotTextToTextProvider,
+  PromptConfig,
   PromptMessage,
 } from '../../src/plugins/copilot/types';
 import { NodeExecutorType } from '../../src/plugins/copilot/workflow/executor';
@@ -174,6 +175,35 @@ export async function createCopilotSession(
   return res.body.data.createCopilotSession;
 }
 
+export async function forkCopilotSession(
+  app: INestApplication,
+  userToken: string,
+  workspaceId: string,
+  docId: string,
+  sessionId: string,
+  latestMessageId: string
+): Promise<string> {
+  const res = await request(app.getHttpServer())
+    .post(gql)
+    .auth(userToken, { type: 'bearer' })
+    .set({ 'x-request-id': 'test', 'x-operation-name': 'test' })
+    .send({
+      query: `
+        mutation forkCopilotSession($options: ForkChatSessionInput!) {
+          forkCopilotSession(options: $options)
+        }
+      `,
+      variables: {
+        options: { workspaceId, docId, sessionId, latestMessageId },
+      },
+    })
+    .expect(200);
+
+  handleGraphQLError(res);
+
+  return res.body.data.forkCopilotSession;
+}
+
 export async function createCopilotMessage(
   app: INestApplication,
   userToken: string,
@@ -286,6 +316,7 @@ export function textToEventStream(
 }
 
 type ChatMessage = {
+  id?: string;
   role: string;
   content: string;
   attachments: string[] | null;
@@ -333,6 +364,7 @@ export async function getHistories(
               action
               createdAt
               messages {
+                id
                 role
                 content
                 attachments
@@ -352,7 +384,12 @@ export async function getHistories(
   return res.body.data.currentUser?.copilot?.histories || [];
 }
 
-type Prompt = { name: string; model: string; messages: PromptMessage[] };
+type Prompt = {
+  name: string;
+  model: string;
+  messages: PromptMessage[];
+  config?: PromptConfig;
+};
 type WorkflowTestCase = {
   graph: WorkflowGraph;
   prompts: Prompt[];

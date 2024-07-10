@@ -8,7 +8,7 @@ import {
   Tooltip,
 } from '@affine/component';
 import { useCurrentWorkspacePropertiesAdapter } from '@affine/core/hooks/use-affine-adapter';
-import { useBlockSuitePageBacklinks } from '@affine/core/hooks/use-block-suite-page-backlinks';
+import { DocLinksService } from '@affine/core/modules/doc-link';
 import type {
   PageInfoCustomProperty,
   PageInfoCustomPropertyMeta,
@@ -106,7 +106,7 @@ interface SortablePropertiesProps {
   children: (properties: PageInfoCustomProperty[]) => React.ReactNode;
 }
 
-const SortableProperties = ({ children }: SortablePropertiesProps) => {
+export const SortableProperties = ({ children }: SortablePropertiesProps) => {
   const manager = useContext(managerContext);
   const properties = useMemo(() => manager.sorter.getOrderedItems(), [manager]);
   const editingItem = useAtomValue(editingPropertyAtom);
@@ -382,7 +382,7 @@ export const PagePropertiesSettingsPopup = ({
 };
 
 type PageBacklinksPopupProps = PropsWithChildren<{
-  backlinks: string[];
+  backlinks: { docId: string; blockId: string; title: string }[];
 }>;
 
 export const PageBacklinksPopup = ({
@@ -400,11 +400,11 @@ export const PageBacklinksPopup = ({
       }}
       items={
         <div className={styles.backlinksList}>
-          {backlinks.map(pageId => (
+          {backlinks.map(link => (
             <AffinePageReference
-              key={pageId}
+              key={link.docId + ':' + link.blockId}
               wrapper={MenuItem}
-              pageId={pageId}
+              pageId={link.docId}
               docCollection={manager.workspace.docCollection}
             />
           ))}
@@ -599,10 +599,11 @@ export const PagePropertiesTableHeader = ({
   const manager = useContext(managerContext);
 
   const t = useI18n();
-  const backlinks = useBlockSuitePageBacklinks(
-    manager.workspace.docCollection,
-    manager.pageId
-  );
+  const { docLinksServices } = useServices({
+    DocLinksServices: DocLinksService,
+  });
+  const docBacklinks = docLinksServices.backlinks;
+  const backlinks = useLiveData(docBacklinks.backlinks$);
 
   const { docService, workspaceService } = useServices({
     DocService,
@@ -736,9 +737,13 @@ export const PagePropertiesTableHeader = ({
 interface PagePropertyRowProps {
   property: PageInfoCustomProperty;
   style?: React.CSSProperties;
+  rowNameClassName?: string;
 }
 
-const PagePropertyRow = ({ property }: PagePropertyRowProps) => {
+export const PagePropertyRow = ({
+  property,
+  rowNameClassName,
+}: PagePropertyRowProps) => {
   const manager = useContext(managerContext);
   const meta = manager.getCustomPropertyMeta(property.id);
 
@@ -776,7 +781,10 @@ const PagePropertyRow = ({ property }: PagePropertyRowProps) => {
               {...attributes}
               {...listeners}
               data-testid="page-property-row-name"
-              className={styles.sortablePropertyRowNameCell}
+              className={clsx(
+                styles.sortablePropertyRowNameCell,
+                rowNameClassName
+              )}
               onClick={handleEditMeta}
             >
               <div className={styles.propertyRowNameContainer}>
@@ -794,7 +802,11 @@ const PagePropertyRow = ({ property }: PagePropertyRowProps) => {
   );
 };
 
-const PageTagsRow = () => {
+export const PageTagsRow = ({
+  rowNameClassName,
+}: {
+  rowNameClassName?: string;
+}) => {
   const t = useI18n();
   return (
     <div
@@ -803,7 +815,7 @@ const PageTagsRow = () => {
       data-property="tags"
     >
       <div
-        className={styles.propertyRowNameCell}
+        className={clsx(styles.propertyRowNameCell, rowNameClassName)}
         data-testid="page-property-row-name"
       >
         <div className={styles.propertyRowNameContainer}>
@@ -1079,7 +1091,7 @@ const PagePropertiesTableInner = () => {
   );
 };
 
-const usePagePropertiesManager = (page: Doc) => {
+export const usePagePropertiesManager = (page: Doc) => {
   // the workspace properties adapter adapter is reactive,
   // which means it's reference will change when any of the properties change
   // also it will trigger a re-render of the component

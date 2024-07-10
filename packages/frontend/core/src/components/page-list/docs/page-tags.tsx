@@ -23,6 +23,7 @@ interface TagItemProps {
   idx?: number;
   maxWidth?: number | string;
   mode: 'inline' | 'list-item';
+  focused?: boolean;
   onRemoved?: () => void;
   style?: React.CSSProperties;
 }
@@ -55,6 +56,7 @@ export const TagItem = ({
   tag,
   idx,
   mode,
+  focused,
   onRemoved,
   style,
   maxWidth,
@@ -81,6 +83,7 @@ export const TagItem = ({
     >
       <div
         style={{ maxWidth: maxWidth }}
+        data-focused={focused}
         className={mode === 'inline' ? styles.tagInline : styles.tagListItem}
       >
         <div

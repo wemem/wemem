@@ -18,6 +18,10 @@ export class DocsStore extends Store {
     return this.workspaceService.workspace.docCollection.getDoc(id);
   }
 
+  createBlockSuiteDoc() {
+    return this.workspaceService.workspace.docCollection.createDoc();
+  }
+
   watchDocIds() {
     return new Observable<string[]>(subscriber => {
       const emit = () => {
@@ -37,7 +41,29 @@ export class DocsStore extends Store {
       return () => {
         dispose();
       };
-    }).pipe(distinctUntilChanged((p, c) => isEqual(p, c)));
+    });
+  }
+
+  watchTrashDocIds() {
+    return new Observable<string[]>(subscriber => {
+      const emit = () => {
+        subscriber.next(
+          this.workspaceService.workspace.docCollection.meta.docMetas
+            .map(v => (v.trash ? v.id : null))
+            .filter(Boolean) as string[]
+        );
+      };
+
+      emit();
+
+      const dispose =
+        this.workspaceService.workspace.docCollection.meta.docMetaUpdated.on(
+          emit
+        ).dispose;
+      return () => {
+        dispose();
+      };
+    });
   }
 
   watchDocMeta(id: string) {

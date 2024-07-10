@@ -11,6 +11,7 @@ type ChatMessage {
   attachments: [String!]
   content: String!
   createdAt: DateTime!
+  id: ID
   params: JSON
   role: String!
 }
@@ -39,6 +40,10 @@ type CopilotHistories {
   tokens: Int!
 }
 
+type CopilotMessageNotFoundDataType {
+  messageId: String!
+}
+
 enum CopilotModels {
   DallE3
   Gpt4Omni
@@ -50,6 +55,22 @@ enum CopilotModels {
   TextEmbeddingAda002
   TextModerationLatest
   TextModerationStable
+}
+
+input CopilotPromptConfigInput {
+  frequencyPenalty: Int
+  jsonMode: Boolean
+  presencePenalty: Int
+  temperature: Int
+  topP: Int
+}
+
+type CopilotPromptConfigType {
+  frequencyPenalty: Int
+  jsonMode: Boolean
+  presencePenalty: Int
+  temperature: Int
+  topP: Int
 }
 
 input CopilotPromptMessageInput {
@@ -76,6 +97,7 @@ type CopilotPromptNotFoundDataType {
 
 type CopilotPromptType {
   action: String
+  config: CopilotPromptConfigType
   messages: [CopilotPromptMessageType!]!
   model: CopilotModels!
   name: String!
@@ -118,6 +140,7 @@ input CreateCheckoutSessionInput {
 
 input CreateCopilotPromptInput {
   action: String
+  config: CopilotPromptConfigInput
   messages: [CopilotPromptMessageInput!]!
   model: CopilotModels!
   name: String!
@@ -175,7 +198,7 @@ enum EarlyAccessType {
   App
 }
 
-union ErrorDataUnion = BlobNotFoundDataType | CopilotPromptNotFoundDataType | CopilotProviderSideErrorDataType | DocAccessDeniedDataType | DocHistoryNotFoundDataType | DocNotFoundDataType | InvalidHistoryTimestampDataType | InvalidPasswordLengthDataType | InvalidRuntimeConfigTypeDataType | MissingOauthQueryParameterDataType | NotInWorkspaceDataType | RuntimeConfigNotFoundDataType | SameSubscriptionRecurringDataType | SubscriptionAlreadyExistsDataType | SubscriptionNotExistsDataType | SubscriptionPlanNotFoundDataType | UnknownOauthProviderDataType | VersionRejectedDataType | WorkspaceAccessDeniedDataType | WorkspaceNotFoundDataType | WorkspaceOwnerNotFoundDataType
+union ErrorDataUnion = BlobNotFoundDataType | CopilotMessageNotFoundDataType | CopilotPromptNotFoundDataType | CopilotProviderSideErrorDataType | DocAccessDeniedDataType | DocHistoryNotFoundDataType | DocNotFoundDataType | InvalidHistoryTimestampDataType | InvalidPasswordLengthDataType | InvalidRuntimeConfigTypeDataType | MissingOauthQueryParameterDataType | NotInWorkspaceDataType | RuntimeConfigNotFoundDataType | SameSubscriptionRecurringDataType | SubscriptionAlreadyExistsDataType | SubscriptionNotExistsDataType | SubscriptionPlanNotFoundDataType | UnknownOauthProviderDataType | VersionRejectedDataType | WorkspaceAccessDeniedDataType | WorkspaceNotFoundDataType | WorkspaceOwnerNotFoundDataType
 
 enum ErrorNames {
   ACCESS_DENIED
@@ -184,6 +207,7 @@ enum ErrorNames {
   BLOB_NOT_FOUND
   BLOB_QUOTA_EXCEEDED
   CANT_CHANGE_WORKSPACE_OWNER
+  CANT_UPDATE_LIFETIME_SUBSCRIPTION
   COPILOT_ACTION_TAKEN
   COPILOT_FAILED_TO_CREATE_MESSAGE
   COPILOT_FAILED_TO_GENERATE_TEXT
@@ -250,6 +274,17 @@ enum FeatureType {
   EarlyAccess
   UnlimitedCopilot
   UnlimitedWorkspace
+}
+
+input ForkChatSessionInput {
+  docId: String!
+
+  """
+  Identify a message in the array and keep it with all previous messages into a forked session.
+  """
+  latestMessageId: String!
+  sessionId: String!
+  workspaceId: String!
 }
 
 type HumanReadableQuotaType {
@@ -399,6 +434,9 @@ type Mutation {
   """Delete a user account"""
   deleteUser(id: String!): DeleteAccount!
   deleteWorkspace(id: String!): Boolean!
+
+  """Create a chat session"""
+  forkCopilotSession(options: ForkChatSessionInput!): String!
   invite(email: String!, permission: Permission!, sendInviteMail: Boolean, workspaceId: String!): String!
   leaveWorkspace(sendLeaveMail: Boolean, workspaceId: String!, workspaceName: String!): Boolean!
   publishPage(mode: PublicPageMode = Page, pageId: String!, workspaceId: String!): WorkspacePage!
@@ -638,12 +676,14 @@ type SubscriptionPlanNotFoundDataType {
 type SubscriptionPrice {
   amount: Int
   currency: String!
+  lifetimeAmount: Int
   plan: SubscriptionPlan!
   type: String!
   yearlyAmount: Int
 }
 
 enum SubscriptionRecurring {
+  Lifetime
   Monthly
   Yearly
 }
@@ -714,8 +754,8 @@ type UserQuotaHumanReadable {
 type UserSubscription {
   canceledAt: DateTime
   createdAt: DateTime!
-  end: DateTime!
-  id: String!
+  end: DateTime
+  id: String
   nextBillAt: DateTime
 
   """

@@ -20,6 +20,7 @@ import {
   ChatHistory,
   ChatMessage,
   ChatMessageSchema,
+  ChatSessionForkOptions,
   ChatSessionOptions,
   ChatSessionState,
   getTokenEncoder,
@@ -48,10 +49,10 @@ export class ChatSession implements AsyncDisposable {
       userId,
       workspaceId,
       docId,
-      prompt: { name: promptName },
+      prompt: { name: promptName, config: promptConfig },
     } = this.state;
 
-    return { sessionId, userId, workspaceId, docId, promptName };
+    return { sessionId, userId, workspaceId, docId, promptName, promptConfig };
   }
 
   get stashMessages() {
@@ -81,7 +82,7 @@ export class ChatSession implements AsyncDisposable {
   async getMessageById(messageId: string) {
     const message = await this.messageCache.get(messageId);
     if (!message || message.sessionId !== this.state.sessionId) {
-      throw new CopilotMessageNotFound();
+      throw new CopilotMessageNotFound({ messageId });
     }
     return message;
   }
@@ -89,7 +90,7 @@ export class ChatSession implements AsyncDisposable {
   async pushByMessageId(messageId: string) {
     const message = await this.messageCache.get(messageId);
     if (!message || message.sessionId !== this.state.sessionId) {
-      throw new CopilotMessageNotFound();
+      throw new CopilotMessageNotFound({ messageId });
     }
 
     this.push({
@@ -200,6 +201,7 @@ export class ChatSessionService {
               workspaceId: state.workspaceId,
               docId: state.docId,
               prompt: { action: { equals: null } },
+              parentSessionId: state.parentSessionId,
             },
             select: { id: true, deletedAt: true },
           })) || {};
@@ -252,6 +254,7 @@ export class ChatSessionService {
             // connect
             userId: state.userId,
             promptName: state.prompt.name,
+            parentSessionId: state.parentSessionId,
           },
         });
       }
@@ -271,8 +274,9 @@ export class ChatSessionService {
           userId: true,
           workspaceId: true,
           docId: true,
+          parentSessionId: true,
           messages: {
-            select: { role: true, content: true, createdAt: true },
+            select: { id: true, role: true, content: true, createdAt: true },
             orderBy: { createdAt: 'asc' },
           },
           promptName: true,
@@ -291,6 +295,7 @@ export class ChatSessionService {
           userId: session.userId,
           workspaceId: session.workspaceId,
           docId: session.docId,
+          parentSessionId: session.parentSessionId,
           prompt,
           messages: messages.success ? messages.data : [],
         };
@@ -380,22 +385,42 @@ export class ChatSessionService {
     return await this.db.aiSession
       .findMany({
         where: {
-          userId,
-          workspaceId: workspaceId,
-          docId: workspaceId === docId ? undefined : docId,
-          prompt: {
-            action: options?.action ? { not: null } : null,
-          },
-          id: options?.sessionId ? { equals: options.sessionId } : undefined,
-          deletedAt: null,
+          OR: [
+            {
+              userId,
+              workspaceId: workspaceId,
+              docId: workspaceId === docId ? undefined : docId,
+              id: options?.sessionId
+                ? { equals: options.sessionId }
+                : undefined,
+              deletedAt: null,
+            },
+            ...(options?.action
+              ? []
+              : [
+                  {
+                    userId: { not: userId },
+                    workspaceId: workspaceId,
+                    docId: workspaceId === docId ? undefined : docId,
+                    id: options?.sessionId
+                      ? { equals: options.sessionId }
+                      : undefined,
+                    // should only find forked session
+                    parentSessionId: { not: null },
+                    deletedAt: null,
+                  },
+                ]),
+          ],
         },
         select: {
           id: true,
+          userId: true,
           promptName: true,
           tokenCost: true,
           createdAt: true,
           messages: {
             select: {
+              id: true,
               role: true,
               content: true,
               attachments: true,
@@ -414,15 +439,30 @@ export class ChatSessionService {
       .then(sessions =>
         Promise.all(
           sessions.map(
-            async ({ id, promptName, tokenCost, messages, createdAt }) => {
+            async ({
+              id,
+              userId: uid,
+              promptName,
+              tokenCost,
+              messages,
+              createdAt,
+            }) => {
               try {
+                const prompt = await this.prompt.get(promptName);
+                if (!prompt) {
+                  throw new CopilotPromptNotFound({ name: promptName });
+                }
+                if (
+                  // filter out the user's session that not match the action option
+                  (uid === userId && !!options?.action !== !!prompt.action) ||
+                  // filter out the non chat session from other user
+                  (uid !== userId && !!prompt.action)
+                ) {
+                  return undefined;
+                }
+
                 const ret = ChatMessageSchema.array().safeParse(messages);
                 if (ret.success) {
-                  const prompt = await this.prompt.get(promptName);
-                  if (!prompt) {
-                    throw new CopilotPromptNotFound({ name: promptName });
-                  }
-
                   // render system prompt
                   const preload = withPrompt
                     ? prompt
@@ -430,7 +470,8 @@ export class ChatSessionService {
                         .filter(({ role }) => role !== 'system')
                     : [];
 
-                  // `createdAt` is required for history sorting in frontend, let's fake the creating time of prompt messages
+                  // `createdAt` is required for history sorting in frontend
+                  // let's fake the creating time of prompt messages
                   (preload as ChatMessage[]).forEach((msg, i) => {
                     msg.createdAt = new Date(
                       createdAt.getTime() - preload.length - i - 1
@@ -495,7 +536,37 @@ export class ChatSessionService {
       sessionId,
       prompt,
       messages: [],
+      // when client create chat session, we always find root session
+      parentSessionId: null,
     });
+  }
+
+  async fork(options: ChatSessionForkOptions): Promise<string> {
+    const state = await this.getSession(options.sessionId);
+    if (!state) {
+      throw new CopilotSessionNotFound();
+    }
+    const lastMessageIdx = state.messages.findLastIndex(
+      ({ id, role }) =>
+        role === AiPromptRole.assistant && id === options.latestMessageId
+    );
+    if (lastMessageIdx < 0) {
+      throw new CopilotMessageNotFound({ messageId: options.latestMessageId });
+    }
+    const messages = state.messages
+      .slice(0, lastMessageIdx + 1)
+      .map(m => ({ ...m, id: undefined }));
+
+    const forkedState = {
+      ...state,
+      sessionId: randomUUID(),
+      messages: [],
+      parentSessionId: options.sessionId,
+    };
+    // create session
+    await this.setSession(forkedState);
+    // save message
+    return await this.setSession({ ...forkedState, messages });
   }
 
   async cleanup(

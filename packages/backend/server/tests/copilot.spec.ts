@@ -208,11 +208,13 @@ test('should be able to manage chat session', async t => {
     { role: 'system', content: 'hello {{word}}' },
   ]);
 
+  const params = { word: 'world' };
+  const commonParams = { docId: 'test', workspaceId: 'test' };
+
   const sessionId = await session.create({
-    docId: 'test',
-    workspaceId: 'test',
     userId,
     promptName: 'prompt',
+    ...commonParams,
   });
   t.truthy(sessionId, 'should create session');
 
@@ -220,8 +222,6 @@ test('should be able to manage chat session', async t => {
   t.is(s.config.sessionId, sessionId, 'should get session');
   t.is(s.config.promptName, 'prompt', 'should have prompt name');
   t.is(s.model, 'model', 'should have model');
-
-  const params = { word: 'world' };
 
   s.push({ role: 'user', content: 'hello', createdAt: new Date() });
   // @ts-expect-error
@@ -239,19 +239,112 @@ test('should be able to manage chat session', async t => {
   const s1 = (await session.get(sessionId))!;
   t.deepEqual(
     // @ts-expect-error
-    s1.finish(params).map(({ createdAt: _, ...m }) => m),
+    s1.finish(params).map(({ id: _, createdAt: __, ...m }) => m),
     finalMessages,
     'should same as before message'
   );
   t.deepEqual(
     // @ts-expect-error
-    s1.finish({}).map(({ createdAt: _, ...m }) => m),
+    s1.finish({}).map(({ id: _, createdAt: __, ...m }) => m),
     [
       { content: 'hello ', params: {}, role: 'system' },
       { content: 'hello', role: 'user' },
     ],
     'should generate different message with another params'
   );
+
+  // should get main session after fork if re-create a chat session for same docId and workspaceId
+  {
+    const newSessionId = await session.create({
+      userId,
+      promptName: 'prompt',
+      ...commonParams,
+    });
+    t.is(newSessionId, sessionId, 'should get same session id');
+  }
+});
+
+test('should be able to fork chat session', async t => {
+  const { prompt, session } = t.context;
+
+  await prompt.set('prompt', 'model', [
+    { role: 'system', content: 'hello {{word}}' },
+  ]);
+
+  const params = { word: 'world' };
+  const commonParams = { docId: 'test', workspaceId: 'test' };
+  // create session
+  const sessionId = await session.create({
+    userId,
+    promptName: 'prompt',
+    ...commonParams,
+  });
+  const s = (await session.get(sessionId))!;
+  s.push({ role: 'user', content: 'hello', createdAt: new Date() });
+  s.push({ role: 'assistant', content: 'world', createdAt: new Date() });
+  s.push({ role: 'user', content: 'aaa', createdAt: new Date() });
+  s.push({ role: 'assistant', content: 'bbb', createdAt: new Date() });
+  await s.save();
+
+  // fork session
+  const s1 = (await session.get(sessionId))!;
+  // @ts-expect-error
+  const latestMessageId = s1.finish({}).find(m => m.role === 'assistant')!.id;
+  const forkedSessionId = await session.fork({
+    userId,
+    sessionId,
+    latestMessageId,
+    ...commonParams,
+  });
+  t.not(sessionId, forkedSessionId, 'should fork a new session');
+
+  // check forked session messages
+  {
+    const s2 = (await session.get(forkedSessionId))!;
+
+    const finalMessages = s2
+      .finish(params) // @ts-expect-error
+      .map(({ id: _, createdAt: __, ...m }) => m);
+    t.deepEqual(
+      finalMessages,
+      [
+        { role: 'system', content: 'hello world', params },
+        { role: 'user', content: 'hello' },
+        { role: 'assistant', content: 'world' },
+      ],
+      'should generate the final message'
+    );
+  }
+
+  // check original session messages
+  {
+    const s3 = (await session.get(sessionId))!;
+
+    const finalMessages = s3
+      .finish(params) // @ts-expect-error
+      .map(({ id: _, createdAt: __, ...m }) => m);
+    t.deepEqual(
+      finalMessages,
+      [
+        { role: 'system', content: 'hello world', params },
+        { role: 'user', content: 'hello' },
+        { role: 'assistant', content: 'world' },
+        { role: 'user', content: 'aaa' },
+        { role: 'assistant', content: 'bbb' },
+      ],
+      'should generate the final message'
+    );
+  }
+
+  // should get main session after fork if re-create a chat session for same docId and workspaceId
+  {
+    const newSessionId = await session.create({
+      userId,
+      promptName: 'prompt',
+      ...commonParams,
+    });
+    t.is(newSessionId, sessionId, 'should get same session id');
+  }
 });
 
 test('should be able to process message id', async t => {
@@ -583,7 +676,7 @@ test.skip('should be able to preview workflow', async t => {
   registerCopilotProvider(OpenAIProvider);
 
   for (const p of prompts) {
-    await prompt.set(p.name, p.model, p.messages);
+    await prompt.set(p.name, p.model, p.messages, p.config);
   }
 
   let result = '';
@@ -633,7 +726,7 @@ test('should be able to run pre defined workflow', async t => {
     const { graph, prompts, callCount, input, params, result } = testCase;
     console.log('running workflow test:', graph.name);
     for (const p of prompts) {
-      await prompt.set(p.name, p.model, p.messages);
+      await prompt.set(p.name, p.model, p.messages, p.config);
     }
 
     for (const [idx, i] of input.entries()) {
@@ -680,7 +773,7 @@ test('should be able to run workflow', async t => {
   const executor = Sinon.spy(executors.text, 'next');
 
   for (const p of prompts) {
-    await prompt.set(p.name, p.model, p.messages);
+    await prompt.set(p.name, p.model, p.messages, p.config);
   }
 
   const graphName = 'presentation';
@@ -699,9 +792,7 @@ test('should be able to run workflow', async t => {
   }
   t.assert(result, 'generate text to text stream');
 
-  // presentation workflow has condition node, it will always false
-  // so the latest 2 nodes will not be executed
-  const callCount = graph!.graph.length - 2;
+  const callCount = graph!.graph.length;
   t.is(
     executor.callCount,
     callCount,
@@ -717,7 +808,7 @@ test('should be able to run workflow', async t => {
 
     t.is(
       params.args[1].content,
-      'generate text to text stream',
+      'apple company',
       'graph params should correct'
     );
     t.is(
