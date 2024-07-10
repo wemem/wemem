@@ -12,8 +12,7 @@ export const root = style({
   userSelect: 'none',
   cursor: 'pointer',
   padding: '0 12px',
-  // margin: '20px 0',
-  marginBottom: '20px',
+  margin: '20px 0',
   position: 'relative',
 });
 export const icon = style({

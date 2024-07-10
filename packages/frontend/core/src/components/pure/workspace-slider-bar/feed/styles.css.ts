@@ -1,5 +1,5 @@
 import { cssVar } from '@toeverything/theme';
-import { globalStyle, keyframes, style } from '@vanilla-extract/css';
+import { globalStyle, style } from '@vanilla-extract/css';
 export const wrapper = style({
   display: 'flex',
   flexDirection: 'column',
@@ -82,22 +82,6 @@ export const menuDividerStyle = style({
   height: '1px',
   background: cssVar('borderColor'),
 });
-const slideDown = keyframes({
-  '0%': {
-    height: '0px',
-  },
-  '100%': {
-    height: 'var(--radix-collapsible-content-height)',
-  },
-});
-const slideUp = keyframes({
-  '0%': {
-    height: 'var(--radix-collapsible-content-height)',
-  },
-  '100%': {
-    height: '0px',
-  },
-});
 export const collapsibleContent = style({
   overflow: 'hidden',
   marginTop: '4px',
@@ -105,28 +89,39 @@ export const collapsibleContent = style({
     '&[data-hidden="true"]': {
       display: 'none',
     },
-    '&[data-state="open"]': {
-      animation: `${slideDown} 0.2s ease-in-out`,
-    },
-    '&[data-state="closed"]': {
-      animation: `${slideUp} 0.2s ease-in-out`,
+  },
+});
+export const label = style({
+  selectors: {
+    '&[data-untitled="true"]': {
+      opacity: 0.6,
     },
   },
 });
-export const emptyFeedWrapper = style({
+export const labelContainer = style({
+  display: 'flex',
+  justifyContent: 'space-between',
+  alignItems: 'center',
+});
+export const labelTooltipContainer = style({
+  display: 'flex',
+  justifyContent: 'space-between',
+  alignItems: 'center',
+});
+export const emptyCollectionWrapper = style({
   padding: '9px 0',
   display: 'flex',
   flexDirection: 'column',
   alignItems: 'center',
   gap: 8,
 });
-export const emptyFeedContent = style({
+export const emptyCollectionContent = style({
   display: 'flex',
   flexDirection: 'column',
   alignItems: 'center',
   gap: 6,
 });
-export const emptyFeedIconWrapper = style({
+export const emptyCollectionIconWrapper = style({
   width: 36,
   height: 36,
   display: 'flex',
@@ -135,17 +130,17 @@ export const emptyFeedIconWrapper = style({
   borderRadius: '50%',
   backgroundColor: cssVar('hoverColor'),
 });
-export const emptyFeedIcon = style({
+export const emptyCollectionIcon = style({
   fontSize: 20,
   color: cssVar('iconSecondary'),
 });
-export const emptyFeedMessage = style({
+export const emptyCollectionMessage = style({
   fontSize: cssVar('fontSm'),
   textAlign: 'center',
   color: cssVar('black30'),
   userSelect: 'none',
 });
-export const emptyFeedNewButton = style({
+export const emptyCollectionNewButton = style({
   padding: '0 8px',
   height: '28px',
   fontSize: cssVar('fontXs'),
@@ -155,4 +150,11 @@ export const docsListContainer = style({
   display: 'flex',
   flexDirection: 'column',
   gap: 4,
+});
+export const noReferences = style({
+  fontSize: cssVar('fontSm'),
+  textAlign: 'left',
+  paddingLeft: '32px',
+  color: cssVar('black30'),
+  userSelect: 'none',
 });

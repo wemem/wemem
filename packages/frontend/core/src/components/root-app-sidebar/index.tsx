@@ -180,12 +180,12 @@ export const RootAppSidebar = memo(
         translucentUI={appSettings.enableBlurBackground}
       >
         <SidebarContainer>
-          {/*<div className={workspaceAndUserWrapper}>*/}
-          {/*  <div className={workspaceWrapper}>*/}
-          {/*    <WorkspaceSelector />*/}
-          {/*  </div>*/}
-          {/*  <UserInfo />*/}
-          {/*</div>*/}
+          <div className={workspaceAndUserWrapper}>
+            <div className={workspaceWrapper}>
+              <WorkspaceSelector />
+            </div>
+            <UserInfo />
+          </div>
           <QuickSearchInput
             data-testid="slider-bar-quick-search-button"
             onClick={onOpenQuickSearchModal}
@@ -263,12 +263,6 @@ export const RootAppSidebar = memo(
           {/*{environment.isDesktop ? <UpdaterButton /> : <AppDownloadButton />}*/}
           <div style={{ height: '4px' }} />
           <AddFeedButton onClick={onOpenNewFeedModal} />
-          <div className={workspaceAndUserWrapper}>
-            <div className={workspaceWrapper}>
-              <WorkspaceSelector />
-            </div>
-            <UserInfo />
-          </div>
         </SidebarContainer>
       </AppSidebar>
     );
