@@ -5,7 +5,7 @@ export const wrapper = style({
   flexDirection: 'column',
   gap: '4px',
   userSelect: 'none',
-  // marginLeft:8,
+  marginLeft: '8px',
 });
 export const collapsedIcon = style({
   transition: 'transform 0.2s ease-in-out',
@@ -157,4 +157,7 @@ export const noReferences = style({
   paddingLeft: '32px',
   color: cssVar('black30'),
   userSelect: 'none',
+});
+export const menuItem = style({
+  marginTop: '0px',
 });

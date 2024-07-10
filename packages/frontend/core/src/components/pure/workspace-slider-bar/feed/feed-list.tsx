@@ -4,7 +4,7 @@ import { IconButton } from '@affine/component/ui/button';
 import {
   FeedOperations,
   filterPage,
-  filterPageByRules,
+  RssIcon,
   stopPropagation,
 } from '@affine/core/components/page-list';
 import { FeedAvatar } from '@affine/core/components/page-list/feed/avatar';
@@ -17,7 +17,6 @@ import { NewFeedService } from '@affine/core/modules/feed/new-feed';
 import { FeedService } from '@affine/core/modules/feed/services/feed';
 import { FavoriteItemsAdapter } from '@affine/core/modules/properties';
 import { WorkbenchLink } from '@affine/core/modules/workbench';
-import { UnseenFilter } from '@affine/core/pages/workspace/feed-docs';
 import { mixpanel } from '@affine/core/utils';
 import type { Collection } from '@affine/env/filter';
 import { useI18n } from '@affine/i18n';
@@ -25,9 +24,9 @@ import { MoreHorizontalIcon } from '@blocksuite/icons/rc';
 import type { DocCollection } from '@blocksuite/store';
 import * as Collapsible from '@radix-ui/react-collapsible';
 import { useLiveData, useService } from '@toeverything/infra';
+import clsx from 'clsx';
 import { useCallback, useMemo, useState } from 'react';
-import { PiRss } from 'react-icons/pi';
-import { VscSettings } from 'react-icons/vsc';
+import { VscInbox, VscMail, VscSettings } from 'react-icons/vsc';
 
 import { WorkbenchService } from '../../../../modules/workbench';
 import {
@@ -160,90 +159,88 @@ export const FeedSidebarNavItem = ({
 const unseenPath = `/feed/seen/false`;
 const seenPath = `/feed/seen/true`;
 
-export const FeedSidebarReadFeeds = ({
-  docCollection,
-  className,
-}: {
-  docCollection: DocCollection;
-  className?: string;
-}) => {
-  const pages = useBlockSuiteDocMeta(docCollection);
-  const [collapsed, setCollapsed] = useState(true);
-  const config = useAllPageListConfig();
-  const favAdapter = useService(FavoriteItemsAdapter);
-  const favourites = useLiveData(favAdapter.favorites$);
+export const FeedSidebarReadAll = () => {
   const t = useI18n();
-  const dndId = getDNDId('sidebar-collections', 'collection', 'unseed');
-
   const currentPath = useLiveData(
     useService(WorkbenchService).workbench.location$.map(
       location => location.pathname
     )
   );
-
-  const allPagesMeta = useMemo(
-    () => Object.fromEntries(pages.map(v => [v.id, v])),
-    [pages]
-  );
-
-  const pagesToRender = pages.filter(meta => {
-    if (meta.trash) return false;
-    const pageData = {
-      meta,
-      publicMode: config.getPublicMode(meta.id),
-      favorite: favourites.some(fav => fav.id === meta.id),
-    };
-    return filterPageByRules([UnseenFilter], [], pageData);
-  });
-
   return (
-    <Collapsible.Root open={!collapsed} className={className}>
-      <SidebarMenuLinkItem
-        className={draggableMenuItemStyles.draggableMenuItem}
-        data-testid="feed-docs-unseen"
-        data-type="feed-docs-unseen"
-        active={
-          currentPath.includes(unseenPath) || currentPath.includes(seenPath)
-        }
-        icon={<PiRss />}
-        to={unseenPath}
-        onCollapsedChange={setCollapsed}
-        linkComponent={WorkbenchLink}
-        collapsed={pagesToRender.length > 0 ? collapsed : undefined}
-      >
-        <span>{t['ai.readflow.rootAppSidebar.feeds.read-feeds']()}</span>
-      </SidebarMenuLinkItem>
-      <Collapsible.Content className={styles.collapsibleContent}>
-        <div className={styles.docsListContainer}>
-          {pagesToRender.map(page => {
-            return (
-              <Doc
-                parentId={dndId}
-                inAllowList={false}
-                removeFromAllowList={() => {}}
-                allPageMeta={allPagesMeta}
-                doc={page}
-                key={page.id}
-                docCollection={docCollection}
-              />
-            );
-          })}
-        </div>
-      </Collapsible.Content>
-    </Collapsible.Root>
+    <SidebarMenuLinkItem
+      className={clsx(
+        draggableMenuItemStyles.draggableMenuItem,
+        styles.menuItem
+      )}
+      data-testid="feed-docs-unseen"
+      data-type="feed-docs-unseen"
+      active={
+        currentPath.includes(unseenPath) || currentPath.includes(seenPath)
+      }
+      icon={<VscInbox />}
+      to={unseenPath}
+      linkComponent={WorkbenchLink}
+    >
+      <span>{t['ai.readflow.rootAppSidebar.feeds.all']()}</span>
+    </SidebarMenuLinkItem>
   );
 };
 
-export const FeedSidebarManageFeeds = ({
-  feeds,
-  docCollection,
-  className,
-}: {
-  feeds: Collection[];
-  docCollection: DocCollection;
-  className?: string;
-}) => {
-  const [collapsed, setCollapsed] = useState(true);
+export const FeedSidebarReadFeeds = () => {
+  const t = useI18n();
+  const currentPath = useLiveData(
+    useService(WorkbenchService).workbench.location$.map(
+      location => location.pathname
+    )
+  );
+  return (
+    <SidebarMenuLinkItem
+      className={clsx(
+        draggableMenuItemStyles.draggableMenuItem,
+        styles.menuItem
+      )}
+      data-testid="feed-docs-unseen"
+      data-type="feed-docs-unseen"
+      active={
+        currentPath.includes(unseenPath) || currentPath.includes(seenPath)
+      }
+      icon={<RssIcon />}
+      to={unseenPath}
+      linkComponent={WorkbenchLink}
+    >
+      <span>{t['ai.readflow.rootAppSidebar.feeds.read-feeds']()}</span>
+    </SidebarMenuLinkItem>
+  );
+};
+
+export const FeedSidebarReadNewsletter = () => {
+  const t = useI18n();
+  const currentPath = useLiveData(
+    useService(WorkbenchService).workbench.location$.map(
+      location => location.pathname
+    )
+  );
+  return (
+    <SidebarMenuLinkItem
+      className={clsx(
+        draggableMenuItemStyles.draggableMenuItem,
+        styles.menuItem
+      )}
+      data-testid="feed-docs-unseen"
+      data-type="feed-docs-unseen"
+      active={
+        currentPath.includes(unseenPath) || currentPath.includes(seenPath)
+      }
+      icon={<VscMail />}
+      to={unseenPath}
+      linkComponent={WorkbenchLink}
+    >
+      <span>{t['ai.readflow.rootAppSidebar.feeds.newsletter']()}</span>
+    </SidebarMenuLinkItem>
+  );
+};
+
+export const FeedSidebarManageSubscriptions = () => {
   const t = useI18n();
 
   const currentPath = useLiveData(
@@ -254,34 +251,21 @@ export const FeedSidebarManageFeeds = ({
   const path = '/feed/manage';
 
   return (
-    <Collapsible.Root open={!collapsed} className={className}>
-      <SidebarMenuLinkItem
-        className={draggableMenuItemStyles.draggableMenuItem}
-        data-testid="feed-item"
-        data-type="feed-list-item"
-        active={currentPath === path}
-        icon={<VscSettings />}
-        to={path}
-        onCollapsedChange={setCollapsed}
-        linkComponent={WorkbenchLink}
-        collapsed={feeds.length > 0 ? collapsed : undefined}
-      >
-        <span>{t['ai.readflow.rootAppSidebar.feeds.manage-feeds']()}</span>
-      </SidebarMenuLinkItem>
-      <Collapsible.Content className={styles.collapsibleContent}>
-        <div className={styles.docsListContainer}>
-          {feeds.map(feed => {
-            return (
-              <FeedSidebarNavItem
-                key={feed.id}
-                feed={feed}
-                docCollection={docCollection}
-              />
-            );
-          })}
-        </div>
-      </Collapsible.Content>
-    </Collapsible.Root>
+    <SidebarMenuLinkItem
+      className={clsx(
+        draggableMenuItemStyles.draggableMenuItem,
+        styles.menuItem
+      )}
+      data-testid="feed-item"
+      data-type="feed-list-item"
+      active={currentPath === path}
+      icon={<VscSettings />}
+      to={path}
+      linkComponent={WorkbenchLink}
+      collapsed={undefined}
+    >
+      <span>{t['ai.readflow.rootAppSidebar.feeds.manage-feeds']()}</span>
+    </SidebarMenuLinkItem>
   );
 };
 
@@ -310,8 +294,10 @@ export const FeedList = ({ docCollection }: FeedsListProps) => {
         <AddFeedButton onClick={handleOpenNewFeedModal} />
       </CategoryDivider>
       <div data-testid="feeds" className={styles.wrapper}>
-        <FeedSidebarReadFeeds docCollection={docCollection} />
-        <FeedSidebarManageFeeds feeds={feeds} docCollection={docCollection} />
+        <FeedSidebarReadAll />
+        <FeedSidebarReadFeeds />
+        <FeedSidebarReadNewsletter />
+        <FeedSidebarManageSubscriptions />
       </div>
     </>
   );

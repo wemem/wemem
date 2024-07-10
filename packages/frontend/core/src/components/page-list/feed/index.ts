@@ -1,5 +1,6 @@
 export * from './create-feed';
 export * from './feed-operations';
+export * from './rss-icon';
 export * from './save-as-feed-button';
 export * from './use-create-feed';
 export * from './use-create-feed-modal';
