@@ -39,7 +39,7 @@
     "prepare": "husky"
   },
   "lint-staged": {
-    "*": "prettier --write --ignore-unknown --cache",
+    "*": "prettier --write --ignore-unknown --cache --no-stash",
     "*.{ts,tsx,mjs,js,jsx}": [
       "prettier --ignore-unknown --write"
     ],
