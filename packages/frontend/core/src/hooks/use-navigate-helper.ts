@@ -26,26 +26,26 @@ export function useNavigateHelper() {
     (
       workspaceId: string,
       pageId: string,
-      logic: RouteLogic = RouteLogic.PUSH,
+      logic: RouteLogic = RouteLogic.PUSH
     ) => {
       return navigate(`/workspace/${workspaceId}/${pageId}`, {
         replace: logic === RouteLogic.REPLACE,
       });
     },
-    [navigate],
+    [navigate]
   );
   const jumpToPageBlock = useCallback(
     (
       workspaceId: string,
       pageId: string,
       blockId: string,
-      logic: RouteLogic = RouteLogic.PUSH,
+      logic: RouteLogic = RouteLogic.PUSH
     ) => {
       return navigate(`/workspace/${workspaceId}/${pageId}#${blockId}`, {
         replace: logic === RouteLogic.REPLACE,
       });
     },
-    [navigate],
+    [navigate]
   );
   const jumpToCollections = useCallback(
     (workspaceId: string, logic: RouteLogic = RouteLogic.PUSH) => {
@@ -53,7 +53,7 @@ export function useNavigateHelper() {
         replace: logic === RouteLogic.REPLACE,
       });
     },
-    [navigate],
+    [navigate]
   );
   const jumpToTags = useCallback(
     (workspaceId: string, logic: RouteLogic = RouteLogic.PUSH) => {
@@ -61,85 +61,85 @@ export function useNavigateHelper() {
         replace: logic === RouteLogic.REPLACE,
       });
     },
-    [navigate],
+    [navigate]
   );
   const jumpToTag = useCallback(
     (
       workspaceId: string,
       tagId: string,
-      logic: RouteLogic = RouteLogic.PUSH,
+      logic: RouteLogic = RouteLogic.PUSH
     ) => {
       return navigate(`/workspace/${workspaceId}/tag/${tagId}`, {
         replace: logic === RouteLogic.REPLACE,
       });
     },
-    [navigate],
+    [navigate]
   );
   const jumpToCollection = useCallback(
     (
       workspaceId: string,
       collectionId: string,
-      logic: RouteLogic = RouteLogic.PUSH,
+      logic: RouteLogic = RouteLogic.PUSH
     ) => {
       return navigate(`/workspace/${workspaceId}/collection/${collectionId}`, {
         replace: logic === RouteLogic.REPLACE,
       });
     },
-    [navigate],
+    [navigate]
   );
 
-  const jumpToManageFeeds = useCallback(
+  const jumpToManageSubscriptions = useCallback(
     (workspaceId: string, logic: RouteLogic = RouteLogic.PUSH) => {
-      return navigate(`/workspace/${workspaceId}/feed/manage`, {
+      return navigate(`/workspace/${workspaceId}/subscription/manage`, {
         replace: logic === RouteLogic.REPLACE,
       });
     },
-    [navigate],
+    [navigate]
   );
 
-  const jumpToFeedDocs = useCallback(
+  const jumpToSubscriptionDocs = useCallback(
     (
       workspaceId: string,
       status: 'true' | 'false' = 'false',
-      logic: RouteLogic = RouteLogic.PUSH,
+      logic: RouteLogic = RouteLogic.PUSH
     ) => {
-      return navigate(`/workspace/${workspaceId}/feed/seen/${status}`, {
+      return navigate(`/workspace/${workspaceId}/subscription/seen/${status}`, {
         replace: logic === RouteLogic.REPLACE,
       });
     },
-    [navigate],
+    [navigate]
   );
 
-  const jumpToFeed = useCallback(
+  const jumpToSubscription = useCallback(
     (
       workspaceId: string,
       feedId: string,
-      logic: RouteLogic = RouteLogic.PUSH,
+      logic: RouteLogic = RouteLogic.PUSH
     ) => {
-      return navigate(`/workspace/${workspaceId}/feed/${feedId}`, {
+      return navigate(`/workspace/${workspaceId}/subscription/${feedId}`, {
         replace: logic === RouteLogic.REPLACE,
       });
     },
-    [navigate],
+    [navigate]
   );
   const jumpToSubPath = useCallback(
     (
       workspaceId: string,
       subPath: WorkspaceSubPath,
-      logic: RouteLogic = RouteLogic.PUSH,
+      logic: RouteLogic = RouteLogic.PUSH
     ) => {
       return navigate(`/workspace/${workspaceId}/${subPath}`, {
         replace: logic === RouteLogic.REPLACE,
       });
     },
-    [navigate],
+    [navigate]
   );
 
   const openPage = useCallback(
     (workspaceId: string, pageId: string) => {
       return jumpToPage(workspaceId, pageId);
     },
-    [jumpToPage],
+    [jumpToPage]
   );
 
   const jumpToIndex = useCallback(
@@ -148,10 +148,10 @@ export function useNavigateHelper() {
         { pathname: '/', search: opt?.search },
         {
           replace: logic === RouteLogic.REPLACE,
-        },
+        }
       );
     },
-    [navigate],
+    [navigate]
   );
 
   const jumpTo404 = useCallback(
@@ -160,7 +160,7 @@ export function useNavigateHelper() {
         replace: logic === RouteLogic.REPLACE,
       });
     },
-    [navigate],
+    [navigate]
   );
   const jumpToExpired = useCallback(
     (logic: RouteLogic = RouteLogic.PUSH) => {
@@ -168,14 +168,14 @@ export function useNavigateHelper() {
         replace: logic === RouteLogic.REPLACE,
       });
     },
-    [navigate],
+    [navigate]
   );
   const jumpToSignIn = useCallback(
     (
       redirectUri?: string,
       logic: RouteLogic = RouteLogic.PUSH,
       otherOptions?: Omit<NavigateOptions, 'replace'>,
-      params?: Record<string, string>,
+      params?: Record<string, string>
     ) => {
       const searchParams = new URLSearchParams();
 
@@ -189,14 +189,14 @@ export function useNavigateHelper() {
 
       return navigate(
         '/signIn' +
-        (searchParams.toString() ? '?' + searchParams.toString() : ''),
+          (searchParams.toString() ? '?' + searchParams.toString() : ''),
         {
           replace: logic === RouteLogic.REPLACE,
           ...otherOptions,
-        },
+        }
       );
     },
-    [navigate],
+    [navigate]
   );
 
   const openInApp = useCallback(
@@ -204,7 +204,7 @@ export function useNavigateHelper() {
       const encodedUrl = encodeURIComponent(`${schema}://${path}`);
       return navigate(`/open-app/url?schema=${schema}&url=${encodedUrl}`);
     },
-    [navigate],
+    [navigate]
   );
 
   return useMemo(
@@ -218,9 +218,9 @@ export function useNavigateHelper() {
       jumpToExpired,
       jumpToSignIn,
       jumpToCollection,
-      jumpToFeed,
-      jumpToFeedDocs,
-      jumpToManageFeeds,
+      jumpToSubscription,
+      jumpToSubscriptionDocs,
+      jumpToManageSubscriptions,
       jumpToCollections,
       jumpToTags,
       jumpToTag,
@@ -236,13 +236,13 @@ export function useNavigateHelper() {
       jumpToExpired,
       jumpToSignIn,
       jumpToCollection,
-      jumpToFeed,
-      jumpToFeedDocs,
-      jumpToManageFeeds,
+      jumpToSubscription,
+      jumpToSubscriptionDocs,
+      jumpToManageSubscriptions,
       jumpToCollections,
       jumpToTags,
       jumpToTag,
       openInApp,
-    ],
+    ]
   );
 }

@@ -1,13 +1,16 @@
-import { FeedService } from '@affine/core/modules/feed/services/feed';
+import { SubscriptionService } from '@affine/core/modules/feed/services/subscription-service';
 import { TagService } from '@affine/core/modules/tag';
 import { useService } from '@toeverything/infra';
 import { useCallback } from 'react';
 
 export const useDeleteFeed = () => {
-  const feedService = useService(FeedService);
+  const feedService = useService(SubscriptionService);
   const tagList = useService(TagService).tagList;
-  return useCallback((...ids: string[]) => {
-    feedService.deleteFeed(...ids);
-    ids.map(id => tagList.deleteTag(id));
-  }, [feedService, tagList]);
+  return useCallback(
+    (...ids: string[]) => {
+      feedService.unsubscribe(...ids);
+      ids.map(id => tagList.deleteTag(id));
+    },
+    [feedService, tagList]
+  );
 };

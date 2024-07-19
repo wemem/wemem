@@ -687,26 +687,6 @@ mutation publishPage($workspaceId: String!, $pageId: String!, $mode: PublicPageM
 }`,
 };
 
-export const pullFeedItemsQuery = {
-  id: 'pullFeedItemsQuery' as const,
-  operationName: 'PullFeedItems',
-  definitionName: 'pullFeedItems',
-  containsFile: false,
-  query: `
-query PullFeedItems($pullInput: [PullFeedItemsInput!]!) {
-  pullFeedItems(pullInput: $pullInput) {
-    feedId
-    feedItemId
-    title
-    link
-    descriptionMarkdown
-    contentMarkdown
-    createdAt
-    publishedAt
-  }
-}`,
-};
-
 export const quotaQuery = {
   id: 'quotaQuery' as const,
   operationName: 'quota',
@@ -804,21 +784,85 @@ mutation revokePublicPage($workspaceId: String!, $pageId: String!) {
 }`,
 };
 
-export const searchFeedsQuery = {
-  id: 'searchFeedsQuery' as const,
-  operationName: 'searchFeeds',
-  definitionName: 'searchFeeds',
+export const searchSubscriptionsQuery = {
+  id: 'searchSubscriptionsQuery' as const,
+  operationName: 'searchSubscriptions',
+  definitionName: 'searchSubscriptions',
   containsFile: false,
   query: `
-query searchFeeds($keyword: String!) {
-  searchFeeds(keyword: $keyword) {
+query searchSubscriptions($keyword: String!) {
+  searchSubscriptions(keyword: $keyword) {
     id
-    title
+    name
+    url
+    icon
     description
-    image
-    feedType
-    feedLink
-    updated
+    createdAt
+  }
+}`,
+};
+
+export const searchQuery = {
+  id: 'searchQuery' as const,
+  operationName: 'Search',
+  definitionName: 'search',
+  containsFile: false,
+  query: `
+query Search($after: String, $first: Int, $query: String, $includeContent: Boolean) {
+  search(
+    first: $first
+    after: $after
+    query: $query
+    includeContent: $includeContent
+  ) {
+    ... on SearchSuccess {
+      edges {
+        cursor
+        node {
+          id
+          title
+          slug
+          url
+          pageType
+          contentReader
+          readableContent
+          createdAt
+          isArchived
+          readingProgressPercent
+          readingProgressTopPercent
+          readingProgressAnchorIndex
+          author
+          image
+          description
+          publishedAt
+          ownedByViewer
+          originalArticleUrl
+          uploadFileId
+          labels {
+            id
+            name
+            color
+          }
+          pageId
+          shortId
+          quote
+          annotation
+          siteName
+          subscription
+          readAt
+        }
+      }
+      pageInfo {
+        hasNextPage
+        hasPreviousPage
+        startCursor
+        endCursor
+        totalCount
+      }
+    }
+    ... on SearchError {
+      errorCodes
+    }
   }
 }`,
 };

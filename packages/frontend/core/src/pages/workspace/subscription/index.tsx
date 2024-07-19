@@ -3,10 +3,9 @@ import {
   useEditCollection,
   VirtualizedPageList,
 } from '@affine/core/components/page-list';
-import { useAllPageListConfig } from '@affine/core/hooks/affine/use-all-page-list-config';
 import { useAsyncCallback } from '@affine/core/hooks/affine-async-hooks';
 import { CollectionService } from '@affine/core/modules/collection';
-import { FeedService } from '@affine/core/modules/feed/services/feed';
+import { SubscriptionService } from '@affine/core/modules/feed/services/subscription-service';
 import { FilterContainer } from '@affine/core/pages/workspace/all-page/all-page-filter';
 import type { Collection, Filter } from '@affine/env/filter';
 import { Trans, useI18n } from '@affine/i18n';
@@ -22,16 +21,15 @@ import { useParams } from 'react-router-dom';
 
 import { useNavigateHelper } from '../../../hooks/use-navigate-helper';
 import { ViewBodyIsland, ViewHeaderIsland } from '../../../modules/workbench';
-import * as styles from './feed.css';
-import { FeedDetailHeader } from './header';
+import { SubscriptionDetailHeader } from './header';
+import * as styles from './subscription.css';
 
 export const FeedDetail = ({ collection }: { collection: Collection }) => {
-  const config = useAllPageListConfig();
   const [filters, setFilters] = useState<Filter[]>([]);
   return (
     <>
       <ViewHeaderIsland>
-        <FeedDetailHeader />
+        <SubscriptionDetailHeader />
       </ViewHeaderIsland>
       <ViewBodyIsland>
         <div className={styles.body}>
@@ -39,7 +37,6 @@ export const FeedDetail = ({ collection }: { collection: Collection }) => {
           <VirtualizedPageList
             feed={collection}
             filters={[...collection.filterList, ...filters]}
-            config={config}
           />
         </div>
       </ViewBodyIsland>
@@ -48,18 +45,18 @@ export const FeedDetail = ({ collection }: { collection: Collection }) => {
 };
 
 export const Component = function CollectionPage() {
-  const service = useService(FeedService);
-  const feeds = useLiveData(service.feeds$);
+  const service = useService(SubscriptionService);
+  const subscriptions = useLiveData(service.subscriptions$);
   const params = useParams();
-  const feed = feeds.find(v => v.id === params.feedId);
+  const subscription = subscriptions.find(v => v.id === params.subscriptionId);
 
-  if (!feed) {
+  if (!subscription) {
     return null;
   }
-  return isEmpty(feed) ? (
-    <Placeholder collection={feed} />
+  return isEmpty(subscription) ? (
+    <Placeholder collection={subscription} />
   ) : (
-    <FeedDetail collection={feed} />
+    <FeedDetail collection={subscription} />
   );
 };
 

@@ -21,7 +21,7 @@ config:
 overwrite: true
 schema:
   - ../../backend/server/src/schema.gql
-  - ../../backend/go-server/graph/readflow.gql
+  - ../../backend/server/src/schema-omnivore.gql
 documents: ./src/**/*.gql
 generates:
   ./src/schema.ts:

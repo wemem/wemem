@@ -130,19 +130,19 @@ export const viewRoutes = [
     lazy: () => import('./pages/workspace/collection/index'),
   },
   {
-    path: '/feed/seen/:status',
+    path: '/subscription/seen/:status',
     lazy: () => import('./pages/workspace/feed-docs/index'),
   },
   {
-    path: '/feed/manage',
+    path: '/subscription/manage',
     lazy: () => import('./pages/workspace/all-feed'),
   },
   {
-    path: '/feed/:feedId',
-    lazy: () => import('@affine/core/pages/workspace/feed/index'),
+    path: '/subscription/:subscriptionId',
+    lazy: () => import('@affine/core/pages/workspace/subscription/index'),
   },
   {
-    path: '/feed/:feedId/page/:pageId',
+    path: '/subscription/:subscriptionId/page/:pageId',
     lazy: () => import('./pages/workspace/detail-page/detail-page'),
   },
   {

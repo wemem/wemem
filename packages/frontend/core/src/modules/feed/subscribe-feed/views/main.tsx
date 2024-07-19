@@ -24,7 +24,7 @@ import {
   useState,
 } from 'react';
 
-import { NewFeedService } from '../services/new-feed-search';
+import { SubscriptionsService } from '../services/subscriptions-service';
 import {
   cmdkValueAtom,
   useCMDKCommandGroups,
@@ -73,8 +73,8 @@ const QuickSearchGroup = ({
 }) => {
   const t = useI18n();
   const i18nKey = categoryToI18nKey[category];
-  const quickSearch = useService(NewFeedService).newFeed;
-  const query = useLiveData(quickSearch.query$);
+  const subscribeFeed = useService(SubscriptionsService).subscribeFeed;
+  const query = useLiveData(subscribeFeed.query$);
 
   const onCommendSelect = useAsyncCallback(
     async (command: CMDKCommand) => {
@@ -179,8 +179,8 @@ export const CMDKContainer = ({
   const [opening, setOpening] = useState(open);
   const { syncing, progress } = useDocEngineStatus();
   const showLoading = useDebouncedValue(syncing, 500);
-  const quickSearch = useService(NewFeedService).newFeed;
-  const mode = useLiveData(quickSearch.mode$);
+  const subscribeFeed = useService(SubscriptionsService).subscribeFeed;
+  const mode = useLiveData(subscribeFeed.mode$);
 
   const inputRef = useRef<HTMLInputElement>(null);
 
@@ -252,8 +252,8 @@ const CMDKQuickSearchModalInner = ({
   open,
   ...props
 }: CMDKModalProps & { pageMeta?: Partial<DocMeta> }) => {
-  const quickSearch = useService(NewFeedService).newFeed;
-  const query = useLiveData(quickSearch.query$);
+  const subscribeFeed = useService(SubscriptionsService).subscribeFeed;
+  const query = useLiveData(subscribeFeed.query$);
   const groups = useCMDKCommandGroups();
   const t = useI18n();
   return (
@@ -261,7 +261,7 @@ const CMDKQuickSearchModalInner = ({
       className={styles.root}
       query={query}
       groups={groups}
-      onQueryChange={quickSearch.setQuery}
+      onQueryChange={subscribeFeed.setQuery}
       inputLabel={t['ai.readflow.feeds.new-feed-button']()}
       open={open}
     >
@@ -274,8 +274,8 @@ const CMDKQuickSearchCallbackModalInner = ({
   open,
   ...props
 }: CMDKModalProps & { pageMeta?: Partial<DocMeta> }) => {
-  const quickSearch = useService(NewFeedService).newFeed;
-  const query = useLiveData(quickSearch.query$);
+  const subscribeFeed = useService(SubscriptionsService).subscribeFeed;
+  const query = useLiveData(subscribeFeed.query$);
   const groups = useSearchCallbackCommandGroups();
   const t = useI18n();
   return (
@@ -283,7 +283,7 @@ const CMDKQuickSearchCallbackModalInner = ({
       className={styles.root}
       query={query}
       groups={groups}
-      onQueryChange={quickSearch.setQuery}
+      onQueryChange={subscribeFeed.setQuery}
       inputLabel={t['com.affine.cmdk.insert-links']()}
       open={open}
     >
@@ -297,8 +297,8 @@ export const NewFeedModal = ({
   open,
   ...props
 }: CMDKModalProps & { pageMeta?: Partial<DocMeta> }) => {
-  const quickSearch = useService(NewFeedService).newFeed;
-  const mode = useLiveData(quickSearch.mode$);
+  const subscribeFeed = useService(SubscriptionsService).subscribeFeed;
+  const mode = useLiveData(subscribeFeed.mode$);
   const InnerComp =
     mode === 'commands'
       ? CMDKQuickSearchModalInner
@@ -354,19 +354,19 @@ const CMDKKeyBinding = ({ keyBinding }: { keyBinding: string }) => {
 };
 
 export const NewFeedModalComponent = () => {
-  const newFeed = useService(NewFeedService).newFeed;
-  const open = useLiveData(newFeed.show$);
+  const subscribeFeed = useService(SubscriptionsService).subscribeFeed;
+  const open = useLiveData(subscribeFeed.show$);
 
   const onToggleQuickSearch = useCallback(
     (open: boolean) => {
       if (open) {
         // should never be here
-        newFeed.show();
+        subscribeFeed.show();
       } else {
-        newFeed.hide();
+        subscribeFeed.hide();
       }
     },
-    [newFeed]
+    [subscribeFeed]
   );
 
   const docRecordList = useService(DocsService).list;

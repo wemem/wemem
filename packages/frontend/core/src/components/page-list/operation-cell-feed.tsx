@@ -11,11 +11,7 @@ import { useEditFeed } from '@affine/core/components/page-list/feed/use-edit-fee
 import { FavoriteItemsAdapter } from '@affine/core/modules/properties';
 import type { Collection } from '@affine/env/filter';
 import { useI18n } from '@affine/i18n';
-import {
-  DeleteIcon,
-  EditIcon,
-  MoreVerticalIcon,
-} from '@blocksuite/icons/rc';
+import { DeleteIcon, EditIcon, MoreVerticalIcon } from '@blocksuite/icons/rc';
 import { useLiveData, useService } from '@toeverything/infra';
 import { useCallback } from 'react';
 
@@ -32,11 +28,10 @@ export const FeedOperationCell = ({ collection }: FeedOperationCellProps) => {
 
   const favAdapter = useService(FavoriteItemsAdapter);
   const favourite = useLiveData(
-    favAdapter.isFavorite$(collection.id, 'collection'),
+    favAdapter.isFavorite$(collection.id, 'collection')
   );
 
   const { handleEditFeed, node: editNameModal } = useEditFeed(collection);
-
 
   const deleteFeed = useDeleteFeed();
 
@@ -50,7 +45,7 @@ export const FeedOperationCell = ({ collection }: FeedOperationCellProps) => {
     toast(
       status
         ? t['com.affine.toastMessage.removedFavorites']()
-        : t['com.affine.toastMessage.addedFavorites'](),
+        : t['com.affine.toastMessage.addedFavorites']()
     );
   }, [favAdapter, collection.id, t]);
 
@@ -82,7 +77,7 @@ export const FeedOperationCell = ({ collection }: FeedOperationCellProps) => {
               }
               type="danger"
             >
-              {t['Delete']()}
+              {t['ai.readease.subscriptions.unsubscribe']()}
             </MenuItem>
           }
           contentOptions={{

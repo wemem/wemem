@@ -1,8 +1,8 @@
 import { tagColors } from '@affine/core/components/affine/page-properties/common';
 import { createEmptyCollection } from '@affine/core/components/page-list';
 import { useNavigateHelper } from '@affine/core/hooks/use-navigate-helper';
-import type { FeedRecord } from '@affine/core/modules/feed/new-feed/views/data-hooks';
-import { FeedService } from '@affine/core/modules/feed/services/feed';
+import { SubscriptionService } from '@affine/core/modules/feed/services/subscription-service';
+import type { SubscriptionRecord } from '@affine/core/modules/feed/subscribe-feed/views/data-hooks';
 import { TagService } from '@affine/core/modules/tag';
 import type { DocCollection } from '@blocksuite/store';
 import { useService } from '@toeverything/infra';
@@ -10,23 +10,24 @@ import { useCallback } from 'react';
 
 export const FeedFilterTagPrefix = 'feed-filter-tag-';
 
-export const useCreateFeed = (docCollection: DocCollection) => {
+export const useSubscribeToFeed = (docCollection: DocCollection) => {
   const navigateHelper = useNavigateHelper();
-  const feedService = useService(FeedService);
+  const subscriptionService = useService(SubscriptionService);
   const tagList = useService(TagService).tagList;
 
   return useCallback(
-    (feed: FeedRecord) => {
-      if (feedService.hasFeed(feed.id)) {
+    (subscription: SubscriptionRecord) => {
+      if (subscriptionService.hasSubscribe(subscription.id)) {
         return;
       }
-      const id = feed.id;
-      feedService.addFeed(
+      const id = subscription.id;
+      subscriptionService.subscribe(
         createEmptyCollection(id, {
-          name: feed.title,
-          feed: {
-            description: feed.description,
-            image: feed.image,
+          name: subscription.name,
+          subscription: {
+            url: subscription.url,
+            description: subscription.description,
+            icon: subscription.icon,
           },
           filterList: [
             {
@@ -39,7 +40,7 @@ export const useCreateFeed = (docCollection: DocCollection) => {
               args: [
                 {
                   type: 'literal',
-                  value: [id],
+                  value: [subscription.url],
                 },
               ],
             },
@@ -51,8 +52,8 @@ export const useCreateFeed = (docCollection: DocCollection) => {
         `${FeedFilterTagPrefix}${id}`,
         tagColors[0][1]
       );
-      navigateHelper.jumpToFeed(docCollection.id, id);
+      navigateHelper.jumpToSubscription(docCollection.id, id);
     },
-    [docCollection.id, feedService, navigateHelper, tagList]
+    [docCollection.id, subscriptionService, navigateHelper, tagList]
   );
 };

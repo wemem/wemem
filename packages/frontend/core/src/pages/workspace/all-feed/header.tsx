@@ -7,9 +7,9 @@ import clsx from 'clsx';
 import * as styles from './header.css';
 
 export const AllFeedHeader = ({
-                                showCreateNew,
-                                handleCreateFeed,
-                              }: {
+  showCreateNew,
+  handleCreateFeed,
+}: {
   showCreateNew: boolean;
   handleCreateFeed?: () => void;
 }) => {
@@ -22,11 +22,11 @@ export const AllFeedHeader = ({
           onClick={handleCreateFeed}
           className={clsx(
             styles.headerCreateNewCollectionIconButton,
-            !showCreateNew && styles.headerCreateNewButtonHidden,
+            !showCreateNew && styles.headerCreateNewButtonHidden
           )}
         />
       }
-      center={<WorkspaceModeFilterTab activeFilter={'feeds'} />}
+      center={<WorkspaceModeFilterTab activeFilter={'subscriptions'} />}
     />
   );
 };

@@ -1,0 +1,62 @@
+query Search(
+  $after: String
+  $first: Int
+  $query: String
+  $includeContent: Boolean
+) {
+  search(
+    first: $first
+    after: $after
+    query: $query
+    includeContent: $includeContent
+  ) {
+    ... on SearchSuccess {
+      edges {
+        cursor
+        node {
+          id
+          title
+          slug
+          url
+          pageType
+          contentReader
+          readableContent
+          createdAt
+          isArchived
+          readingProgressPercent
+          readingProgressTopPercent
+          readingProgressAnchorIndex
+          author
+          image
+          description
+          publishedAt
+          ownedByViewer
+          originalArticleUrl
+          uploadFileId
+          labels {
+            id
+            name
+            color
+          }
+          pageId
+          shortId
+          quote
+          annotation
+          siteName
+          subscription
+          readAt
+        }
+      }
+      pageInfo {
+        hasNextPage
+        hasPreviousPage
+        startCursor
+        endCursor
+        totalCount
+      }
+    }
+    ... on SearchError {
+      errorCodes
+    }
+  }
+}

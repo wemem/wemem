@@ -15,6 +15,11 @@ export class PrismaService
   }
 
   async onModuleInit() {
+    this.$on<'query'>('query', e => {
+      console.log('Query: ' + e.query);
+      console.log('Params: ' + e.params);
+      console.log('Duration: ' + e.duration + 'ms');
+    });
     await this.$connect();
   }
 

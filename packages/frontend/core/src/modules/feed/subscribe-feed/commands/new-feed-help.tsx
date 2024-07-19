@@ -4,7 +4,11 @@ import { PiWechatLogo } from 'react-icons/pi';
 
 import { registerNewFeedCommand } from './registry';
 
-export function registerNewFeedHelpCommands({ t }: { t: ReturnType<typeof useAFFiNEI18N> }) {
+export function registerNewFeedHelpCommands({
+  t,
+}: {
+  t: ReturnType<typeof useAFFiNEI18N>;
+}) {
   const unsubs: Array<() => void> = [];
   unsubs.push(
     registerNewFeedCommand({
@@ -15,7 +19,7 @@ export function registerNewFeedHelpCommands({ t }: { t: ReturnType<typeof useAFF
       run() {
         popupWindow(runtimeConfig.changelogUrl);
       },
-    }),
+    })
   );
 
   return () => {

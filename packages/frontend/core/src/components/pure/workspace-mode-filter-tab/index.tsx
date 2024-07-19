@@ -19,7 +19,12 @@ export const WorkspaceModeFilterTab = ({
   const t = useI18n();
   const [value, setValue] = useState(activeFilter);
   const [filterMode, setFilterMode] = useAtom(allPageFilterSelectAtom);
-  const { jumpToCollections, jumpToTags, jumpToSubPath, jumpToFeedDocs } = useNavigateHelper();
+  const {
+    jumpToCollections,
+    jumpToTags,
+    jumpToSubPath,
+    jumpToSubscriptionDocs,
+  } = useNavigateHelper();
   const handleValueChange = useCallback(
     (value: AllPageFilterOption) => {
       switch (value) {
@@ -32,12 +37,18 @@ export const WorkspaceModeFilterTab = ({
         case 'docs':
           jumpToSubPath(workspace.id, WorkspaceSubPath.ALL);
           break;
-        case 'feeds':
-          jumpToFeedDocs(workspace.id);
+        case 'subscriptions':
+          jumpToSubscriptionDocs(workspace.id);
           break;
       }
     },
-    [jumpToCollections, jumpToSubPath, jumpToTags, jumpToFeedDocs, workspace],
+    [
+      jumpToCollections,
+      jumpToSubPath,
+      jumpToTags,
+      jumpToSubscriptionDocs,
+      workspace,
+    ]
   );
 
   useEffect(() => {
@@ -61,7 +72,7 @@ export const WorkspaceModeFilterTab = ({
             className: styles.filterTab,
           },
           {
-            value: 'feeds',
+            value: 'subscriptions',
             label: t['ai.readflow.feeds.header'](),
             testId: 'workspace-feeds-button',
             className: styles.filterTab,

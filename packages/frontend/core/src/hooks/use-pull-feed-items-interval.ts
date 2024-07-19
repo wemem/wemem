@@ -1,18 +1,16 @@
 import { GraphQLService } from '@affine/core/modules/cloud';
-import { FeedService } from '@affine/core/modules/feed/services/feed';
+import { SubscriptionService } from '@affine/core/modules/feed/services/subscription-service';
 import {
   FeedTag,
   UnseenTag,
 } from '@affine/core/modules/tag/entities/internal-tag';
 import { DebugLogger } from '@affine/debug';
-import { pullFeedItemsQuery } from '@affine/graphql';
+import { searchQuery, type SearchSuccess } from '@affine/graphql';
 import { importMarkDown } from '@blocksuite/blocks';
 import type { JobMiddleware } from '@blocksuite/store';
 import { useService, WorkspaceService } from '@toeverything/infra';
-import { useEffect, useMemo, useRef } from 'react';
+import { useEffect, useRef } from 'react';
 
-import { PagePropertiesMetaManager } from '../components/affine/page-properties';
-import { PagePropertyType } from '../modules/properties/services/schema';
 import { TagService } from '../modules/tag/service/tag';
 import { useCurrentWorkspacePropertiesAdapter } from './use-affine-adapter';
 import { usePagePropertiesMetaManager } from './use-page-properties-meta-manager';
@@ -21,7 +19,7 @@ const logger = new DebugLogger('usePullFeedItemsInterval');
 export const usePullFeedItemsInterval = () => {
   const currentWorkspace = useService(WorkspaceService).workspace;
   const graphQLService = useService(GraphQLService);
-  const feedService = useService(FeedService);
+  const feedService = useService(SubscriptionService);
   const tagList = useService(TagService).tagList;
   const timerRef = useRef<NodeJS.Timeout | null>(null);
   const isRunning = useRef(false);
@@ -44,60 +42,68 @@ export const usePullFeedItemsInterval = () => {
 
       isRunning.current = true;
       try {
-        const pullInput = feedService.feeds$.getValue().map(feed => ({
-          feedId: feed.id,
-          latestFeedItemId: feed.feed?.latestFeedItemId,
-        }));
-        logger.debug('pulling input', pullInput);
-        if (pullInput.length === 0) {
-          return;
-        }
+        // const pullInput = feedService.subscriptions$.getValue().map(feed => ({
+        //   feedId: feed.id,
+        //   latestFeedItemId: feed.feed?.latestFeedItemId,
+        // }));
+        // logger.debug('pulling input', pullInput);
+        // if (pullInput.length === 0) {
+        //   return;
+        // }
+
+        const input = {
+          // "after": "0",
+          first: 10,
+          query: 'in:sucess',
+          includeContent: true,
+        };
 
         const response = await graphQLService.exec({
-          query: pullFeedItemsQuery,
-          variables: { pullInput },
+          query: searchQuery,
+          variables: input,
         });
 
+        const searchSuccess = response.search as SearchSuccess;
         logger.debug(
           'pulling feed items response length',
-          response.pullFeedItems?.length ?? 0
+          searchSuccess.edges.length ?? 0
         );
 
-        for (const item of response.pullFeedItems || []) {
-          if (!currentWorkspace.docCollection.getDoc(item.feedItemId)) {
+        for (const item of searchSuccess.edges || []) {
+          const libraryItem = item.node;
+          if (!currentWorkspace.docCollection.getDoc(libraryItem.id)) {
             const jobMiddleware: JobMiddleware = ({ slots }) => {
               slots.beforeImport.on(payload => {
                 if (payload.type !== 'page') {
                   return;
                 }
-                payload.snapshot.meta.id = item.feedItemId;
+                payload.snapshot.meta.id = libraryItem.id;
                 payload.snapshot.meta.createDate = new Date(
-                  item.publishedAt
+                  libraryItem.publishedAt || libraryItem.createdAt
                 ).getTime();
               });
             };
 
             const docId = await importMarkDown(
               currentWorkspace.docCollection,
-              item.contentMarkdown || item.descriptionMarkdown,
-              item.title,
+              libraryItem.readableContent,
+              libraryItem.title,
               jobMiddleware
             );
+
+            const tags = [FeedTag.id, UnseenTag.id];
+            if (libraryItem.subscription) {
+              tags.push(libraryItem.subscription);
+            }
+
             currentWorkspace.docCollection.setDocMeta(docId, {
-              tags: [FeedTag.id, item.feedId, UnseenTag.id],
-              createDate: new Date(item.publishedAt).getTime(),
+              tags,
+              createDate: new Date(libraryItem.createdAt).getTime(),
             });
 
-            feedService.updateFeed(item.feedId, feed => ({
-              ...feed,
-              feed: {
-                ...feed.feed,
-                latestFeedItemId: item.feedItemId,
-              },
-            }));
             logger.debug('import feed item to doc', {
-              feedItemId: item.feedItemId,
-              feedId: item.feedId,
+              subscription: libraryItem.subscription,
+              url: libraryItem.url,
               docId,
             });
           }
@@ -115,7 +121,7 @@ export const usePullFeedItemsInterval = () => {
       fetchFeedItems();
     };
 
-    timerRef.current = setInterval(intervalCallback, 300000);
+    timerRef.current = setInterval(intervalCallback, 3000);
 
     return () => {
       if (timerRef.current) {

@@ -6,9 +6,9 @@ import { Array as YArray } from 'yjs';
 
 const SETTING_KEY = 'setting';
 
-const FEEDS_KEY = 'feeds';
+const SUBSCRIPTIONS_KEY = 'subscriptions';
 
-export class FeedService extends Service {
+export class SubscriptionService extends Service {
   constructor(private readonly workspaceService: WorkspaceService) {
     super();
   }
@@ -19,69 +19,69 @@ export class FeedService extends Service {
 
   private get setting() {
     return this.workspaceService.workspace.docCollection.doc.getMap(
-      SETTING_KEY,
+      SETTING_KEY
     );
   }
 
-  private get feedsYArray(): YArray<Collection> | undefined {
-    return this.setting.get(FEEDS_KEY) as YArray<Collection>;
+  private get subscriptionsYArray(): YArray<Collection> | undefined {
+    return this.setting.get(SUBSCRIPTIONS_KEY) as YArray<Collection>;
   }
 
-  readonly feeds$ = LiveData.from(
+  readonly subscriptions$ = LiveData.from(
     new Observable<Collection[]>(subscriber => {
-      subscriber.next(this.feedsYArray?.toArray() ?? []);
+      subscriber.next(this.subscriptionsYArray?.toArray() ?? []);
       const fn = () => {
-        subscriber.next(this.feedsYArray?.toArray() ?? []);
+        subscriber.next(this.subscriptionsYArray?.toArray() ?? []);
       };
       this.setting.observeDeep(fn);
       return () => {
         this.setting.unobserveDeep(fn);
       };
     }),
-    [],
+    []
   );
 
-  addFeed(...collections: Collection[]) {
-    if (!this.setting.has(FEEDS_KEY)) {
-      this.setting.set(FEEDS_KEY, new YArray());
+  subscribe(...collections: Collection[]) {
+    if (!this.setting.has(SUBSCRIPTIONS_KEY)) {
+      this.setting.set(SUBSCRIPTIONS_KEY, new YArray());
     }
     this.doc.transact(() => {
-      this.feedsYArray?.insert(0, collections);
+      this.subscriptionsYArray?.insert(0, collections);
     });
   }
 
-  updateFeed(id: string, updater: (value: Collection) => Collection) {
-    if (this.feedsYArray) {
+  updateSubscription(id: string, updater: (value: Collection) => Collection) {
+    if (this.subscriptionsYArray) {
       updateFirstOfYArray(
-        this.feedsYArray,
+        this.subscriptionsYArray,
         v => v.id === id,
         v => {
           return updater(v);
-        },
+        }
       );
     }
   }
 
-  hasFeed(id: string) {
-    return this.feedsYArray?.toArray().some(v => v.id === id) ?? false;
+  hasSubscribe(id: string) {
+    return this.subscriptionsYArray?.toArray().some(v => v.id === id) ?? false;
   }
 
-  deleteFeed(...ids: string[]) {
-    const feedsYArray = this.feedsYArray;
-    if (!feedsYArray) {
+  unsubscribe(...ids: string[]) {
+    const subscriptionsYArray = this.subscriptionsYArray;
+    if (!subscriptionsYArray) {
       return;
     }
     const set = new Set(ids);
     this.workspaceService.workspace.docCollection.doc.transact(() => {
       const indexList: number[] = [];
-      feedsYArray.forEach((feed, i) => {
+      subscriptionsYArray.forEach((feed, i) => {
         if (set.has(feed.id)) {
           set.delete(feed.id);
           indexList.unshift(i);
         }
       });
       indexList.forEach(i => {
-        feedsYArray.delete(i);
+        subscriptionsYArray.delete(i);
       });
     });
   }
@@ -90,7 +90,7 @@ export class FeedService extends Service {
 const updateFirstOfYArray = <T>(
   array: YArray<T>,
   p: (value: T) => boolean,
-  update: (value: T) => T,
+  update: (value: T) => T
 ) => {
   array.doc?.transact(() => {
     for (let i = 0; i < array.length; i++) {

@@ -1,6 +1,6 @@
 import { AnimatedDeleteIcon } from '@affine/component';
 import { AddFeedButton } from '@affine/core/components/app-sidebar/add-feed-button';
-import { FeedList } from '@affine/core/components/pure/workspace-slider-bar/feed';
+import { SubscriptionsList } from '../pure/workspace-slider-bar/subscriptions';
 import { AppSidebarJournalButton } from '@affine/core/components/root-app-sidebar/journal-button';
 import { getDNDId } from '@affine/core/hooks/affine/use-global-dnd-helper';
 import { useAsyncCallback } from '@affine/core/hooks/affine-async-hooks';
@@ -241,7 +241,7 @@ export const RootAppSidebar = memo(
             docCollection={docCollection}
             onCreate={handleCreateCollection}
           />
-          <FeedList docCollection={docCollection} />
+          <SubscriptionsList docCollection={docCollection} />
           <CategoryDivider label={t['com.affine.rootAppSidebar.others']()} />
           {/* fixme: remove the following spacer */}
           <div style={{ height: '4px' }} />

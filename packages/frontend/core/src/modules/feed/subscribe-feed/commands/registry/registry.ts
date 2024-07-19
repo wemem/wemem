@@ -1,4 +1,8 @@
-import { type AffineCommand, type AffineCommandOptions, createAffineCommand } from '@affine/core/commands';
+import {
+  type AffineCommand,
+  type AffineCommandOptions,
+  createAffineCommand,
+} from '@affine/core/commands';
 import { DebugLogger } from '@affine/debug';
 // @ts-expect-error upstream type is wrong
 import { tinykeys } from 'tinykeys';

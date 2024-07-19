@@ -9,6 +9,6 @@ export type CollectionsListProps = {
   onCreate?: () => void;
 };
 
-export type FeedsListProps = {
+export type SubscriptionsListProps = {
   docCollection: DocCollection;
 };

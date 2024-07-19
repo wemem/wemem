@@ -4,13 +4,12 @@ import {
   type CommandCategory,
   PreconditionStrategy,
 } from '@affine/core/commands';
-import { useCreateFeed } from '@affine/core/components/page-list';
+import { useSubscribeToFeed } from '@affine/core/components/page-list';
 import { FeedAvatar } from '@affine/core/components/page-list/feed/avatar';
 import { useNavigateHelper } from '@affine/core/hooks/use-navigate-helper';
-import { type SearchCallbackResult } from '@affine/core/modules/cmdk';
-import { NewFeedService } from '@affine/core/modules/feed/new-feed';
-import { NewFeedCommandRegistry } from '@affine/core/modules/feed/new-feed/commands';
-import type { SearchFeedsQuery } from '@affine/graphql';
+import { SubscriptionsService } from '@affine/core/modules/feed/subscribe-feed';
+import { NewFeedCommandRegistry } from '@affine/core/modules/feed/subscribe-feed/commands';
+import type { SearchSubscriptionsQuery } from '@affine/graphql';
 import { useI18n } from '@affine/i18n';
 import {
   GlobalContextService,
@@ -24,7 +23,9 @@ import { useCallback, useEffect, useMemo, useState } from 'react';
 import { filterSortAndGroupCommands } from './filter-commands';
 import type { CMDKCommand, CommandContext } from './types';
 
-export type FeedRecord = NonNullable<SearchFeedsQuery['searchFeeds']>[number];
+export type SubscriptionRecord = NonNullable<
+  SearchSubscriptionsQuery['searchSubscriptions']
+>[number];
 export const cmdkValueAtom = atom('');
 
 function filterCommandByContext(
@@ -59,46 +60,50 @@ function getAllCommand(context: CommandContext) {
   });
 }
 
-const feedToCommand = (
+const subscriptionToCommand = (
   category: CommandCategory,
-  feed: FeedRecord,
+  subscription: SubscriptionRecord,
   run: () => void
 ): CMDKCommand => {
   const commandLabel = {
-    title: feed.title,
-    subTitle: feed.description,
+    title: subscription.name,
+    subTitle: subscription.url || '',
   };
 
-  const id = category + '.' + feed.id;
+  const id = category + '.' + subscription.id;
   return {
     id,
     label: commandLabel,
     category: category,
-    originalValue: feed.title,
+    originalValue: subscription.name,
     run: run,
-    icon: <FeedAvatar image={feed.image} />,
-    timestamp: new Date(feed.updated).getTime(),
+    icon: <FeedAvatar image={subscription.icon} />,
+    timestamp: new Date(subscription.createdAt).getTime(),
   };
 };
 
-function useSearchedFeedsCommands(onSelect: (feed: FeedRecord) => void) {
-  const newFeed = useService(NewFeedService).newFeed;
-  const query = useLiveData(newFeed.query$);
+function useSearchedSubscribeFeedCommands(
+  onSelect: (record: SubscriptionRecord) => void
+) {
+  const subscribeFeed = useService(SubscriptionsService).subscribeFeed;
+  const query = useLiveData(subscribeFeed.query$);
   const [cmds, setCmds] = useState<CMDKCommand[]>([]);
 
   useEffect(() => {
-    const searchFeeds = async () => {
-      const feeds = await newFeed.getSearchedFeeds(query);
-      const cmds = feeds.map(feed => {
+    const searchSubscriptions = async () => {
+      const subscriptions = await subscribeFeed.searchSubscriptions(query);
+      const cmds = subscriptions.map(subscription => {
         const category = 'affine:pages';
-        return feedToCommand(category, feed, () => onSelect(feed));
+        return subscriptionToCommand(category, subscription, () =>
+          onSelect(subscription)
+        );
       });
 
       setCmds(cmds);
     };
     // eslint-disable-next-line @typescript-eslint/no-floating-promises
-    searchFeeds().then();
-  }, [newFeed, onSelect, query]);
+    searchSubscriptions().then();
+  }, [subscribeFeed, onSelect, query]);
 
   return cmds;
 }
@@ -106,42 +111,42 @@ function useSearchedFeedsCommands(onSelect: (feed: FeedRecord) => void) {
 export const useSearchFeedsCommands = () => {
   const workspace = useService(WorkspaceService).workspace;
   const navigationHelper = useNavigateHelper();
-  const createFeed = useCreateFeed(workspace.docCollection);
+  const subscribe = useSubscribeToFeed(workspace.docCollection);
   const t = useI18n();
 
   const onSelectPage = useCallback(
-    (feed: FeedRecord) => {
+    (record: SubscriptionRecord) => {
       if (!workspace) {
         console.error('current workspace not found');
         return;
       }
 
-      createFeed(feed);
+      subscribe(record);
       toast(t['ai.readflow.notification.message.feed-added']());
-      navigationHelper.jumpToFeed(workspace.id, feed.id);
+      navigationHelper.jumpToSubscription(workspace.id, record.id);
     },
-    [createFeed, navigationHelper, t, workspace]
+    [subscribe, navigationHelper, t, workspace]
   );
 
-  return useSearchedFeedsCommands(onSelectPage);
+  return useSearchedSubscribeFeedCommands(onSelectPage);
 };
 
 // todo: refactor to reduce duplication with usePageCommands
 export const useSearchCallbackCommands = () => {
-  const newFeed = useService(NewFeedService).newFeed;
+  const subscribeFeed = useService(SubscriptionsService).subscribeFeed;
   const workspace = useService(WorkspaceService).workspace;
   const onSelectPage = useCallback(
-    (feed: FeedRecord) => {
+    (feed: SubscriptionRecord) => {
       if (!workspace) {
         console.error('current workspace not found');
         return;
       }
-      newFeed.setSearchCallbackResult(feed);
+      subscribeFeed.setSearchCallbackResult(feed);
     },
-    [newFeed, workspace]
+    [subscribeFeed, workspace]
   );
 
-  return useSearchedFeedsCommands(onSelectPage);
+  return useSearchedSubscribeFeedCommands(onSelectPage);
 };
 
 export const useCMDKCommandGroups = () => {
@@ -154,8 +159,8 @@ export const useCMDKCommandGroups = () => {
       docMode: currentDocMode,
     });
   }, [currentDocMode]);
-  const quickSearch = useService(NewFeedService).newFeed;
-  const query = useLiveData(quickSearch.query$).trim();
+  const subscribeFeed = useService(SubscriptionsService).subscribeFeed;
+  const query = useLiveData(subscribeFeed.query$).trim();
 
   return useMemo(() => {
     const commands = [...searchFeedsCommands, ...newFeedsDefaultCommands];
@@ -166,8 +171,8 @@ export const useCMDKCommandGroups = () => {
 export const useSearchCallbackCommandGroups = () => {
   const searchCallbackCommands = useSearchCallbackCommands();
 
-  const quickSearch = useService(NewFeedService).newFeed;
-  const query = useLiveData(quickSearch.query$).trim();
+  const subscribeFeed = useService(SubscriptionsService).subscribeFeed;
+  const query = useLiveData(subscribeFeed.query$).trim();
 
   return useMemo(() => {
     const commands = [...searchCallbackCommands];

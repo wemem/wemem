@@ -3,8 +3,8 @@ import {
   FeedListHeader,
   VirtualizedFeedList,
 } from '@affine/core/components/page-list/feeds';
-import { NewFeedService } from '@affine/core/modules/feed/new-feed';
-import { FeedService } from '@affine/core/modules/feed/services/feed';
+import { SubscriptionsService } from '../../../modules/feed/subscribe-feed';
+import { SubscriptionService } from '@affine/core/modules/feed/services/subscription-service';
 import { mixpanel } from '@affine/core/utils';
 import { useLiveData, useService } from '@toeverything/infra';
 import { useCallback, useMemo, useState } from 'react';
@@ -17,8 +17,8 @@ import * as styles from './index.css';
 export const AllCollection = () => {
   const [hideHeaderCreateNew, setHideHeaderCreateNew] = useState(true);
 
-  const feedService = useService(FeedService);
-  const feeds = useLiveData(feedService.feeds$);
+  const feedService = useService(SubscriptionService);
+  const feeds = useLiveData(feedService.subscriptions$);
   const feedMetas = useMemo(() => {
     const collectionsList: CollectionMeta[] = feeds.map(collection => {
       return {
@@ -28,14 +28,14 @@ export const AllCollection = () => {
     });
     return collectionsList;
   }, [feeds]);
-  const newFeed = useService(NewFeedService).newFeed;
+  const subscribeFeed = useService(SubscriptionsService).subscribeFeed;
   const handleOpenNewFeedModal = useCallback(() => {
-    newFeed.show();
+    subscribeFeed.show();
     mixpanel.track('NewOpened', {
       segment: 'navigation panel',
       control: 'new feed button',
     });
-  }, [newFeed]);
+  }, [subscribeFeed]);
   return (
     <>
       <ViewHeaderIsland>

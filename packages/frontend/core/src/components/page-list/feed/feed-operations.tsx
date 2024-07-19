@@ -2,34 +2,28 @@ import type { MenuItemProps } from '@affine/component';
 import { Menu, MenuIcon, MenuItem } from '@affine/component';
 import { useDeleteFeed } from '@affine/core/components/page-list';
 import { useAppSettingHelper } from '@affine/core/hooks/affine/use-app-setting-helper';
-import { FeedService } from '@affine/core/modules/feed/services/feed';
+import { SubscriptionService } from '@affine/core/modules/feed/services/subscription-service';
 import { WorkbenchService } from '@affine/core/modules/workbench';
 import type { Collection } from '@affine/env/filter';
 import { useI18n } from '@affine/i18n';
-import {
-  DeleteIcon,
-  EditIcon,
-  SplitViewIcon,
-} from '@blocksuite/icons/rc';
+import { DeleteIcon, EditIcon, SplitViewIcon } from '@blocksuite/icons/rc';
 import { useService } from '@toeverything/infra';
 import type { PropsWithChildren, ReactElement } from 'react';
 import { useCallback, useMemo } from 'react';
 
 import * as styles from './feed-operations.css';
-import {
-  useCreateFeedModal,
-} from './use-create-feed-modal';
+import { useCreateFeedModal } from './use-create-feed-modal';
 
 export const FeedOperations = ({
-                                 feed,
-                                 openRenameModal,
-                                 children,
-                               }: PropsWithChildren<{
+  feed,
+  openRenameModal,
+  children,
+}: PropsWithChildren<{
   feed: Collection;
   openRenameModal?: () => void;
 }>) => {
   const { appSettings } = useAppSettingHelper();
-  const service = useService(FeedService);
+  const service = useService(SubscriptionService);
   const workbench = useService(WorkbenchService).workbench;
   const deleteFeed = useDeleteFeed();
   const t = useI18n();
@@ -45,7 +39,7 @@ export const FeedOperations = ({
     }
     openEditFeedNameModal(feed.name)
       .then(name => {
-        return service.updateFeed(feed.id, () => ({
+        return service.updateSubscription(feed.id, () => ({
           ...feed,
           name,
         }));
@@ -62,15 +56,15 @@ export const FeedOperations = ({
   const actions = useMemo<
     Array<
       | {
-      icon: ReactElement;
-      name: string;
-      click: () => void;
-      type?: MenuItemProps['type'];
-      element?: undefined;
-    }
+          icon: ReactElement;
+          name: string;
+          click: () => void;
+          type?: MenuItemProps['type'];
+          element?: undefined;
+        }
       | {
-      element: ReactElement;
-    }
+          element: ReactElement;
+        }
     >
   >(
     () => [
@@ -85,16 +79,16 @@ export const FeedOperations = ({
       },
       ...(appSettings.enableMultiView
         ? [
-          {
-            icon: (
-              <MenuIcon>
-                <SplitViewIcon />
-              </MenuIcon>
-            ),
-            name: t['com.affine.workbench.split-view.page-menu-open'](),
-            click: openFeedSplitView,
-          },
-        ]
+            {
+              icon: (
+                <MenuIcon>
+                  <SplitViewIcon />
+                </MenuIcon>
+              ),
+              name: t['com.affine.workbench.split-view.page-menu-open'](),
+              click: openFeedSplitView,
+            },
+          ]
         : []),
       {
         element: <div key="divider" className={styles.divider}></div>,
@@ -112,7 +106,14 @@ export const FeedOperations = ({
         type: 'danger',
       },
     ],
-    [t, showEditName, appSettings.enableMultiView, openFeedSplitView, service, feed.id],
+    [
+      t,
+      showEditName,
+      appSettings.enableMultiView,
+      openFeedSplitView,
+      service,
+      feed.id,
+    ]
   );
   return (
     <>

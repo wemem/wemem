@@ -1,4 +1,4 @@
-import { FeedService } from '@affine/core/modules/feed/services/feed';
+import { SubscriptionService } from '@affine/core/modules/feed/services/subscription-service';
 import type { Collection } from '@affine/env/filter';
 import { useI18n } from '@affine/i18n';
 import { useService } from '@toeverything/infra';
@@ -7,7 +7,7 @@ import { useCallback } from 'react';
 import { useEditFeedModal } from './use-edit-feed-modal';
 
 export const useEditFeed = (collection: Collection) => {
-  const feedService = useService(FeedService);
+  const feedService = useService(SubscriptionService);
   const t = useI18n();
   const { node, open } = useEditFeedModal({
     title: t['ai.readflow.editFeed.editFeed'](),
@@ -18,7 +18,7 @@ export const useEditFeed = (collection: Collection) => {
     // use openRenameModal if it is in the sidebar collection list
     open(collection.name)
       .then(name => {
-        return feedService.updateFeed(collection.id, collection => ({
+        return feedService.updateSubscription(collection.id, collection => ({
           ...collection,
           name,
         }));

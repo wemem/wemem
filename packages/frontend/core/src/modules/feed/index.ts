@@ -4,10 +4,10 @@ import {
   WorkspaceService,
 } from '@toeverything/infra';
 
-import { FeedService } from './services/feed';
+import { SubscriptionService } from './services/subscription-service';
 
 export function configureFeedModule(framework: Framework) {
   framework
     .scope(WorkspaceScope)
-    .service(FeedService, [WorkspaceService]);
+    .service(SubscriptionService, [WorkspaceService]);
 }

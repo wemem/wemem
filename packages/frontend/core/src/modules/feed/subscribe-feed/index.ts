@@ -6,17 +6,17 @@ import {
   WorkspaceScope,
 } from '@toeverything/infra';
 
-import { NewFeed } from './entities/new-feed';
-import { NewFeedService } from './services/new-feed-search';
+import { SubscribeFeed } from './entities/subscribe-feed';
+import { SubscriptionsService } from './services/subscriptions-service';
 import { RecentPagesService } from './services/recent-pages';
 
-export * from './entities/new-feed';
-export { NewFeedService, RecentPagesService };
+export * from './entities/subscribe-feed';
+export { SubscriptionsService, RecentPagesService };
 
 export function configureNewFeedModule(framework: Framework) {
   framework
     .scope(WorkspaceScope)
-    .service(NewFeedService)
+    .service(SubscriptionsService)
     .service(RecentPagesService, [WorkspaceLocalState, DocsService])
-    .entity(NewFeed, [GraphQLService]);
+    .entity(SubscribeFeed, [GraphQLService]);
 }

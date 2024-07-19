@@ -1,0 +1,10 @@
+query searchSubscriptions($keyword: String!) {
+  searchSubscriptions(keyword: $keyword) {
+    id
+    name
+    url
+    icon
+    description
+    createdAt
+  }
+}

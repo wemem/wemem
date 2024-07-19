@@ -5,7 +5,7 @@ import {
 } from '@affine/component/global-loading';
 import { usePullFeedItemsInterval } from '@affine/core/hooks/use-pull-feed-items-interval';
 import { useRegisterNewFeedCommands } from '@affine/core/hooks/use-register-new-feed-commands';
-import { NewFeedModalComponent } from '@affine/core/modules/feed/new-feed/views';
+import { NewFeedModalComponent } from '@affine/core/modules/feed/subscribe-feed/views';
 import { useI18n } from '@affine/i18n';
 import { ZipTransformer } from '@blocksuite/blocks';
 import { assertExists } from '@blocksuite/global/utils';
@@ -61,7 +61,7 @@ import {
 import { useRegisterFindInPageCommands } from '../hooks/affine/use-register-find-in-page-commands';
 import { useNavigateHelper } from '../hooks/use-navigate-helper';
 import { useRegisterWorkspaceCommands } from '../hooks/use-register-workspace-commands';
-import { NewFeedService } from '../modules/feed/new-feed';
+import { SubscriptionsService } from '../modules/feed/subscribe-feed';
 import { useRegisterNavigationCommands } from '../modules/navigation/view/use-register-navigation-commands';
 import { QuickSearchContainer } from '../modules/quicksearch';
 import { CMDKQuickSearchService } from '../modules/quicksearch/services/cmdk';
@@ -206,14 +206,14 @@ export const WorkspaceLayoutInner = ({ children }: PropsWithChildren) => {
     });
   }, [cmdkQuickSearchService]);
 
-  const newFeed = useService(NewFeedService).newFeed;
+  const subscribeFeed = useService(SubscriptionsService).subscribeFeed;
   const handleOpenNewFeedModal = useCallback(() => {
-    newFeed.show();
+    subscribeFeed.show();
     mixpanel.track('NewOpened', {
       segment: 'navigation panel',
       control: 'new feed button',
     });
-  }, [newFeed]);
+  }, [subscribeFeed]);
 
   const setOpenSettingModalAtom = useSetAtom(openSettingModalAtom);
 

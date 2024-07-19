@@ -94,7 +94,7 @@ async function handleOauthJwt(url: string) {
         httpOnly: true,
         value: token,
         secure: true,
-        name: 'affine_session',
+        name: 'auth',
         expirationDate: Math.floor(
           Date.now() / 1000 +
             3600 *

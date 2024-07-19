@@ -26,6 +26,7 @@ export interface Scalars {
   Boolean: { input: boolean; output: boolean };
   Int: { input: number; output: number };
   Float: { input: number; output: number };
+  Date: { input: string; output: string };
   /** A date-time string at UTC, such as 2019-12-03T09:54:33Z, compliant with the date-time format. */
   DateTime: { input: string; output: string };
   /** The `JSON` scalar type represents JSON values as specified by [ECMA-404](http://www.ecma-international.org/publications/files/ECMA-ST/ECMA-404.pdf). */
@@ -52,6 +53,12 @@ export interface ChatMessage {
   id: Maybe<Scalars['ID']['output']>;
   params: Maybe<Scalars['JSON']['output']>;
   role: Scalars['String']['output'];
+}
+
+export enum ContentReader {
+  EPUB = 'EPUB',
+  PDF = 'PDF',
+  WEB = 'WEB',
 }
 
 export interface Copilot {
@@ -216,6 +223,11 @@ export interface DeleteSessionInput {
   workspaceId: Scalars['String']['input'];
 }
 
+export enum DirectionalityType {
+  LTR = 'LTR',
+  RTL = 'RTL',
+}
+
 export interface DocAccessDeniedDataType {
   __typename?: 'DocAccessDeniedDataType';
   docId: Scalars['String']['output'];
@@ -245,6 +257,13 @@ export interface DocNotFoundDataType {
 export enum EarlyAccessType {
   AI = 'AI',
   App = 'App',
+}
+
+export enum ErrorCode {
+  BAD_REQUEST = 'BAD_REQUEST',
+  FORBIDDEN = 'FORBIDDEN',
+  NOT_FOUND = 'NOT_FOUND',
+  UNAUTHORIZED = 'UNAUTHORIZED',
 }
 
 export type ErrorDataUnion =
@@ -347,27 +366,10 @@ export enum FeatureType {
   UnlimitedWorkspace = 'UnlimitedWorkspace',
 }
 
-export interface Feed {
-  __typename?: 'Feed';
-  description: Scalars['String']['output'];
-  feedLink: Scalars['String']['output'];
-  feedType: Scalars['String']['output'];
-  id: Scalars['ID']['output'];
-  image: Maybe<Scalars['String']['output']>;
-  title: Scalars['String']['output'];
-  updated: Scalars['DateTime']['output'];
-}
-
-export interface FeedItem {
-  __typename?: 'FeedItem';
-  contentMarkdown: Maybe<Scalars['String']['output']>;
-  createdAt: Scalars['DateTime']['output'];
-  descriptionMarkdown: Scalars['String']['output'];
-  feedId: Scalars['ID']['output'];
-  feedItemId: Scalars['ID']['output'];
-  link: Scalars['String']['output'];
-  publishedAt: Scalars['DateTime']['output'];
-  title: Scalars['String']['output'];
+export enum FetchContentType {
+  ALWAYS = 'ALWAYS',
+  NEVER = 'NEVER',
+  WHEN_EMPTY = 'WHEN_EMPTY',
 }
 
 export interface ForkChatSessionInput {
@@ -459,6 +461,18 @@ export enum InvoiceStatus {
   Void = 'Void',
 }
 
+export interface Label {
+  __typename?: 'Label';
+  color: Scalars['String']['output'];
+  createdAt: Maybe<Scalars['Date']['output']>;
+  description: Maybe<Scalars['String']['output']>;
+  id: Scalars['ID']['output'];
+  internal: Maybe<Scalars['Boolean']['output']>;
+  name: Scalars['String']['output'];
+  position: Maybe<Scalars['Int']['output']>;
+  source: Maybe<Scalars['String']['output']>;
+}
+
 export interface LimitedUserType {
   __typename?: 'LimitedUserType';
   /** User email */
@@ -513,7 +527,6 @@ export interface Mutation {
   leaveWorkspace: Scalars['Boolean']['output'];
   publishPage: WorkspacePage;
   recoverDoc: Scalars['DateTime']['output'];
-  refreshFeed: Maybe<Scalars['String']['output']>;
   /** Remove user avatar */
   removeAvatar: RemoveAvatar;
   removeEarlyAccess: Scalars['Int']['output'];
@@ -532,6 +545,7 @@ export interface Mutation {
   setWorkspaceExperimentalFeature: Scalars['Boolean']['output'];
   /** @deprecated renamed to publishPage */
   sharePage: Scalars['Boolean']['output'];
+  subscribe: SubscribeResult;
   /** Update a copilot prompt */
   updateCopilotPrompt: CopilotPromptType;
   updateProfile: UserType;
@@ -652,10 +666,6 @@ export interface MutationRecoverDocArgs {
   workspaceId: Scalars['String']['input'];
 }
 
-export interface MutationRefreshFeedArgs {
-  feedId: Scalars['String']['input'];
-}
-
 export interface MutationRemoveEarlyAccessArgs {
   email: Scalars['String']['input'];
 }
@@ -726,6 +736,10 @@ export interface MutationSharePageArgs {
   workspaceId: Scalars['String']['input'];
 }
 
+export interface MutationSubscribeArgs {
+  input: SubscribeInput;
+}
+
 export interface MutationUpdateCopilotPromptArgs {
   messages: Array<CopilotPromptMessageInput>;
   name: Scalars['String']['input'];
@@ -773,6 +787,56 @@ export enum OAuthProviderType {
   OIDC = 'OIDC',
 }
 
+export interface Page {
+  __typename?: 'Page';
+  author: Maybe<Scalars['String']['output']>;
+  createdAt: Scalars['Date']['output'];
+  description: Maybe<Scalars['String']['output']>;
+  hash: Scalars['String']['output'];
+  id: Scalars['ID']['output'];
+  image: Scalars['String']['output'];
+  originalHtml: Scalars['String']['output'];
+  originalUrl: Scalars['String']['output'];
+  publishedAt: Maybe<Scalars['Date']['output']>;
+  readableHtml: Scalars['String']['output'];
+  title: Scalars['String']['output'];
+  type: PageType;
+  updatedAt: Maybe<Scalars['Date']['output']>;
+  url: Scalars['String']['output'];
+}
+
+export interface PageInfo {
+  __typename?: 'PageInfo';
+  endCursor: Maybe<Scalars['String']['output']>;
+  hasNextPage: Scalars['Boolean']['output'];
+  hasPreviousPage: Scalars['Boolean']['output'];
+  startCursor: Maybe<Scalars['String']['output']>;
+  totalCount: Maybe<Scalars['Int']['output']>;
+}
+
+export interface PageInfoInput {
+  author: InputMaybe<Scalars['String']['input']>;
+  canonicalUrl: InputMaybe<Scalars['String']['input']>;
+  contentType: InputMaybe<Scalars['String']['input']>;
+  description: InputMaybe<Scalars['String']['input']>;
+  previewImage: InputMaybe<Scalars['String']['input']>;
+  publishedAt: InputMaybe<Scalars['Date']['input']>;
+  title: InputMaybe<Scalars['String']['input']>;
+}
+
+export enum PageType {
+  ARTICLE = 'ARTICLE',
+  BOOK = 'BOOK',
+  FILE = 'FILE',
+  HIGHLIGHTS = 'HIGHLIGHTS',
+  IMAGE = 'IMAGE',
+  PROFILE = 'PROFILE',
+  TWEET = 'TWEET',
+  UNKNOWN = 'UNKNOWN',
+  VIDEO = 'VIDEO',
+  WEBSITE = 'WEBSITE',
+}
+
 export interface PasswordLimitsType {
   __typename?: 'PasswordLimitsType';
   maxLength: Scalars['Int']['output'];
@@ -791,12 +855,6 @@ export enum Permission {
 export enum PublicPageMode {
   Edgeless = 'Edgeless',
   Page = 'Page',
-}
-
-export interface PullFeedItemsInput {
-  feedId: Scalars['String']['input'];
-  latestFeedItemId: InputMaybe<Scalars['ID']['input']>;
-  latestPublishedAt: InputMaybe<Scalars['DateTime']['input']>;
 }
 
 export interface Query {
@@ -822,8 +880,8 @@ export interface Query {
   listCopilotPrompts: Array<CopilotPromptType>;
   listWorkspaceFeatures: Array<WorkspaceType>;
   prices: Array<SubscriptionPrice>;
-  pullFeedItems: Maybe<Array<FeedItem>>;
-  searchFeeds: Maybe<Array<Feed>>;
+  search: SearchResult;
+  searchSubscriptions: Array<Subscription>;
   /** server config */
   serverConfig: ServerConfigType;
   /** get all server runtime configurable settings */
@@ -865,11 +923,15 @@ export interface QueryListWorkspaceFeaturesArgs {
   feature: FeatureType;
 }
 
-export interface QueryPullFeedItemsArgs {
-  pullInput: Array<PullFeedItemsInput>;
+export interface QuerySearchArgs {
+  after: InputMaybe<Scalars['String']['input']>;
+  first: InputMaybe<Scalars['Int']['input']>;
+  format: InputMaybe<Scalars['String']['input']>;
+  includeContent: InputMaybe<Scalars['Boolean']['input']>;
+  query: InputMaybe<Scalars['String']['input']>;
 }
 
-export interface QuerySearchFeedsArgs {
+export interface QuerySearchSubscriptionsArgs {
   keyword: Scalars['String']['input'];
 }
 
@@ -931,6 +993,80 @@ export interface SameSubscriptionRecurringDataType {
   recurring: Scalars['String']['output'];
 }
 
+export interface SearchError {
+  __typename?: 'SearchError';
+  errorCodes: Array<SearchErrorCode>;
+}
+
+export enum SearchErrorCode {
+  QUERY_TOO_LONG = 'QUERY_TOO_LONG',
+  UNAUTHORIZED = 'UNAUTHORIZED',
+}
+
+export interface SearchItem {
+  __typename?: 'SearchItem';
+  aiSummary: Maybe<Scalars['String']['output']>;
+  annotation: Maybe<Scalars['String']['output']>;
+  archivedAt: Maybe<Scalars['Date']['output']>;
+  author: Maybe<Scalars['String']['output']>;
+  color: Maybe<Scalars['String']['output']>;
+  content: Maybe<Scalars['String']['output']>;
+  contentReader: ContentReader;
+  createdAt: Scalars['Date']['output'];
+  description: Maybe<Scalars['String']['output']>;
+  directionality: Maybe<DirectionalityType>;
+  feedContent: Maybe<Scalars['String']['output']>;
+  folder: Scalars['String']['output'];
+  format: Maybe<Scalars['String']['output']>;
+  id: Scalars['ID']['output'];
+  image: Maybe<Scalars['String']['output']>;
+  isArchived: Scalars['Boolean']['output'];
+  labels: Maybe<Array<Label>>;
+  language: Maybe<Scalars['String']['output']>;
+  links: Maybe<Scalars['JSON']['output']>;
+  originalArticleUrl: Maybe<Scalars['String']['output']>;
+  ownedByViewer: Maybe<Scalars['Boolean']['output']>;
+  pageId: Maybe<Scalars['ID']['output']>;
+  pageType: PageType;
+  previewContentType: Maybe<Scalars['String']['output']>;
+  publishedAt: Maybe<Scalars['Date']['output']>;
+  quote: Maybe<Scalars['String']['output']>;
+  readAt: Maybe<Scalars['Date']['output']>;
+  readableContent: Scalars['String']['output'];
+  readingProgressAnchorIndex: Scalars['Int']['output'];
+  readingProgressPercent: Scalars['Float']['output'];
+  readingProgressTopPercent: Maybe<Scalars['Float']['output']>;
+  savedAt: Scalars['Date']['output'];
+  score: Maybe<Scalars['Float']['output']>;
+  seenAt: Maybe<Scalars['Date']['output']>;
+  shortId: Maybe<Scalars['String']['output']>;
+  siteIcon: Maybe<Scalars['String']['output']>;
+  siteName: Maybe<Scalars['String']['output']>;
+  slug: Scalars['String']['output'];
+  subscription: Maybe<Scalars['String']['output']>;
+  title: Scalars['String']['output'];
+  unsubHttpUrl: Maybe<Scalars['String']['output']>;
+  unsubMailTo: Maybe<Scalars['String']['output']>;
+  updatedAt: Maybe<Scalars['Date']['output']>;
+  uploadFileId: Maybe<Scalars['ID']['output']>;
+  url: Scalars['String']['output'];
+  wordsCount: Maybe<Scalars['Int']['output']>;
+}
+
+export interface SearchItemEdge {
+  __typename?: 'SearchItemEdge';
+  cursor: Scalars['String']['output'];
+  node: SearchItem;
+}
+
+export type SearchResult = SearchError | SearchSuccess;
+
+export interface SearchSuccess {
+  __typename?: 'SearchSuccess';
+  edges: Array<SearchItemEdge>;
+  pageInfo: PageInfo;
+}
+
 export interface ServerConfigType {
   __typename?: 'ServerConfigType';
   /** server base url */
@@ -985,9 +1121,70 @@ export interface ServerRuntimeConfigType {
   value: Scalars['JSON']['output'];
 }
 
+export interface SubscribeError {
+  __typename?: 'SubscribeError';
+  errorCodes: Array<SubscribeErrorCode>;
+}
+
+export enum SubscribeErrorCode {
+  ALREADY_SUBSCRIBED = 'ALREADY_SUBSCRIBED',
+  BAD_REQUEST = 'BAD_REQUEST',
+  EXCEEDED_MAX_SUBSCRIPTIONS = 'EXCEEDED_MAX_SUBSCRIPTIONS',
+  NOT_FOUND = 'NOT_FOUND',
+  UNAUTHORIZED = 'UNAUTHORIZED',
+}
+
+export interface SubscribeInput {
+  autoAddToLibrary: InputMaybe<Scalars['Boolean']['input']>;
+  fetchContent: InputMaybe<Scalars['Boolean']['input']>;
+  fetchContentType: InputMaybe<FetchContentType>;
+  folder: InputMaybe<Scalars['String']['input']>;
+  isPrivate: InputMaybe<Scalars['Boolean']['input']>;
+  subscriptionType: InputMaybe<SubscriptionType>;
+  url: Scalars['String']['input'];
+}
+
+export type SubscribeResult = SubscribeError | SubscribeSuccess;
+
+export interface SubscribeSuccess {
+  __typename?: 'SubscribeSuccess';
+  subscriptions: Array<Subscription>;
+}
+
+export interface Subscription {
+  __typename?: 'Subscription';
+  autoAddToLibrary: Maybe<Scalars['Boolean']['output']>;
+  count: Scalars['Int']['output'];
+  createdAt: Scalars['Date']['output'];
+  description: Maybe<Scalars['String']['output']>;
+  failedAt: Maybe<Scalars['Date']['output']>;
+  fetchContent: Scalars['Boolean']['output'];
+  fetchContentType: FetchContentType;
+  folder: Scalars['String']['output'];
+  icon: Maybe<Scalars['String']['output']>;
+  id: Scalars['ID']['output'];
+  isPrivate: Maybe<Scalars['Boolean']['output']>;
+  lastFetchedAt: Maybe<Scalars['Date']['output']>;
+  mostRecentItemDate: Maybe<Scalars['Date']['output']>;
+  name: Scalars['String']['output'];
+  newsletterEmail: Maybe<Scalars['String']['output']>;
+  refreshedAt: Maybe<Scalars['Date']['output']>;
+  status: SubscriptionStatus;
+  type: SubscriptionType;
+  unsubscribeHttpUrl: Maybe<Scalars['String']['output']>;
+  unsubscribeMailTo: Maybe<Scalars['String']['output']>;
+  updatedAt: Maybe<Scalars['Date']['output']>;
+  url: Scalars['String']['output'];
+}
+
 export interface SubscriptionAlreadyExistsDataType {
   __typename?: 'SubscriptionAlreadyExistsDataType';
   plan: Scalars['String']['output'];
+}
+
+export interface SubscriptionError {
+  __typename?: 'SubscriptionError';
+  errorCodes: Array<ErrorCode>;
 }
 
 export interface SubscriptionNotExistsDataType {
@@ -1026,6 +1223,8 @@ export enum SubscriptionRecurring {
   Yearly = 'Yearly',
 }
 
+export type SubscriptionResult = SubscriptionError | SubscriptionSuccess;
+
 export enum SubscriptionStatus {
   Active = 'Active',
   Canceled = 'Canceled',
@@ -1035,6 +1234,16 @@ export enum SubscriptionStatus {
   Paused = 'Paused',
   Trialing = 'Trialing',
   Unpaid = 'Unpaid',
+}
+
+export interface SubscriptionSuccess {
+  __typename?: 'SubscriptionSuccess';
+  subscription: Subscription;
+}
+
+export enum SubscriptionType {
+  NEWSLETTER = 'NEWSLETTER',
+  RSS = 'RSS',
 }
 
 export interface UnknownOauthProviderDataType {
@@ -1847,25 +2056,6 @@ export type PublishPageMutation = {
   };
 };
 
-export type PullFeedItemsQueryVariables = Exact<{
-  pullInput: Array<PullFeedItemsInput> | PullFeedItemsInput;
-}>;
-
-export type PullFeedItemsQuery = {
-  __typename?: 'Query';
-  pullFeedItems: Array<{
-    __typename?: 'FeedItem';
-    feedId: string;
-    feedItemId: string;
-    title: string;
-    link: string;
-    descriptionMarkdown: string;
-    contentMarkdown: string | null;
-    createdAt: string;
-    publishedAt: string;
-  }> | null;
-};
-
 export type QuotaQueryVariables = Exact<{ [key: string]: never }>;
 
 export type QuotaQuery = {
@@ -1953,22 +2143,84 @@ export type RevokePublicPageMutation = {
   };
 };
 
-export type SearchFeedsQueryVariables = Exact<{
+export type SearchSubscriptionsQueryVariables = Exact<{
   keyword: Scalars['String']['input'];
 }>;
 
-export type SearchFeedsQuery = {
+export type SearchSubscriptionsQuery = {
   __typename?: 'Query';
-  searchFeeds: Array<{
-    __typename?: 'Feed';
+  searchSubscriptions: Array<{
+    __typename?: 'Subscription';
     id: string;
-    title: string;
-    description: string;
-    image: string | null;
-    feedType: string;
-    feedLink: string;
-    updated: string;
-  }> | null;
+    name: string;
+    url: string;
+    icon: string | null;
+    description: string | null;
+    createdAt: string;
+  }>;
+};
+
+export type SearchQueryVariables = Exact<{
+  after: InputMaybe<Scalars['String']['input']>;
+  first: InputMaybe<Scalars['Int']['input']>;
+  query: InputMaybe<Scalars['String']['input']>;
+  includeContent: InputMaybe<Scalars['Boolean']['input']>;
+}>;
+
+export type SearchQuery = {
+  __typename?: 'Query';
+  search:
+    | { __typename?: 'SearchError'; errorCodes: Array<SearchErrorCode> }
+    | {
+        __typename?: 'SearchSuccess';
+        edges: Array<{
+          __typename?: 'SearchItemEdge';
+          cursor: string;
+          node: {
+            __typename?: 'SearchItem';
+            id: string;
+            title: string;
+            slug: string;
+            url: string;
+            pageType: PageType;
+            contentReader: ContentReader;
+            readableContent: string;
+            createdAt: string;
+            isArchived: boolean;
+            readingProgressPercent: number;
+            readingProgressTopPercent: number | null;
+            readingProgressAnchorIndex: number;
+            author: string | null;
+            image: string | null;
+            description: string | null;
+            publishedAt: string | null;
+            ownedByViewer: boolean | null;
+            originalArticleUrl: string | null;
+            uploadFileId: string | null;
+            pageId: string | null;
+            shortId: string | null;
+            quote: string | null;
+            annotation: string | null;
+            siteName: string | null;
+            subscription: string | null;
+            readAt: string | null;
+            labels: Array<{
+              __typename?: 'Label';
+              id: string;
+              name: string;
+              color: string;
+            }> | null;
+          };
+        }>;
+        pageInfo: {
+          __typename?: 'PageInfo';
+          hasNextPage: boolean;
+          hasPreviousPage: boolean;
+          startCursor: string | null;
+          endCursor: string | null;
+          totalCount: number | null;
+        };
+      };
 };
 
 export type SendChangeEmailMutationVariables = Exact<{
@@ -2383,19 +2635,19 @@ export type Queries =
       response: PricesQuery;
     }
   | {
-      name: 'pullFeedItemsQuery';
-      variables: PullFeedItemsQueryVariables;
-      response: PullFeedItemsQuery;
-    }
-  | {
       name: 'quotaQuery';
       variables: QuotaQueryVariables;
       response: QuotaQuery;
     }
   | {
-      name: 'searchFeedsQuery';
-      variables: SearchFeedsQueryVariables;
-      response: SearchFeedsQuery;
+      name: 'searchSubscriptionsQuery';
+      variables: SearchSubscriptionsQueryVariables;
+      response: SearchSubscriptionsQuery;
+    }
+  | {
+      name: 'searchQuery';
+      variables: SearchQueryVariables;
+      response: SearchQuery;
     }
   | {
       name: 'serverConfigQuery';

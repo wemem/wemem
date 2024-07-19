@@ -65,7 +65,7 @@ export class AuthService implements OnApplicationBootstrap {
     path: '/',
     secure: this.config.server.https,
   };
-  static readonly sessionCookieName = 'affine_session';
+  static readonly sessionCookieName = 'auth';
   static readonly authUserSeqHeaderName = 'x-auth-user';
 
   constructor(
@@ -153,7 +153,6 @@ export class AuthService implements OnApplicationBootstrap {
     seq = 0
   ): Promise<{ user: CurrentUser | null; expiresAt: Date | null }> {
     const session = await this.getSession(token);
-
     // no such session
     if (!session) {
       return { user: null, expiresAt: null };

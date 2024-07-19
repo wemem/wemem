@@ -9,12 +9,11 @@ import {
 } from '@affine/core/components/page-list';
 import { FeedAvatar } from '@affine/core/components/page-list/feed/avatar';
 import { Doc } from '@affine/core/components/pure/workspace-slider-bar/collections';
-import { AddFeedButton } from '@affine/core/components/pure/workspace-slider-bar/feed/add-feed-button';
+import { SubscribeButton } from '@affine/core/components/pure/workspace-slider-bar/subscriptions/subscribe-button';
 import { useAllPageListConfig } from '@affine/core/hooks/affine/use-all-page-list-config';
 import { getDNDId } from '@affine/core/hooks/affine/use-global-dnd-helper';
 import { useBlockSuiteDocMeta } from '@affine/core/hooks/use-block-suite-page-meta';
-import { NewFeedService } from '@affine/core/modules/feed/new-feed';
-import { FeedService } from '@affine/core/modules/feed/services/feed';
+import { SubscriptionService } from '@affine/core/modules/feed/services/subscription-service';
 import { FavoriteItemsAdapter } from '@affine/core/modules/properties';
 import { WorkbenchLink } from '@affine/core/modules/workbench';
 import { mixpanel } from '@affine/core/utils';
@@ -28,13 +27,14 @@ import clsx from 'clsx';
 import { useCallback, useMemo, useState } from 'react';
 import { VscInbox, VscMail, VscSettings } from 'react-icons/vsc';
 
+import { SubscriptionsService } from '../../../../modules/feed/subscribe-feed';
 import { WorkbenchService } from '../../../../modules/workbench';
 import {
   CategoryDivider,
   MenuLinkItem as SidebarMenuLinkItem,
 } from '../../../app-sidebar';
 import * as draggableMenuItemStyles from '../components/draggable-menu-item.css';
-import type { FeedsListProps } from '../index';
+import type { SubscriptionsListProps } from '../index';
 import * as styles from './styles.css';
 
 export const FeedSidebarNavItem = ({
@@ -50,7 +50,7 @@ export const FeedSidebarNavItem = ({
   const [collapsed, setCollapsed] = useState(true);
   const [open, setOpen] = useState(false);
   const config = useAllPageListConfig();
-  const feedService = useService(FeedService);
+  const feedService = useService(SubscriptionService);
   const favAdapter = useService(FavoriteItemsAdapter);
   const favourites = useLiveData(favAdapter.favorites$);
   const t = useI18n();
@@ -61,11 +61,11 @@ export const FeedSidebarNavItem = ({
       location => location.pathname
     )
   );
-  const path = `/feed/${feed.id}`;
+  const path = `/subscription/${feed.id}`;
 
   const onRename = useCallback(
     (name: string) => {
-      feedService.updateFeed(feed.id, () => ({
+      feedService.updateSubscription(feed.id, () => ({
         ...feed,
         name,
       }));
@@ -156,8 +156,8 @@ export const FeedSidebarNavItem = ({
   );
 };
 
-const unseenPath = `/feed/seen/false`;
-const seenPath = `/feed/seen/true`;
+const unseenPath = `/subscription/seen/false`;
+const seenPath = `/subscription/seen/true`;
 
 export const FeedSidebarReadAll = () => {
   const t = useI18n();
@@ -240,7 +240,7 @@ export const FeedSidebarReadNewsletter = () => {
   );
 };
 
-export const FeedSidebarManageSubscriptions = () => {
+export const ManageSubscriptions = () => {
   const t = useI18n();
 
   const currentPath = useLiveData(
@@ -248,7 +248,7 @@ export const FeedSidebarManageSubscriptions = () => {
       location => location.pathname
     )
   );
-  const path = '/feed/manage';
+  const path = '/subscription/manage';
 
   return (
     <SidebarMenuLinkItem
@@ -256,8 +256,8 @@ export const FeedSidebarManageSubscriptions = () => {
         draggableMenuItemStyles.draggableMenuItem,
         styles.menuItem
       )}
-      data-testid="feed-item"
-      data-type="feed-list-item"
+      data-testid="subscription-item"
+      data-type="subscription-list-item"
       active={currentPath === path}
       icon={<VscSettings />}
       to={path}
@@ -269,35 +269,39 @@ export const FeedSidebarManageSubscriptions = () => {
   );
 };
 
-export const FeedList = ({ docCollection }: FeedsListProps) => {
-  const feeds = useLiveData(useService(FeedService).feeds$);
+export const SubscriptionsList = ({
+  docCollection,
+}: SubscriptionsListProps) => {
+  const subscriptions = useLiveData(
+    useService(SubscriptionService).subscriptions$
+  );
   const t = useI18n();
-  const newFeed = useService(NewFeedService).newFeed;
+  const subscribeFeed = useService(SubscriptionsService).subscribeFeed;
   const handleOpenNewFeedModal = useCallback(() => {
-    newFeed.show();
+    subscribeFeed.show();
     mixpanel.track('NewOpened', {
       segment: 'navigation panel',
-      control: 'new feed button',
+      control: 'new subscription button',
     });
-  }, [newFeed]);
+  }, [subscribeFeed]);
 
-  if (feeds.length === 0) {
+  if (subscriptions.length === 0) {
     return (
       <CategoryDivider label={t['ai.readflow.rootAppSidebar.feeds']()}>
-        <AddFeedButton onClick={handleOpenNewFeedModal} />
+        <SubscribeButton onClick={handleOpenNewFeedModal} />
       </CategoryDivider>
     );
   }
   return (
     <>
       <CategoryDivider label={t['ai.readflow.rootAppSidebar.feeds']()}>
-        <AddFeedButton onClick={handleOpenNewFeedModal} />
+        <SubscribeButton onClick={handleOpenNewFeedModal} />
       </CategoryDivider>
-      <div data-testid="feeds" className={styles.wrapper}>
+      <div data-testid="subscriptions" className={styles.wrapper}>
         <FeedSidebarReadAll />
         <FeedSidebarReadFeeds />
         <FeedSidebarReadNewsletter />
-        <FeedSidebarManageSubscriptions />
+        <ManageSubscriptions />
       </div>
     </>
   );
