@@ -9,22 +9,27 @@ import { searchQuery, type SearchSuccess } from '@affine/graphql';
 import { importMarkDown } from '@blocksuite/blocks';
 import type { JobMiddleware } from '@blocksuite/store';
 import { useService, WorkspaceService } from '@toeverything/infra';
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, useState } from 'react';
 
 import { TagService } from '../modules/tag/service/tag';
 import { useCurrentWorkspacePropertiesAdapter } from './use-affine-adapter';
 import { usePagePropertiesMetaManager } from './use-page-properties-meta-manager';
 
+const initIntervalDuration = 1000 * 3; // 初始间隔时间为3秒
+const maxIntervalDuration = 1000 * 60 * 60; // 最大间隔时间为60分钟
+
 const logger = new DebugLogger('usePullFeedItemsInterval');
 export const usePullFeedItemsInterval = () => {
   const currentWorkspace = useService(WorkspaceService).workspace;
   const graphQLService = useService(GraphQLService);
-  const feedService = useService(SubscriptionService);
+  const subscriptionService = useService(SubscriptionService);
   const tagList = useService(TagService).tagList;
   const timerRef = useRef<NodeJS.Timeout | null>(null);
   const isRunning = useRef(false);
   const adapter = useCurrentWorkspacePropertiesAdapter();
   const metaManager = usePagePropertiesMetaManager();
+  const [intervalDuration, setIntervalDuration] =
+    useState(initIntervalDuration); // 初始间隔时间为3000毫秒
   useEffect(() => {
     metaManager.initInternalProperties();
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -33,6 +38,10 @@ export const usePullFeedItemsInterval = () => {
     tagList.initInternalTags();
   }, [tagList]);
   useEffect(() => {
+    // 清除旧的定时器并设置新的定时器
+    if (timerRef.current) {
+      clearInterval(timerRef.current);
+    }
     const fetchFeedItems = async () => {
       logger.debug('start pulling feed items');
       if (isRunning.current) {
@@ -42,17 +51,12 @@ export const usePullFeedItemsInterval = () => {
 
       isRunning.current = true;
       try {
-        // const pullInput = feedService.subscriptions$.getValue().map(feed => ({
-        //   feedId: feed.id,
-        //   latestFeedItemId: feed.feed?.latestFeedItemId,
-        // }));
-        // logger.debug('pulling input', pullInput);
-        // if (pullInput.length === 0) {
-        //   return;
-        // }
+        if (subscriptionService.subscriptions$.getValue().length === 0) {
+          return;
+        }
 
         const input = {
-          // "after": "0",
+          after: subscriptionService.afterCursor$.getValue(),
           first: 10,
           query: 'in:sucess',
           includeContent: true,
@@ -65,9 +69,19 @@ export const usePullFeedItemsInterval = () => {
 
         const searchSuccess = response.search as SearchSuccess;
         logger.debug(
-          'pulling feed items response length',
-          searchSuccess.edges.length ?? 0
+          'pulling subscription feed items response length',
+          searchSuccess.edges.length
         );
+
+        if (searchSuccess.edges.length === 0) {
+          // 如果没有拉取到数据，间隔时间翻倍，最大不超过30分钟
+          setIntervalDuration(prevDuration =>
+            Math.min(prevDuration * 2, maxIntervalDuration)
+          );
+        } else {
+          // 如果拉取到数据，重置间隔时间为初始值
+          setIntervalDuration(initIntervalDuration);
+        }
 
         for (const item of searchSuccess.edges || []) {
           const libraryItem = item.node;
@@ -95,18 +109,17 @@ export const usePullFeedItemsInterval = () => {
             if (libraryItem.subscription) {
               tags.push(libraryItem.subscription);
             }
-
             currentWorkspace.docCollection.setDocMeta(docId, {
               tags,
               createDate: new Date(libraryItem.createdAt).getTime(),
             });
-
             logger.debug('import feed item to doc', {
               subscription: libraryItem.subscription,
               url: libraryItem.url,
               docId,
             });
           }
+          subscriptionService.updateAfterCursor(item.cursor);
         }
         logger.debug('finish pulling');
       } catch (error) {
@@ -121,13 +134,12 @@ export const usePullFeedItemsInterval = () => {
       fetchFeedItems();
     };
 
-    timerRef.current = setInterval(intervalCallback, 3000);
+    timerRef.current = setInterval(intervalCallback, intervalDuration);
 
     return () => {
       if (timerRef.current) {
         clearInterval(timerRef.current);
       }
     };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }, [intervalDuration]);
 };

@@ -7,6 +7,7 @@ import { Array as YArray } from 'yjs';
 const SETTING_KEY = 'setting';
 
 const SUBSCRIPTIONS_KEY = 'subscriptions';
+const SUBSCRIPTIONS_AFTER_CURSOR_KEY = 'subscriptionAfterCursor';
 
 export class SubscriptionService extends Service {
   constructor(private readonly workspaceService: WorkspaceService) {
@@ -25,6 +26,32 @@ export class SubscriptionService extends Service {
 
   private get subscriptionsYArray(): YArray<Collection> | undefined {
     return this.setting.get(SUBSCRIPTIONS_KEY) as YArray<Collection>;
+  }
+
+  private get afterCursor(): string | undefined {
+    return this.setting.get(SUBSCRIPTIONS_AFTER_CURSOR_KEY) as string;
+  }
+
+  readonly afterCursor$ = LiveData.from(
+    new Observable<string>(subscriber => {
+      subscriber.next(this.afterCursor || '0');
+      const fn = () => {
+        subscriber.next(this.afterCursor || '0');
+      };
+      this.setting.observeDeep(fn);
+      return () => {
+        this.setting.unobserveDeep(fn);
+      };
+    }),
+    '0'
+  );
+
+  public updateAfterCursor(cursor: string) {
+    console.log('updateAfterCursor1', cursor);
+    if (cursor > (this.afterCursor || '0')) {
+      console.log('updateAfterCursor2', cursor);
+      this.setting.set(SUBSCRIPTIONS_AFTER_CURSOR_KEY, cursor);
+    }
   }
 
   readonly subscriptions$ = LiveData.from(

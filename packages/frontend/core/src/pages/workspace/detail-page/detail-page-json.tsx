@@ -19,8 +19,8 @@ import {
 import clsx from 'clsx';
 import type { ReactElement } from 'react';
 import React, {
-  Suspense,
   memo,
+  Suspense,
   useCallback,
   useEffect,
   useLayoutEffect,
