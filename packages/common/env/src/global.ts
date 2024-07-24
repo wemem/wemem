@@ -18,6 +18,8 @@ export const runtimeFlagsSchema = z.object({
   enablePreloading: z.boolean(),
   enableNewSettingModal: z.boolean(),
   enableWorkspaceSelector: z.boolean(),
+  enableLater: z.boolean(),
+  enableArchive: z.boolean(),
   enableNewSettingUnstableApi: z.boolean(),
   enableCloud: z.boolean(),
   enableCaptcha: z.boolean(),

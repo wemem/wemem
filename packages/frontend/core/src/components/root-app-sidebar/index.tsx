@@ -213,24 +213,28 @@ export const RootAppSidebar = memo(
           <AppSidebarJournalButton
             docCollection={currentWorkspace.docCollection}
           />
-          <RouteMenuLinkItem
-            icon={<PiTimer size={20} />}
-            active={laterActive}
-            path={paths.later(currentWorkspaceId)}
-          >
-            <span data-testid="later-page">
-              {t['ai.readflow.workspaceSubPath.later']()}
-            </span>
-          </RouteMenuLinkItem>
-          <RouteMenuLinkItem
-            icon={<PiArchive size={20} />}
-            active={archiveActive}
-            path={paths.archive(currentWorkspaceId)}
-          >
-            <span data-testid="archive-page">
-              {t['ai.readflow.workspaceSubPath.archive']()}
-            </span>
-          </RouteMenuLinkItem>
+          {runtimeConfig.enableLater && (
+            <RouteMenuLinkItem
+              icon={<PiTimer size={20} />}
+              active={laterActive}
+              path={paths.later(currentWorkspaceId)}
+            >
+              <span data-testid="later-page">
+                {t['ai.readflow.workspaceSubPath.later']()}
+              </span>
+            </RouteMenuLinkItem>
+          )}
+          {runtimeConfig.enableArchive && (
+            <RouteMenuLinkItem
+              icon={<PiArchive size={20} />}
+              active={archiveActive}
+              path={paths.archive(currentWorkspaceId)}
+            >
+              <span data-testid="archive-page">
+                {t['ai.readflow.workspaceSubPath.archive']()}
+              </span>
+            </RouteMenuLinkItem>
+          )}
           {runtimeConfig.enableNewSettingModal ? (
             <MenuItem
               data-testid="slider-bar-workspace-setting-button"
