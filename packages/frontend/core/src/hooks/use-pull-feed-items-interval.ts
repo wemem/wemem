@@ -11,6 +11,11 @@ import type { JobMiddleware } from '@blocksuite/store';
 import { useService, WorkspaceService } from '@toeverything/infra';
 import { useEffect, useRef, useState } from 'react';
 
+import { PagePropertiesManager } from '../components/affine/page-properties';
+import {
+  AuthorProperty,
+  OriginalProperty,
+} from '../components/affine/page-properties/internal-properties';
 import { TagService } from '../modules/tag/service/tag';
 import { useCurrentWorkspacePropertiesAdapter } from './use-affine-adapter';
 import { usePagePropertiesMetaManager } from './use-page-properties-meta-manager';
@@ -113,6 +118,20 @@ export const usePullFeedItemsInterval = () => {
               tags,
               createDate: new Date(libraryItem.createdAt).getTime(),
             });
+
+            const propertiesManager = new PagePropertiesManager(adapter, docId);
+
+            libraryItem.author &&
+              propertiesManager.addCustomProperty(
+                AuthorProperty.id,
+                libraryItem.author
+              );
+            libraryItem.url &&
+              propertiesManager.addCustomProperty(
+                OriginalProperty.id,
+                libraryItem.url
+              );
+
             logger.debug('import feed item to doc', {
               subscription: libraryItem.subscription,
               url: libraryItem.url,

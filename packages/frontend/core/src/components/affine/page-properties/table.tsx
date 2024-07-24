@@ -71,6 +71,7 @@ import { managerContext } from './common';
 import { ConfirmDeletePropertyModal } from './confirm-delete-property-modal';
 import type { PagePropertyIcon } from './icons-mapping';
 import { getDefaultIconName, nameToIcon } from './icons-mapping';
+import { isInternalProperty, usePropertyI18n } from './internal-properties';
 import type { MenuItemOption } from './menu-items';
 import {
   EditPropertyNameMenuItem,
@@ -87,7 +88,6 @@ import {
   TagsValue,
 } from './property-row-value-renderer';
 import * as styles from './styles.css';
-import { isInternalProperty, usePropertyI18n } from './internal-properties';
 
 type PagePropertiesSettingsPopupProps = PropsWithChildren<{
   className?: string;

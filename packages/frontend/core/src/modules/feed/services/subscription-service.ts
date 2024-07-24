@@ -47,11 +47,7 @@ export class SubscriptionService extends Service {
   );
 
   public updateAfterCursor(cursor: string) {
-    console.log('updateAfterCursor1', cursor);
-    if (cursor > (this.afterCursor || '0')) {
-      console.log('updateAfterCursor2', cursor);
-      this.setting.set(SUBSCRIPTIONS_AFTER_CURSOR_KEY, cursor);
-    }
+    this.setting.set(SUBSCRIPTIONS_AFTER_CURSOR_KEY, cursor);
   }
 
   readonly subscriptions$ = LiveData.from(

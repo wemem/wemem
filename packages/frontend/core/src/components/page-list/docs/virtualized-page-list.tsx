@@ -148,8 +148,9 @@ export const VirtualizedPageList = ({
     if (feedDocs) {
       return (
         <FeedDocsPageListHeader
+          filteredPageMetas={filteredPageMetas}
           workspaceId={currentWorkspace.id}
-          propertiesMeta={currentWorkspace.docCollection.meta.properties}
+          docCollection={currentWorkspace.docCollection}
           // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
           currentFilters={currentFilters!}
           // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
@@ -157,10 +158,12 @@ export const VirtualizedPageList = ({
         />
       );
     }
-    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+
     return (
       <PageListHeader
+        // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
         currentFilters={currentFilters!}
+        // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
         onChangeCurrentFilters={onChangeCurrentFilters!}
       />
     );
