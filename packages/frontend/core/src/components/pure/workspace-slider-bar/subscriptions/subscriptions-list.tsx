@@ -298,9 +298,9 @@ export const SubscriptionsList = ({
         <SubscribeButton onClick={handleOpenNewFeedModal} />
       </CategoryDivider>
       <div data-testid="subscriptions" className={styles.wrapper}>
-        <FeedSidebarReadAll />
+        {/* <FeedSidebarReadAll /> */}
         <FeedSidebarReadFeeds />
-        <FeedSidebarReadNewsletter />
+        {/* <FeedSidebarReadNewsletter /> */}
         <ManageSubscriptions />
       </div>
     </>

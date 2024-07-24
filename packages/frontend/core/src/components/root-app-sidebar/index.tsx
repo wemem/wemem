@@ -1,6 +1,5 @@
 import { AnimatedDeleteIcon } from '@affine/component';
 import { AddFeedButton } from '@affine/core/components/app-sidebar/add-feed-button';
-import { SubscriptionsList } from '../pure/workspace-slider-bar/subscriptions';
 import { AppSidebarJournalButton } from '@affine/core/components/root-app-sidebar/journal-button';
 import { getDNDId } from '@affine/core/hooks/affine/use-global-dnd-helper';
 import { useAsyncCallback } from '@affine/core/hooks/affine-async-hooks';
@@ -39,6 +38,7 @@ import { createEmptyCollection, useEditCollectionName } from '../page-list';
 import { CollectionsList } from '../pure/workspace-slider-bar/collections';
 import { AddCollectionButton } from '../pure/workspace-slider-bar/collections/add-collection-button';
 import FavoriteList from '../pure/workspace-slider-bar/favorite/favorite-list';
+import { SubscriptionsList } from '../pure/workspace-slider-bar/subscriptions';
 import { WorkspaceSelector } from '../workspace-selector';
 import ImportPage from './import-page';
 import { workspaceAndUserWrapper, workspaceWrapper } from './index.css';
@@ -180,16 +180,27 @@ export const RootAppSidebar = memo(
         translucentUI={appSettings.enableBlurBackground}
       >
         <SidebarContainer>
+          {process.env.NODE_ENV !== 'production' && (
+            <div className={workspaceAndUserWrapper}>
+              <div className={workspaceWrapper}>
+                <WorkspaceSelector />
+              </div>
+              <UserInfo />
+            </div>
+          )}
           <div className={workspaceAndUserWrapper}>
             <div className={workspaceWrapper}>
-              <WorkspaceSelector />
+              <QuickSearchInput
+                data-testid="slider-bar-quick-search-button"
+                onClick={onOpenQuickSearchModal}
+              />
             </div>
             <UserInfo />
           </div>
-          <QuickSearchInput
+          {/* <QuickSearchInput
             data-testid="slider-bar-quick-search-button"
             onClick={onOpenQuickSearchModal}
-          />
+          /> */}
           <RouteMenuLinkItem
             icon={<FolderIcon />}
             active={allPageActive}

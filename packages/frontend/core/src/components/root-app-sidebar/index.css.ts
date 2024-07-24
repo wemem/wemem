@@ -8,6 +8,7 @@ export const workspaceAndUserWrapper = style({
   alignItems: 'center',
   justifyContent: 'space-between',
   gap: 8,
+  marginBottom: 20,
 });
 
 export const workspaceWrapper = style({
