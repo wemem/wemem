@@ -41,7 +41,7 @@
   "lint-staged": {
     "*": "prettier --write --ignore-unknown --cache --no-stash",
     "*.{ts,tsx,mjs,js,jsx}": [
-      "prettier --ignore-unknown --write"
+      "prettier --ignore-unknown --write --no-stash"
     ],
     "*.toml": [
       "taplo format"
