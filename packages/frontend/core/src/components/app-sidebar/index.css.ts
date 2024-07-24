@@ -41,7 +41,7 @@ export const navHeaderStyle = style({
   height: '52px',
   padding: '0px 16px',
   display: 'flex',
-  justifyContent: 'space-between',
+  // justifyContent: 'space-between',
   alignItems: 'center',
   ['WebkitAppRegion' as string]: 'drag',
 });

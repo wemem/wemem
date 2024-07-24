@@ -134,12 +134,12 @@ export const AppSidebarFallback = (): ReactElement | null => {
         <div className={navBodyStyle}>
           <div className={fallbackStyle}>
             <div className={fallbackHeaderStyle}>
-              {currentWorkspace ? (
+              {currentWorkspace && runtimeConfig.enableWorkspaceSelector ? (
                 <WorkspaceSelector />
               ) : (
                 <>
-                  <Skeleton variant="circular" width={40} height={40} />
-                  <Skeleton variant="rectangular" width={150} height={40} />
+                  <Skeleton variant="rectangular" width={181} height={36} />
+                  <Skeleton variant="circular" width={34} height={34} />
                 </>
               )}
             </div>

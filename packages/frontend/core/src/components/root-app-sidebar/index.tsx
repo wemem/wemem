@@ -180,7 +180,7 @@ export const RootAppSidebar = memo(
         translucentUI={appSettings.enableBlurBackground}
       >
         <SidebarContainer>
-          {process.env.NODE_ENV !== 'production' && (
+          {runtimeConfig.enableWorkspaceSelector && (
             <div className={workspaceAndUserWrapper}>
               <div className={workspaceWrapper}>
                 <WorkspaceSelector />

@@ -63,10 +63,12 @@ export const WorkspaceSettingDetail = ({
           <LabelsPanel />
         </SettingRow>
       </SettingWrapper>
-      <SettingWrapper title={t['com.affine.brand.affineCloud']()}>
-        <EnableCloudPanel />
-        <MembersPanel />
-      </SettingWrapper>
+      {runtimeConfig.enableWorkspaceSelector && (
+        <SettingWrapper title={t['com.affine.brand.affineCloud']()}>
+          <EnableCloudPanel />
+          <MembersPanel />
+        </SettingWrapper>
+      )}
       {environment.isDesktop && (
         <SettingWrapper title={t['Storage and Export']()}>
           <ExportPanel
@@ -76,7 +78,7 @@ export const WorkspaceSettingDetail = ({
         </SettingWrapper>
       )}
       <SettingWrapper>
-        <DeleteLeaveWorkspace />
+        {runtimeConfig.enableWorkspaceSelector && <DeleteLeaveWorkspace />}
         <SettingRow
           name={
             <span style={{ color: 'var(--affine-text-secondary-color)' }}>

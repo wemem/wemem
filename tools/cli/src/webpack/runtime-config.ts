@@ -16,6 +16,7 @@ export function getRuntimeConfig(buildFlags: BuildFlags): RuntimeConfig {
       linkPreviewUrl: '/api/worker/link-preview',
       enablePreloading: true,
       enableNewSettingModal: true,
+      enableWorkspaceSelector: false,
       enableNewSettingUnstableApi: false,
       enableCloud: true,
       enableCaptcha: true,
@@ -57,6 +58,7 @@ export function getRuntimeConfig(buildFlags: BuildFlags): RuntimeConfig {
       linkPreviewUrl: '/api/worker/link-preview',
       enablePreloading: true,
       enableNewSettingModal: true,
+      enableWorkspaceSelector: true,
       enableNewSettingUnstableApi: false,
       enableCloud: true,
       enableCaptcha: true,
@@ -95,6 +97,9 @@ export function getRuntimeConfig(buildFlags: BuildFlags): RuntimeConfig {
     enableNewSettingModal: process.env.ENABLE_NEW_SETTING_MODAL
       ? process.env.ENABLE_NEW_SETTING_MODAL === 'true'
       : currentBuildPreset.enableNewSettingModal,
+    enableWorkspaceSelector: process.env.ENABLE_WORKSPACE_SELECTOR
+      ? process.env.ENABLE_WORKSPACE_SELECTOR === 'true'
+      : currentBuildPreset.enableWorkspaceSelector,
     enableNewSettingUnstableApi: process.env.ENABLE_NEW_SETTING_UNSTABLE_API
       ? process.env.ENABLE_NEW_SETTING_UNSTABLE_API === 'true'
       : currentBuildPreset.enableNewSettingUnstableApi,

@@ -219,7 +219,7 @@ const usePauseAnimation = (timeToResume = 5000) => {
   return { paused, pause };
 };
 
-const WorkspaceInfo = ({ name }: { name: string }) => {
+export const WorkspaceInfo = ({ name }: { name?: string }) => {
   const { message, active } = useSyncEngineSyncProgress();
   const currentWorkspace = useService(WorkspaceService).workspace;
   const isCloud = currentWorkspace.flavour === WorkspaceFlavour.AFFINE_CLOUD;
@@ -252,9 +252,11 @@ const WorkspaceInfo = ({ name }: { name: string }) => {
     <div className={styles.workspaceInfoSlider} data-active={delayActive}>
       <div className={styles.workspaceInfoSlide}>
         <div className={styles.workspaceInfo} data-type="normal">
-          <div className={styles.workspaceName} data-testid="workspace-name">
-            {name}
-          </div>
+          {name && (
+            <div className={styles.workspaceName} data-testid="workspace-name">
+              {name}
+            </div>
+          )}
           <div className={styles.workspaceStatus}>
             {isCloud ? <CloudWorkspaceStatus /> : <LocalWorkspaceStatus />}
           </div>
