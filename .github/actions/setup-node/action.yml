@@ -187,4 +187,4 @@ runs:
       run: npm install -g pnpm
     - name: Install Dependencies for Submodules
       shell: bash
-      run: git submodule foreach 'pnpm install'
+      run: git submodule foreach 'pnpm install --registry https://registry.npmjs.org'
