@@ -21,12 +21,6 @@ permissions:
   packages: 'write'
 
 jobs:
-  build-server-image:
-    name: Build Server Image
-    uses: ./.github/workflows/build-server-image.yml
-    with:
-      flavor: ${{ github.event.inputs.flavor }}
-
   build-web:
     name: Build @affine/web
     runs-on: ubuntu-latest
