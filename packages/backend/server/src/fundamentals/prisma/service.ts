@@ -15,6 +15,7 @@ export class PrismaService
   }
 
   async onModuleInit() {
+    //@ts-expect-error: 暂时没有找到更好的方法
     this.$on<'query'>('query', e => {
       console.log('Query: ' + e.query);
       console.log('Params: ' + e.params);

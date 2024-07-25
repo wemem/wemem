@@ -15,7 +15,7 @@ export type PromptConfig = {
   maxTokens?: number;
 };
 
-type Prompt = {
+export type Prompt = {
   name: string;
   action?: string;
   model: string;
