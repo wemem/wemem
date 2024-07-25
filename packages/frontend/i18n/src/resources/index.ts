@@ -187,7 +187,7 @@ function replaceAffineWithReadease(obj: JsonObject) {
       replaceAffineWithReadease(obj[key]);
     } else if (typeof obj[key] === 'string') {
       // 替换字符串中的 "affine" 为 "readease"
-      obj[key] = obj[key].replace(/AFFiNE/g, 'Readease');
+      obj[key] = obj[key].replace(/AFFiNE/g, 'ReadEase');
     }
   }
 
