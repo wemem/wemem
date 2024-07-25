@@ -50,7 +50,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
         with:
-          token: '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'
+          token: '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'
           submodules: recursive
       - name: Setup Version
         id: version
