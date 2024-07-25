@@ -12,6 +12,6 @@ runs:
     - name: Install PNPM
       shell: bash
       run: npm install -g pnpm
-    - name: Install Dependencies for Submodules
+    - name: Install Dependencies for blocksuite
       shell: bash
-      run: cd submodules/blocksuite && pnpm install --registry https://registry.npmjs.org
+      run: cd submodules/blocksuite && pnpm install
