@@ -182,9 +182,3 @@ runs:
       run: node ./node_modules/electron/install.js
       env:
         electron_config_cache: ./node_modules/.cache/electron
-    - name: Install PNPM
-      shell: bash
-      run: npm install -g pnpm
-    - name: Install Dependencies for Submodules
-      shell: bash
-      run: cd submodules/blocksuite && pnpm install --registry https://registry.npmjs.org

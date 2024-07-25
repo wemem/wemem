@@ -1,0 +1,17 @@
+name: 'AFFiNE Blocksuite Setup'
+description: 'pnpm install for blocksuite'
+runs:
+  using: 'composite'
+  steps:
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version-file: '.nvmrc'
+        registry-url: https://registry.npmjs.org
+        scope: '@toeverything'
+    - name: Install PNPM
+      shell: bash
+      run: npm install -g pnpm
+    - name: Install Dependencies for Submodules
+      shell: bash
+      run: cd submodules/blocksuite && pnpm install --registry https://registry.npmjs.org
