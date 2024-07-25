@@ -24,57 +24,57 @@ ENV SELF_HOSTED=true
 ARG MIXPANEL_TOKEN
 ENV MIXPANEL_TOKEN=$MIXPANEL_TOKEN
 
-# 安装依赖
-RUN yarn install
+# # 安装依赖
+# RUN yarn install
 
-# 执行版本设置脚本
-RUN if [ "$(git rev-parse --is-inside-work-tree 2>/dev/null)" = "true" ]; then \
-  if [ "$(git symbolic-ref --short HEAD 2>/dev/null)" != "" ]; then \
-  echo "Running in a git repository"; \
-  else \
-  echo "Running in a detached HEAD state"; \
-  fi; \
-  fi
+# # 执行版本设置脚本
+# RUN if [ "$(git rev-parse --is-inside-work-tree 2>/dev/null)" = "true" ]; then \
+#   if [ "$(git symbolic-ref --short HEAD 2>/dev/null)" != "" ]; then \
+#   echo "Running in a git repository"; \
+#   else \
+#   echo "Running in a detached HEAD state"; \
+#   fi; \
+#   fi
 
-RUN bash -c '\
-  if [ "${GITHUB_REF_TYPE}" == "tag" ]; then \
-  APP_VERSION=$(echo "${GITHUB_REF_NAME}" | sed "s/^v//"); \
-  else \
-  PACKAGE_VERSION=$(node -p "require(\"./package.json\").version"); \
-  TIME_VERSION=$(date +%Y%m%d%H%M); \
-  GIT_SHORT_HASH=$(git rev-parse --short HEAD); \
-  APP_VERSION=$PACKAGE_VERSION-nightly-$TIME_VERSION-$GIT_SHORT_HASH; \
-  fi && \
-  echo $APP_VERSION && \
-  export APP_VERSION=$APP_VERSION && \
-  ./scripts/set-version.sh $APP_VERSION'
+# RUN bash -c '\
+#   if [ "${GITHUB_REF_TYPE}" == "tag" ]; then \
+#   APP_VERSION=$(echo "${GITHUB_REF_NAME}" | sed "s/^v//"); \
+#   else \
+#   PACKAGE_VERSION=$(node -p "require(\"./package.json\").version"); \
+#   TIME_VERSION=$(date +%Y%m%d%H%M); \
+#   GIT_SHORT_HASH=$(git rev-parse --short HEAD); \
+#   APP_VERSION=$PACKAGE_VERSION-nightly-$TIME_VERSION-$GIT_SHORT_HASH; \
+#   fi && \
+#   echo $APP_VERSION && \
+#   export APP_VERSION=$APP_VERSION && \
+#   ./scripts/set-version.sh $APP_VERSION'
 
-# 构建核心应用
-RUN yarn nx build @affine/web --skip-nx-cache
-RUN yarn nx build @affine/admin --skip-nx-cache
-RUN yarn workspace @affine/server build
+# # 构建核心应用
+# RUN yarn nx build @affine/web --skip-nx-cache
+# RUN yarn nx build @affine/admin --skip-nx-cache
+# RUN yarn workspace @affine/server build
 # RUN yarn build:server-native --skip-nx-cache
 
-# 下载自托管字体
-RUN node ./scripts/download-blocksuite-fonts.mjs
+# # 下载自托管字体
+# RUN node ./scripts/download-blocksuite-fonts.mjs
 
-RUN yarn config set --json supportedArchitectures.cpu '["x64", "arm64", "arm"]'
-RUN yarn config set --json supportedArchitectures.libc '["glibc"]'
-RUN yarn workspaces focus @affine/server --production
-RUN yarn workspace @affine/server prisma generate
+# RUN yarn config set --json supportedArchitectures.cpu '["x64", "arm64", "arm"]'
+# RUN yarn config set --json supportedArchitectures.libc '["glibc"]'
+# RUN yarn workspaces focus @affine/server --production
+# RUN yarn workspace @affine/server prisma generate
 
-RUN cp -r ./packages/frontend/web/dist ./packages/backend/server/static
-RUN cp -r ./packages/frontend/admin/dist ./packages/backend/server/static/admin
-RUN cp -r ./packages/backend/native/server-native.node ./packages/backend/server/server-native.node
-RUN cp -r ./packages/backend/native/server-native.node ./packages/backend/server/server-native.arm64.node
-RUN cp -r ./packages/backend/native/server-native.node ./packages/backend/server/server-native.armv7.node
+# RUN cp -r ./packages/frontend/web/dist ./packages/backend/server/static
+# RUN cp -r ./packages/frontend/admin/dist ./packages/backend/server/static/admin
+# RUN cp -r ./packages/backend/native/server-native.node ./packages/backend/server/server-native.node
+# RUN cp -r ./packages/backend/native/server-native.node ./packages/backend/server/server-native.arm64.node
+# RUN cp -r ./packages/backend/native/server-native.node ./packages/backend/server/server-native.armv7.node
 
 
-WORKDIR /app/packages/backend/server
+# WORKDIR /app/packages/backend/server
 
-EXPOSE 3010
+# EXPOSE 3010
 
-CMD ["node", "--import", "./scripts/register.js", "./dist/index.js"]
+# CMD ["node", "--import", "./scripts/register.js", "./dist/index.js"]
 
 # FROM node:18
 
