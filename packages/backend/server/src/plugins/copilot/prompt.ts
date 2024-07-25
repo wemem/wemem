@@ -46,7 +46,7 @@ export class ChatPrompt {
   static createFromPrompt(
     options: Omit<AiPrompt, 'id' | 'createdAt' | 'config'> & {
       messages: PromptMessage[];
-      config: PromptConfig | undefined;
+      config?: PromptConfig | undefined;
     }
   ) {
     return new ChatPrompt(
