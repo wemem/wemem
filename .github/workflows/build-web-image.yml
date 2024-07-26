@@ -23,7 +23,7 @@ permissions:
 jobs:
   build-web:
     name: Build @affine/web
-    runs-on: self-hosted
+    runs-on: ubuntu-latest
     environment: ${{ github.event.inputs.flavor }}
     steps:
       - uses: actions/checkout@v4
@@ -62,7 +62,7 @@ jobs:
 
   build-admin:
     name: Build @affine/admin
-    runs-on: self-hosted
+    runs-on: ubuntu-latest
     environment: ${{ github.event.inputs.flavor }}
     steps:
       - uses: actions/checkout@v4
@@ -101,7 +101,7 @@ jobs:
 
   build-frontend-image:
     name: Build Frontend Image
-    runs-on: self-hosted
+    runs-on: ubuntu-latest
     needs:
       - build-web
       - build-admin
