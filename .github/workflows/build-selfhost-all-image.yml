@@ -148,8 +148,8 @@ jobs:
           path: ./packages/backend/native/server-native.node
           if-no-files-found: error
 
-  build-docker:
-    name: Build Docker
+  build-server-docker:
+    name: Build Server Docker
     runs-on: ubuntu-latest
     needs:
       - build-server
@@ -247,8 +247,8 @@ jobs:
           provenance: true
           file: .github/deployment/node/Dockerfile
           tags: ghcr.io/readeaseai/affine-server:${{env.RELEASE_FLAVOR}}-${{ env.GIT_SHORT_HASH }},ghcr.io/readeaseai/affine-server:${{env.RELEASE_FLAVOR}}
-  build-frontend-image:
-    name: Build Frontend Image
+  build-web-image:
+    name: Build Web Image
     runs-on: ubuntu-latest
     needs:
       - build-web-selfhost
