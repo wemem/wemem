@@ -23,7 +23,7 @@ permissions:
 jobs:
   build-server:
     name: Build Server
-    runs-on: ubuntu-latest
+    runs-on: self-hosted
     steps:
       - uses: actions/checkout@v4
       - name: Setup Version
@@ -45,7 +45,7 @@ jobs:
 
   build-web-selfhost:
     name: Build @affine/web selfhost
-    runs-on: ubuntu-latest
+    runs-on: self-hosted
     environment: ${{ github.event.inputs.flavor }}
     steps:
       - uses: actions/checkout@v4
@@ -78,7 +78,7 @@ jobs:
 
   build-admin-selfhost:
     name: Build @affine/admin selfhost
-    runs-on: ubuntu-latest
+    runs-on: self-hosted
     environment: ${{ github.event.inputs.flavor }}
     steps:
       - uses: actions/checkout@v4
@@ -109,7 +109,7 @@ jobs:
 
   build-server-native:
     name: Build Server native - ${{ matrix.targets.name }}
-    runs-on: ubuntu-latest
+    runs-on: self-hosted
     strategy:
       matrix:
         targets:
@@ -145,7 +145,7 @@ jobs:
 
   build-docker:
     name: Build Docker
-    runs-on: ubuntu-latest
+    runs-on: self-hosted
     needs:
       - build-server
       - build-web-selfhost
