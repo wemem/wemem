@@ -237,7 +237,7 @@ jobs:
         id: version
         uses: ./.github/actions/setup-version
 
-      - name: Build graphql Dockerfile
+      - name: Build Server Dockerfile
         uses: docker/build-push-action@v6
         with:
           context: .
@@ -285,7 +285,7 @@ jobs:
         uses: docker/setup-qemu-action@v3
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
-      - name: Build front Dockerfile
+      - name: Build Web Dockerfile
         uses: docker/build-push-action@v6
         with:
           context: .
