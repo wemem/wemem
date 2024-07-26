@@ -4,7 +4,6 @@ COPY ./packages/frontend/web/dist ./dist
 COPY ./packages/frontend/admin/dist ./admin
 COPY ./.github/deployment/front/nginx.conf /usr/local/openresty/nginx/conf/nginx.conf
 COPY ./.github/deployment/front/affine.nginx.conf /etc/nginx/conf.d/affine.nginx.conf
-COPY ./.github/deployment/front/readease.nginx.conf /etc/nginx/conf.d/readease.nginx.conf
 
 RUN mkdir -p /var/log/nginx && \
   rm /etc/nginx/conf.d/default.conf
