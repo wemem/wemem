@@ -60,3 +60,6 @@ async function load() {
 }
 
 await load();
+
+console.log('loaded AFFiNE config:');
+console.log(globalThis.AFFiNE);
