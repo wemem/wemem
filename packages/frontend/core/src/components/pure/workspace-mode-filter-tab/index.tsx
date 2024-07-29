@@ -73,7 +73,7 @@ export const WorkspaceModeFilterTab = ({
           },
           {
             value: 'subscriptions',
-            label: t['ai.readflow.feeds.header'](),
+            label: t['ai.readease.feeds.header'](),
             testId: 'workspace-feeds-button',
             className: styles.filterTab,
           },

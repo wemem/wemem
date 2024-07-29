@@ -113,7 +113,7 @@ const Placeholder = ({ collection }: { collection: Collection }) => {
               style={{ color: 'var(--affine-icon-color)' }}
               fontSize={14}
             />
-            {t['ai.readflow.feeds.allFeeds']()}
+            {t['ai.readease.feeds.allFeeds']()}
             <div>/</div>
           </div>
           <div

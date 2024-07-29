@@ -16,20 +16,20 @@ export interface EditFeedModalProps {
 }
 
 export const EditFeedModal = ({
-                                init,
-                                onConfirm,
-                                open,
-                                showTips,
-                                onOpenChange,
-                                title,
-                              }: EditFeedModalProps) => {
+  init,
+  onConfirm,
+  open,
+  showTips,
+  onOpenChange,
+  title,
+}: EditFeedModalProps) => {
   const t = useI18n();
   const onConfirmTitle = useCallback(
     (title: string) => {
       onConfirm(title);
       onOpenChange(false);
     },
-    [onConfirm, onOpenChange],
+    [onConfirm, onOpenChange]
   );
   const onCancel = useCallback(() => {
     onOpenChange(false);
@@ -59,12 +59,12 @@ export interface CreateFeedProps {
 }
 
 export const EditFeed = ({
-                           onConfirmText,
-                           init,
-                           showTips,
-                           onCancel,
-                           onConfirm,
-                         }: CreateFeedProps) => {
+  onConfirmText,
+  init,
+  showTips,
+  onCancel,
+  onConfirm,
+}: CreateFeedProps) => {
   const t = useI18n();
   const [value, onChange] = useState(init);
   const isNameEmpty = useMemo(() => value.trim().length === 0, [value]);
@@ -85,32 +85,30 @@ export const EditFeed = ({
       }
       e.stopPropagation();
     },
-    [isNameEmpty],
+    [isNameEmpty]
   );
   return (
     <div>
       <div className={styles.content}>
-        <div className={styles.label}>
-          {t['ai.readflow.editFeed.name']()}
-        </div>
+        <div className={styles.label}>{t['ai.readease.editFeed.name']()}</div>
         <Input
           autoFocus
           value={value}
           data-testid="input-collection-title"
-          placeholder={t['ai.readflow.editFeed.placeholder']()}
+          placeholder={t['ai.readease.editFeed.placeholder']()}
           onChange={useCallback((value: string) => onChange(value), [onChange])}
           onEnter={save}
           onKeyDown={onKeyDown}
         ></Input>
         {showTips ? (
           <div className={styles.createTips}>
-            {t[`ai.readflow.editFeed.editTips`]()}
+            {t[`ai.readease.editFeed.editTips`]()}
           </div>
         ) : null}
       </div>
       <div className={styles.footer}>
         <Button size="large" onClick={onCancel}>
-          {t['ai.readflow.editFeed.button.cancel']()}
+          {t['ai.readease.editFeed.button.cancel']()}
         </Button>
         <Button
           size="large"
@@ -119,7 +117,7 @@ export const EditFeed = ({
           disabled={isNameEmpty}
           onClick={save}
         >
-          {onConfirmText ?? t['ai.readflow.editFeed.button.create']()}
+          {onConfirmText ?? t['ai.readease.editFeed.button.create']()}
         </Button>
       </div>
     </div>

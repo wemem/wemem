@@ -67,7 +67,7 @@ export const FeedDocsPageListHeader = ({
     <div className={styles.docListHeader}>
       <div className={styles.docListHeaderTitle}>
         <div style={{ cursor: 'pointer', display: floating ? 'none' : 'flex' }}>
-          {t['ai.readflow.feed-docs.header']()}
+          {t['ai.readease.feed-docs.header']()}
         </div>
         <div className={feedStyles.listRightButton}>
           <RadioButtonGroup
@@ -78,13 +78,13 @@ export const FeedDocsPageListHeader = ({
               value="false"
               data-testid="workspace-feed-docs-unseen-button"
             >
-              {t['ai.readflow.feed-docs.unseen']()}
+              {t['ai.readease.feed-docs.unseen']()}
             </RadioButton>
             <RadioButton
               value="true"
               data-testid="workspace-feed-docs-seen-button"
             >
-              {t['ai.readflow.feed-docs.seen']()}
+              {t['ai.readease.feed-docs.seen']()}
             </RadioButton>
           </RadioButtonGroup>
         </div>
@@ -103,7 +103,7 @@ export const FeedDocsPageListHeader = ({
             loading={marking}
             onClick={onMarkAllAsSeen}
           >
-            {t['ai.readflow.feed-docs.mark-all-as-seen']()}
+            {t['ai.readease.feed-docs.mark-all-as-seen']()}
           </Button>
         )}
         <PageDisplayMenu />

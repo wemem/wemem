@@ -45,6 +45,7 @@ import { workspaceAndUserWrapper, workspaceWrapper } from './index.css';
 // import { AppSidebarJournalButton } from './journal-button';
 // import { UpdaterButton } from './updater-button';
 import { UserInfo } from './user-info';
+import { TagsList } from '@affine/core/components/pure/workspace-slider-bar/tags';
 
 export type RootAppSidebarProps = {
   isPublicWorkspace: boolean;
@@ -220,7 +221,7 @@ export const RootAppSidebar = memo(
               path={paths.later(currentWorkspaceId)}
             >
               <span data-testid="later-page">
-                {t['ai.readflow.workspaceSubPath.later']()}
+                {t['ai.readease.workspaceSubPath.later']()}
               </span>
             </RouteMenuLinkItem>
           )}
@@ -231,7 +232,7 @@ export const RootAppSidebar = memo(
               path={paths.archive(currentWorkspaceId)}
             >
               <span data-testid="archive-page">
-                {t['ai.readflow.workspaceSubPath.archive']()}
+                {t['ai.readease.workspaceSubPath.archive']()}
               </span>
             </RouteMenuLinkItem>
           )}
@@ -256,6 +257,7 @@ export const RootAppSidebar = memo(
             docCollection={docCollection}
             onCreate={handleCreateCollection}
           />
+          <TagsList docCollection={docCollection} />
           <SubscriptionsList docCollection={docCollection} />
           <CategoryDivider label={t['com.affine.rootAppSidebar.others']()} />
           {/* fixme: remove the following spacer */}

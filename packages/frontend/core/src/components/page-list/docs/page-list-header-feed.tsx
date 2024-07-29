@@ -41,7 +41,7 @@ export const FeedPageListHeader = ({
       <div className={styles.docListHeader}>
         <div className={styles.docListHeaderTitle}>
           <div style={{ cursor: 'pointer' }} onClick={handleJumpToFeeds}>
-            {t['ai.readflow.feeds.header']()} /
+            {t['ai.readease.feeds.header']()} /
           </div>
           <div className={styles.titleIcon}>
             <FeedAvatar image={collection.feed?.image} />

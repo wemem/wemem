@@ -170,10 +170,11 @@ export const VirtualizedPageList = ({
   }, [
     collection,
     currentFilters,
-    currentWorkspace.docCollection.meta.properties,
+    currentWorkspace.docCollection,
     currentWorkspace.id,
     feed,
     feedDocs,
+    filteredPageMetas,
     onChangeCurrentFilters,
     tag,
   ]);

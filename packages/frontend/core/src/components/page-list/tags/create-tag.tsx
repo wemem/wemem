@@ -9,7 +9,13 @@ import { tagColors } from '../../affine/page-properties/common';
 import type { TagMeta } from '../types';
 import * as styles from './create-tag.css';
 
-const TagIcon = ({ color, large }: { color: string; large?: boolean }) => (
+export const TagIcon = ({
+  color,
+  large,
+}: {
+  color: string;
+  large?: boolean;
+}) => (
   <div
     className={clsx(styles.tagColorIcon, {
       ['large']: large,
@@ -18,7 +24,7 @@ const TagIcon = ({ color, large }: { color: string; large?: boolean }) => (
   />
 );
 
-const randomTagColor = () => {
+export const randomTagColor = () => {
   const randomIndex = Math.floor(Math.random() * tagColors.length);
   return tagColors[randomIndex][1];
 };

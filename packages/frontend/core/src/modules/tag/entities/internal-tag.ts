@@ -54,13 +54,13 @@ export const isInternalTag = (tagName: any) =>
 export const useTagI18N = () => {
   const t = useI18n();
   return useCallback(
-    (tagName: any) => {
+    (tagName: any): string => {
       if (!tagName) {
         return t['Untitled']();
       }
       if (isInternalTag(tagName)) {
         // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-        return t[tagName as string]();
+        return t[tagName as string] ? t[tagName as string]() : tagName;
       }
 
       return tagName;

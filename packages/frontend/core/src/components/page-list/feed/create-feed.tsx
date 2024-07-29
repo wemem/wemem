@@ -1,4 +1,10 @@
-import { Button, Input, Modal, RadioButton, RadioButtonGroup } from '@affine/component';
+import {
+  Button,
+  Input,
+  Modal,
+  RadioButton,
+  RadioButtonGroup,
+} from '@affine/component';
 import { useI18n } from '@affine/i18n';
 import type { KeyboardEvent } from 'react';
 import { useCallback, useMemo, useState } from 'react';
@@ -22,20 +28,20 @@ export interface CreateFeedModalProps {
 }
 
 export const CreateFeedModal = ({
-                                  init,
-                                  onConfirm,
-                                  open,
-                                  showTips,
-                                  onOpenChange,
-                                  title,
-                                }: CreateFeedModalProps) => {
+  init,
+  onConfirm,
+  open,
+  showTips,
+  onOpenChange,
+  title,
+}: CreateFeedModalProps) => {
   const t = useI18n();
   const onConfirmTitle = useCallback(
     (title: string) => {
       onConfirm(title);
       onOpenChange(false);
     },
-    [onConfirm, onOpenChange],
+    [onConfirm, onOpenChange]
   );
   const onCancel = useCallback(() => {
     onOpenChange(false);
@@ -65,12 +71,12 @@ export interface CreateFeedProps {
 }
 
 export const CreateFeed = ({
-                             onConfirmText,
-                             init,
-                             showTips,
-                             onCancel,
-                             onConfirm,
-                           }: CreateFeedProps) => {
+  onConfirmText,
+  init,
+  showTips,
+  onCancel,
+  onConfirm,
+}: CreateFeedProps) => {
   const t = useI18n();
   const [value, onChange] = useState(init);
   const isNameEmpty = useMemo(() => value.trim().length === 0, [value]);
@@ -91,7 +97,7 @@ export const CreateFeed = ({
       }
       e.stopPropagation();
     },
-    [isNameEmpty],
+    [isNameEmpty]
   );
   const [feedType, setFeedType] = useState(FeedType.WeChat);
   return (
@@ -105,34 +111,39 @@ export const CreateFeed = ({
             (value: FeedType) => {
               setFeedType(value);
             },
-            [setFeedType],
+            [setFeedType]
           )}
         >
-          <RadioButton value={FeedType.WeChat} data-testid="feed-type-wechat-trigger">
-            {t['ai.readflow.editFeed.feedType.wechat']()}
+          <RadioButton
+            value={FeedType.WeChat}
+            data-testid="feed-type-wechat-trigger"
+          >
+            {t['ai.readease.editFeed.feedType.wechat']()}
           </RadioButton>
           <RadioButton value={FeedType.RSS} data-testid="feed-type-rss-trigger">
-            {t['ai.readflow.editFeed.feedType.rss']()}
+            {t['ai.readease.editFeed.feedType.rss']()}
           </RadioButton>
         </RadioButtonGroup>
         <Input
           autoFocus
           value={value}
           data-testid="input-collection-title"
-          placeholder={t[`ai.readflow.editFeed.feedType.${feedType}.placeholder`]()}
+          placeholder={t[
+            `ai.readease.editFeed.feedType.${feedType}.placeholder`
+          ]()}
           onChange={useCallback((value: string) => onChange(value), [onChange])}
           onEnter={save}
           onKeyDown={onKeyDown}
         ></Input>
         {showTips ? (
           <div className={styles.createTips}>
-            {t[`ai.readflow.editFeed.feedType.${feedType}.createTips`]()}
+            {t[`ai.readease.editFeed.feedType.${feedType}.createTips`]()}
           </div>
         ) : null}
       </div>
       <div className={styles.footer}>
         <Button size="large" onClick={onCancel}>
-          {t['ai.readflow.editFeed.button.cancel']()}
+          {t['ai.readease.editFeed.button.cancel']()}
         </Button>
         <Button
           size="large"
@@ -141,7 +152,7 @@ export const CreateFeed = ({
           disabled={isNameEmpty}
           onClick={save}
         >
-          {onConfirmText ?? t['ai.readflow.editFeed.button.create']()}
+          {onConfirmText ?? t['ai.readease.editFeed.button.create']()}
         </Button>
       </div>
     </div>

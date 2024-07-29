@@ -181,7 +181,7 @@ export const FeedSidebarReadAll = () => {
       to={unseenPath}
       linkComponent={WorkbenchLink}
     >
-      <span>{t['ai.readflow.rootAppSidebar.feeds.all']()}</span>
+      <span>{t['ai.readease.rootAppSidebar.feeds.all']()}</span>
     </SidebarMenuLinkItem>
   );
 };
@@ -208,7 +208,7 @@ export const FeedSidebarReadFeeds = () => {
       to={unseenPath}
       linkComponent={WorkbenchLink}
     >
-      <span>{t['ai.readflow.rootAppSidebar.feeds.read-feeds']()}</span>
+      <span>{t['ai.readease.rootAppSidebar.feeds.read-feeds']()}</span>
     </SidebarMenuLinkItem>
   );
 };
@@ -235,7 +235,7 @@ export const FeedSidebarReadNewsletter = () => {
       to={unseenPath}
       linkComponent={WorkbenchLink}
     >
-      <span>{t['ai.readflow.rootAppSidebar.feeds.newsletter']()}</span>
+      <span>{t['ai.readease.rootAppSidebar.feeds.newsletter']()}</span>
     </SidebarMenuLinkItem>
   );
 };
@@ -264,7 +264,7 @@ export const ManageSubscriptions = () => {
       linkComponent={WorkbenchLink}
       collapsed={undefined}
     >
-      <span>{t['ai.readflow.rootAppSidebar.feeds.manage-feeds']()}</span>
+      <span>{t['ai.readease.rootAppSidebar.feeds.manage-feeds']()}</span>
     </SidebarMenuLinkItem>
   );
 };
@@ -287,14 +287,14 @@ export const SubscriptionsList = ({
 
   if (subscriptions.length === 0) {
     return (
-      <CategoryDivider label={t['ai.readflow.rootAppSidebar.feeds']()}>
+      <CategoryDivider label={t['ai.readease.rootAppSidebar.feeds']()}>
         <SubscribeButton onClick={handleOpenNewFeedModal} />
       </CategoryDivider>
     );
   }
   return (
     <>
-      <CategoryDivider label={t['ai.readflow.rootAppSidebar.feeds']()}>
+      <CategoryDivider label={t['ai.readease.rootAppSidebar.feeds']()}>
         <SubscribeButton onClick={handleOpenNewFeedModal} />
       </CategoryDivider>
       <div data-testid="subscriptions" className={styles.wrapper}>

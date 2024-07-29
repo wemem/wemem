@@ -95,7 +95,7 @@ export const VirtualizedFeedList = ({
         open={showFloatingToolbar}
         content={
           <Trans
-            i18nKey="ai.readflow.feed.toolbar.selected"
+            i18nKey="ai.readease.feed.toolbar.selected"
             count={selectedCollectionIds.length}
           >
             <div style={{ color: 'var(--affine-text-secondary-color)' }}>

@@ -16,24 +16,26 @@ interface AddPageFeedButtonProps {
 }
 
 export function AddPageFeedButton({
-                                    onClickNewPage,
-                                    onOpenNewFeedModal,
-                                    className,
-                                  }: AddPageFeedButtonProps) {
+  onClickNewPage,
+  onOpenNewFeedModal,
+  className,
+}: AddPageFeedButtonProps) {
   const t = useI18n();
   return (
     <div className={clsx(styles.root)}>
       <Button
         className={clsx([styles.button, className])}
         icon={<PageIcon />}
-        onClick={onClickNewPage}>
+        onClick={onClickNewPage}
+      >
         {t['New Page']()}
       </Button>
       <Button
         className={clsx([styles.button, className])}
         icon={<PiRss />}
-        onClick={onOpenNewFeedModal}>
-        {t['ai.readflow.feeds.new-feed-button']()}
+        onClick={onOpenNewFeedModal}
+      >
+        {t['ai.readease.feeds.new-feed-button']()}
       </Button>
       <Spotlight />
     </div>

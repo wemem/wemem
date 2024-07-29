@@ -60,7 +60,7 @@ export const FeedOperationCell = ({ collection }: FeedOperationCellProps) => {
       >
         <FavoriteTag onClick={onToggleFavoriteCollection} active={favourite} />
       </ColWrapper>
-      <Tooltip content={t['ai.readflow.feed.menu.rename']()} side="top">
+      <Tooltip content={t['ai.readease.feed.menu.rename']()} side="top">
         <IconButton onClick={handleEditFeed}>
           <EditIcon />
         </IconButton>

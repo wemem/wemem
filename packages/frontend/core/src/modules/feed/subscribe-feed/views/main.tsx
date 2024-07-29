@@ -230,7 +230,7 @@ export const CMDKContainer = ({
           />
         ) : null}
         <Command.Input
-          placeholder={t['ai.readflow.feeds.new-feed.placeholder']()}
+          placeholder={t['ai.readease.feeds.new-feed.placeholder']()}
           ref={inputRef}
           {...rest}
           value={query}
@@ -262,7 +262,7 @@ const CMDKQuickSearchModalInner = ({
       query={query}
       groups={groups}
       onQueryChange={subscribeFeed.setQuery}
-      inputLabel={t['ai.readflow.feeds.new-feed-button']()}
+      inputLabel={t['ai.readease.feeds.new-feed-button']()}
       open={open}
     >
       <QuickSearchCommands groups={groups} onOpenChange={props.onOpenChange} />

@@ -26,7 +26,8 @@ export function AddFeedButton({
       className={clsx([styles.root, className])}
       onClick={onClick}
     >
-      <PlusIcon className={styles.icon} /> {t['ai.readflow.feeds.new-feed-button']()}
+      <PlusIcon className={styles.icon} />{' '}
+      {t['ai.readease.feeds.new-feed-button']()}
       <Spotlight />
     </button>
   );

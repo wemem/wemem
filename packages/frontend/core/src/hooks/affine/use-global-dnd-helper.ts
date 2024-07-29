@@ -18,6 +18,7 @@ import { useTrashModalHelper } from './use-trash-modal-helper';
 export type DndWhere =
   | 'sidebar-pin'
   | 'sidebar-collections'
+  | 'sidebar-tags'
   | 'sidebar-trash'
   | 'doc-list'
   | 'collection-list'

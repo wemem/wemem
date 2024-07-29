@@ -67,6 +67,19 @@ export class TagList extends Entity {
     return this.tags$.map(tags => tags.find(tag => tag.id === tagId));
   }
 
+  tagMetaByTag(tag: Tag) {
+    return LiveData.computed(get => {
+      return {
+        id: tag.id,
+        title: get(tag.value$),
+        color: get(tag.color$),
+        pageCount: get(tag.pageIds$).length,
+        createDate: get(tag.createDate$),
+        updatedDate: get(tag.updateDate$),
+      };
+    });
+  }
+
   tagMetas$ = LiveData.computed(get => {
     return get(this.tags$).map(tag => {
       return {

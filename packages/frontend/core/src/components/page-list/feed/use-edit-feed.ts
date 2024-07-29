@@ -10,7 +10,7 @@ export const useEditFeed = (collection: Collection) => {
   const feedService = useService(SubscriptionService);
   const t = useI18n();
   const { node, open } = useEditFeedModal({
-    title: t['ai.readflow.editFeed.editFeed'](),
+    title: t['ai.readease.editFeed.editFeed'](),
     showTips: true,
   });
 
