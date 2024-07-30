@@ -59,7 +59,7 @@ export const Component = () => {
     buildShowcaseWorkspace(
       workspacesService,
       WorkspaceFlavour.AFFINE_CLOUD,
-      'AFFiNE Cloud'
+      'First Workspace'
     )
       .then(({ meta, defaultDocId }) => {
         if (defaultDocId) {
@@ -118,6 +118,9 @@ export const Component = () => {
   ]);
 
   useEffect(() => {
+    if (!runtimeConfig.allowLocalWorkspace) {
+      return;
+    }
     setCreating(true);
     createFirstAppData(workspacesService)
       .then(createdWorkspace => {

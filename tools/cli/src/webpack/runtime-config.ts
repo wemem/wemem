@@ -128,11 +128,15 @@ export function getRuntimeConfig(buildFlags: BuildFlags): RuntimeConfig {
       : buildFlags.mode === 'development'
         ? true
         : currentBuildPreset.enablePageHistory,
+    // allowLocalWorkspace: process.env.ALLOW_LOCAL_WORKSPACE
+    //   ? process.env.ALLOW_LOCAL_WORKSPACE === 'true'
+    //   : buildFlags.mode === 'development'
+    //     ? true
+    //     : currentBuildPreset.allowLocalWorkspace,
+
     allowLocalWorkspace: process.env.ALLOW_LOCAL_WORKSPACE
       ? process.env.ALLOW_LOCAL_WORKSPACE === 'true'
-      : buildFlags.mode === 'development'
-        ? true
-        : currentBuildPreset.allowLocalWorkspace,
+      : currentBuildPreset.allowLocalWorkspace,
   };
 
   const testEnvironmentPreset = {
