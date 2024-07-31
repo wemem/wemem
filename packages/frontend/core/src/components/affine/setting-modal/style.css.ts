@@ -33,7 +33,7 @@ export const suggestionLinkIcon = style({
   margin: '3px 0',
 });
 export const footer = style({
-  display: 'flex',
+  display: 'none',
   justifyContent: 'center',
   alignItems: 'center',
   paddingBottom: '20px',

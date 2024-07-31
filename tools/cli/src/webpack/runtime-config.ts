@@ -10,8 +10,8 @@ export function getRuntimeConfig(buildFlags: BuildFlags): RuntimeConfig {
       enableBroadcastChannelProvider: true,
       enableDebugPage: true,
       githubUrl: 'https://github.com/toeverything/AFFiNE',
-      changelogUrl: 'https://affine.pro/what-is-new',
-      downloadUrl: 'https://affine.pro/download',
+      changelogUrl: 'https://readease.ai/what-is-new',
+      downloadUrl: 'https://readease.ai/download',
       imageProxyUrl: '/api/worker/image-proxy',
       linkPreviewUrl: '/api/worker/link-preview',
       enablePreloading: true,
@@ -28,7 +28,7 @@ export function getRuntimeConfig(buildFlags: BuildFlags): RuntimeConfig {
       enableExperimentalFeature: false,
       enableInfoModal: false,
       allowLocalWorkspace: buildFlags.distribution === 'desktop' ? true : false,
-      serverUrlPrefix: 'https://app.affine.pro',
+      serverUrlPrefix: 'https://app.readease.ai',
       appVersion: packageJson.version,
       editorVersion: packageJson.devDependencies['@blocksuite/presets'],
       appBuildType: 'stable',
@@ -37,14 +37,14 @@ export function getRuntimeConfig(buildFlags: BuildFlags): RuntimeConfig {
       return {
         ...this.stable,
         enablePageHistory: true,
-        serverUrlPrefix: 'https://insider.affine.pro',
+        serverUrlPrefix: 'https://insider.readease.ai',
         appBuildType: 'beta' as const,
       };
     },
     get internal() {
       return {
         ...this.stable,
-        serverUrlPrefix: 'https://insider.affine.pro',
+        serverUrlPrefix: 'https://insider.readease.ai',
         appBuildType: 'internal' as const,
       };
     },
@@ -55,7 +55,7 @@ export function getRuntimeConfig(buildFlags: BuildFlags): RuntimeConfig {
       enableDebugPage: true,
       githubUrl: 'https://github.com/toeverything/AFFiNE',
       changelogUrl: 'https://github.com/toeverything/AFFiNE/releases',
-      downloadUrl: 'https://affine.pro/download',
+      downloadUrl: 'https://readease.ai/download',
       imageProxyUrl: '/api/worker/image-proxy',
       linkPreviewUrl: '/api/worker/link-preview',
       enablePreloading: true,

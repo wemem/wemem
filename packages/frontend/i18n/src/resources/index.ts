@@ -28,7 +28,7 @@ export const LOCALES = [
     flagEmoji: '🇰🇷',
     base: false,
     completeRate: 0.77,
-    res: replaceAffineWithReadease(ko),
+    res: ko,
   },
   {
     id: 1000040021,
@@ -38,7 +38,7 @@ export const LOCALES = [
     flagEmoji: '🇧🇷',
     base: false,
     completeRate: 0.336,
-    res: replaceAffineWithReadease(pt_BR),
+    res: pt_BR,
   },
   {
     id: 1000040001,
@@ -48,7 +48,7 @@ export const LOCALES = [
     flagEmoji: '🇬🇧',
     base: true,
     completeRate: 1,
-    res: replaceAffineWithReadease(Object.assign({}, en, en_Readease)),
+    res: Object.assign({}, en, en_Readease),
   },
   {
     id: 1000040003,
@@ -58,7 +58,7 @@ export const LOCALES = [
     flagEmoji: '🇭🇰',
     base: false,
     completeRate: 0.368,
-    res: replaceAffineWithReadease(zh_Hant),
+    res: zh_Hant,
   },
   {
     id: 1000040004,
@@ -68,9 +68,7 @@ export const LOCALES = [
     flagEmoji: '🇨🇳',
     base: false,
     completeRate: 0.99,
-    res: replaceAffineWithReadease(
-      Object.assign({}, zh_Hans, zh_Hans_Readease)
-    ),
+    res: Object.assign({}, zh_Hans, zh_Hans_Readease),
   },
   {
     id: 1000040006,
@@ -80,7 +78,7 @@ export const LOCALES = [
     flagEmoji: '🇫🇷',
     base: false,
     completeRate: 0.7,
-    res: replaceAffineWithReadease(fr),
+    res: fr,
   },
   {
     id: 1000040008,
@@ -90,7 +88,7 @@ export const LOCALES = [
     flagEmoji: '🇪🇸',
     base: false,
     completeRate: 0.26,
-    res: replaceAffineWithReadease(es),
+    res: es,
   },
   {
     id: 1000040009,
@@ -100,7 +98,7 @@ export const LOCALES = [
     flagEmoji: '🇩🇪',
     base: false,
     completeRate: 0.299,
-    res: replaceAffineWithReadease(de),
+    res: de,
   },
   {
     id: 1000040011,
@@ -110,7 +108,7 @@ export const LOCALES = [
     flagEmoji: '🇷🇺',
     base: false,
     completeRate: 0.99,
-    res: replaceAffineWithReadease(ru),
+    res: ru,
   },
   {
     id: 1000040014,
@@ -120,7 +118,7 @@ export const LOCALES = [
     flagEmoji: '🇯🇵',
     base: false,
     completeRate: 0.447,
-    res: replaceAffineWithReadease(ja),
+    res: ja,
   },
   {
     id: 1000070001,
@@ -130,7 +128,7 @@ export const LOCALES = [
     flagEmoji: '🇦🇩',
     base: false,
     completeRate: 0.068,
-    res: replaceAffineWithReadease(ca),
+    res: ca,
   },
   {
     id: 1000074001,
@@ -140,7 +138,7 @@ export const LOCALES = [
     flagEmoji: '🇩🇰',
     base: false,
     completeRate: 0.103,
-    res: replaceAffineWithReadease(da),
+    res: da,
   },
   {
     id: 1000074003,
@@ -150,7 +148,7 @@ export const LOCALES = [
     flagEmoji: '🇨🇱',
     base: false,
     completeRate: 0.028,
-    res: replaceAffineWithReadease(es_CL),
+    res: es_CL,
   },
   {
     id: 1000074004,
@@ -160,7 +158,7 @@ export const LOCALES = [
     flagEmoji: '🇮🇳',
     base: false,
     completeRate: 0.017,
-    res: replaceAffineWithReadease(hi),
+    res: hi,
   },
   {
     id: 1000134010,
@@ -170,26 +168,6 @@ export const LOCALES = [
     flagEmoji: '🇸🇪',
     base: false,
     completeRate: 0.062,
-    res: replaceAffineWithReadease(sv_SE),
+    res: sv_SE,
   },
 ] as const;
-
-// 定义 JSON 文件中可能出现的数据结构类型
-interface JsonObject {
-  [key: string]: any;
-}
-
-// 替换函数
-function replaceAffineWithReadease(obj: JsonObject) {
-  for (const key in obj) {
-    if (typeof obj[key] === 'object' && obj[key] !== null) {
-      // 递归调用替换子对象
-      replaceAffineWithReadease(obj[key]);
-    } else if (typeof obj[key] === 'string') {
-      // 替换字符串中的 "affine" 为 "readease"
-      obj[key] = obj[key].replace(/AFFiNE/g, 'ReadEase');
-    }
-  }
-
-  return obj;
-}

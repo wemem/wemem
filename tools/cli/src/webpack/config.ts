@@ -1,4 +1,4 @@
-import { join } from 'node:path';
+import path, { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 import type { RuntimeConfig } from '@affine/env/global';
@@ -234,6 +234,19 @@ export const createConfiguration: (
       },
       rules: [
         {
+          test: /\.json$/,
+          exclude: /node_modules/,
+          use: [
+            {
+              loader: path.resolve(
+                dirname(fileURLToPath(import.meta.url)),
+                'loader',
+                'json-replace-loader.ts'
+              ), // 使用自定义 loader
+            },
+          ],
+        },
+        {
           test: /\.m?js?$/,
           resolve: {
             fullySpecified: false,
@@ -250,36 +263,47 @@ export const createConfiguration: (
             {
               test: /\.tsx?$/,
               exclude: /node_modules/,
-              loader: 'swc-loader',
-              options: {
-                // https://swc.rs/docs/configuring-swc/
-                jsc: {
-                  preserveAllComments: true,
-                  parser: {
-                    syntax: 'typescript',
-                    dynamicImport: true,
-                    topLevelAwait: false,
-                    tsx: true,
-                    decorators: true,
-                  },
-                  target: 'es2022',
-                  externalHelpers: false,
-                  transform: {
-                    react: {
-                      runtime: 'automatic',
-                      refresh: buildFlags.mode === 'development' && {
-                        refreshReg: '$RefreshReg$',
-                        refreshSig: '$RefreshSig$',
-                        emitFullSignatures: true,
+              use: [
+                {
+                  loader: path.resolve(
+                    dirname(fileURLToPath(import.meta.url)),
+                    'loader',
+                    'ts-replace-loader.ts'
+                  ), // 使用自定义 loader
+                },
+                {
+                  loader: 'swc-loader',
+                  options: {
+                    // https://swc.rs/docs/configuring-swc/
+                    jsc: {
+                      preserveAllComments: true,
+                      parser: {
+                        syntax: 'typescript',
+                        dynamicImport: true,
+                        topLevelAwait: false,
+                        tsx: true,
+                        decorators: true,
+                      },
+                      target: 'es2022',
+                      externalHelpers: false,
+                      transform: {
+                        react: {
+                          runtime: 'automatic',
+                          refresh: buildFlags.mode === 'development' && {
+                            refreshReg: '$RefreshReg$',
+                            refreshSig: '$RefreshSig$',
+                            emitFullSignatures: true,
+                          },
+                        },
+                        useDefineForClassFields: false,
+                        decoratorVersion: '2022-03',
                       },
                     },
-                    useDefineForClassFields: false,
-                    decoratorVersion: '2022-03',
+                    sourceMaps: true,
+                    inlineSourcesContent: true,
                   },
                 },
-                sourceMaps: true,
-                inlineSourcesContent: true,
-              },
+              ],
             },
             {
               test: /\.(png|jpg|gif|svg|webp|mp4|zip)$/,

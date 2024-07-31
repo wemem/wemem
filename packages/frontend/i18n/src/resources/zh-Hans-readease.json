@@ -1328,5 +1328,6 @@
   "ai.readease.workspaceSubPath.later": "稍后读",
   "ai.readease.workspaceSubPath.archive": "归档",
   "ai.readease.internal-tags.seen": "已读",
-  "ai.readease.internal-tags.unseen": "未读"
+  "ai.readease.internal-tags.unseen": "未读",
+  "ai.readease.rootAppSidebar.tags": "标签"
 }

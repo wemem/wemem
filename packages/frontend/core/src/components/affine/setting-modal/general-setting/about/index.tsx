@@ -12,7 +12,7 @@ import { useCallback } from 'react';
 import { useAppSettingHelper } from '../../../../../hooks/affine/use-app-setting-helper';
 import { appIconMap, appNames } from '../../../../../pages/open-app';
 import { mixpanel, popupWindow } from '../../../../../utils';
-import { relatedLinks } from './config';
+import { readeaseRelatedLinks } from './config';
 import * as styles from './style.css';
 import { UpdateCheckSection } from './update-check-section';
 
@@ -138,7 +138,7 @@ export const AboutAffine = () => {
       </SettingWrapper>
       <SettingWrapper title={t['com.affine.aboutAFFiNE.community.title']()}>
         <div className={styles.communityWrapper}>
-          {relatedLinks.map(({ icon, title, link }) => {
+          {readeaseRelatedLinks.map(({ icon, title, link }) => {
             return (
               <div
                 className={styles.communityItem}

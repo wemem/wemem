@@ -39,3 +39,11 @@ export const relatedLinks = [
     link: 'https://www.reddit.com/r/Affine/',
   },
 ];
+
+export const readeaseRelatedLinks = [
+  {
+    icon: <TwitterIcon />,
+    title: 'X',
+    link: 'https://twitter.com/AffineOfficial',
+  },
+];
