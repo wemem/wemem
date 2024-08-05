@@ -1,7 +1,7 @@
 import { GraphQLService } from '@affine/core/modules/cloud';
 import { SubscriptionService } from '@affine/core/modules/feed/services/subscription-service';
 import {
-  FeedTag,
+  SubscriptionTag,
   UnseenTag,
 } from '@affine/core/modules/tag/entities/internal-tag';
 import { DebugLogger } from '@affine/debug';
@@ -110,7 +110,7 @@ export const usePullFeedItemsInterval = () => {
               jobMiddleware
             );
 
-            const tags = [FeedTag.id, UnseenTag.id];
+            const tags = [SubscriptionTag.id, UnseenTag.id];
             if (libraryItem.subscription) {
               tags.push(libraryItem.subscription);
             }

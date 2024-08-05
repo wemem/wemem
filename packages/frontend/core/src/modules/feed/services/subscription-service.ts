@@ -64,6 +64,15 @@ export class SubscriptionService extends Service {
     []
   );
 
+  subscriptionById$(subscriptionId?: string) {
+    if (!subscriptionId) {
+      return;
+    }
+    return this.subscriptions$.map(subscription =>
+      subscription.find(item => item.id === subscriptionId)
+    );
+  }
+
   subscribe(...collections: Collection[]) {
     if (!this.setting.has(SUBSCRIPTIONS_KEY)) {
       this.setting.set(SUBSCRIPTIONS_KEY, new YArray());

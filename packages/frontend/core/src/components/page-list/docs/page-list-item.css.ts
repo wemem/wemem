@@ -101,9 +101,18 @@ export const titleCellMain = style({
   whiteSpace: 'nowrap',
   flex: 1,
   textOverflow: 'ellipsis',
-  alignSelf: 'stretch',
-  display: 'flex',
 });
+
+export const titleCellMainForSubcription = style({
+  whiteSpace: 'normal !important',
+  alignSelf: 'stretch',
+  display: '-webkit-box !important',
+  WebkitBoxOrient: 'vertical',
+  WebkitLineClamp: 2, // 限制显示的最大行数为2行
+  wordBreak: 'break-word', // 允许长单词在必要时换行
+  maxHeight: '3.4em',
+});
+
 export const titleCellPreview = style({
   overflow: 'hidden',
   color: cssVar('textSecondaryColor'),
@@ -151,22 +160,4 @@ export const operationsCell = style({
   justifyContent: 'flex-end',
   columnGap: '6px',
   flexShrink: 0,
-});
-
-export const unseenLabel = style({
-  width: '20px',
-  minWidth: '20px',
-  height: '20px',
-  display: 'flex',
-  justifyContent: 'center',
-  alignItems: 'center',
-  selectors: {
-    '&::after': {
-      content: '""',
-      width: '8px',
-      height: '8px',
-      borderRadius: '50%',
-      background: cssVar('primaryColor'),
-    },
-  },
 });

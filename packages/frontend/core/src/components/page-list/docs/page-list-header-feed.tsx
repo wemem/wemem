@@ -1,7 +1,7 @@
 import { Button } from '@affine/component';
 import {
   PageDisplayMenu,
-  useEditFeed,
+  useEditSubscription,
 } from '@affine/core/components/page-list';
 import { FeedPageListOperationsMenu } from '@affine/core/components/page-list/docs/page-list-header-feed-operations-menu';
 import { FeedAvatar } from '@affine/core/components/page-list/feed/avatar';
@@ -33,7 +33,7 @@ export const FeedPageListHeader = ({
     jumpToManageSubscriptions(workspaceId);
   }, [jumpToManageSubscriptions, workspaceId]);
 
-  const { node, handleEditFeed } = useEditFeed(collection);
+  const { node, handleEditFeed } = useEditSubscription(collection);
 
   return (
     <>
@@ -44,7 +44,7 @@ export const FeedPageListHeader = ({
             {t['ai.readease.feeds.header']()} /
           </div>
           <div className={styles.titleIcon}>
-            <FeedAvatar image={collection.feed?.image} />
+            <FeedAvatar image={collection.subscription?.icon} />
           </div>
           <div className={styles.titleCollectionName}>{collection.name}</div>
           <div className={feedStyles.listRightButton}>

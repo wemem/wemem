@@ -105,6 +105,11 @@ export interface ListProps<T> {
   // we also need the following to make sure the page list functions properly
   // maybe we could also give a function to render PageListItem?
   operationsRenderer?: (item: T) => ReactNode;
+  // 当点击一个item时，需要跳转到的页面
+  // to 就是跳转的地址
+  // wrapTo 是一个函数，用于包装 to，比如在跳转到一个页面时，需要在地址前加上 /pages
+  // 最初的场景是在订阅列表点击一个文档时，需要跳转到 /subscription/seen/:pageId
+  wrapTo?: (to: string) => string;
 }
 
 export interface VirtualizedListProps<T> extends ListProps<T> {

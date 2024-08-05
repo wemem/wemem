@@ -100,10 +100,20 @@ export function useNavigateHelper() {
   const jumpToSubscriptionDocs = useCallback(
     (
       workspaceId: string,
-      status: 'true' | 'false' = 'false',
+      status: 'seen' | 'unseen' = 'unseen',
+      subscriptionId?: string,
       logic: RouteLogic = RouteLogic.PUSH
     ) => {
-      return navigate(`/workspace/${workspaceId}/subscription/seen/${status}`, {
+      if (subscriptionId) {
+        return navigate(
+          `/workspace/${workspaceId}/subscription/${subscriptionId}/${status}`,
+          {
+            replace: logic === RouteLogic.REPLACE,
+          }
+        );
+      }
+
+      return navigate(`/workspace/${workspaceId}/subscription/${status}`, {
         replace: logic === RouteLogic.REPLACE,
       });
     },

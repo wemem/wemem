@@ -3,14 +3,14 @@ import type { Collection, Filter } from '@affine/env/filter';
 import { useService, WorkspaceService } from '@toeverything/infra';
 import { useCallback } from 'react';
 
-import { filterContainerStyle } from '../../../components/filter-container.css';
 import {
   FilterList,
   SaveAsCollectionButton,
 } from '../../../components/page-list';
 import { useNavigateHelper } from '../../../hooks/use-navigate-helper';
+import { filterContainerStyle } from './subscription-page-filter.css';
 
-export const FilterContainer = ({
+export const SubscriptionFilterContainer = ({
   filters,
   onChangeFilters,
 }: {
@@ -45,7 +45,9 @@ export const FilterContainer = ({
         />
       </div>
       <div>
-        {filters.length > 0 ? (
+        {/* 暂时关闭这个功能，因为订阅流程的数据是变化，暂时还没想好怎么做比较好，现在的思路是应该不会使用精选，而是创建一个自己的订阅分组，和其他RSS平级，放在订阅下面，别人也可以订阅 */}
+        {/* eslint-disable-next-line no-constant-condition  */}
+        {filters.length > 0 && false ? (
           <SaveAsCollectionButton onConfirm={saveToCollection} />
         ) : null}
       </div>

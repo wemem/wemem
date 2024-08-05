@@ -130,8 +130,9 @@ export const viewRoutes = [
     lazy: () => import('./pages/workspace/collection/index'),
   },
   {
-    path: '/subscription/seen/:status',
-    lazy: () => import('./pages/workspace/feed-docs/index'),
+    path: '/subscription/:subscriptionId?/:status/:pageId?',
+    lazy: () =>
+      import('@affine/core/pages/workspace/all-subscription-page/index'),
   },
   {
     path: '/subscription/manage',

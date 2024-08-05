@@ -1,4 +1,5 @@
 import { MenuIcon, MenuItem, MenuSeparator } from '@affine/component';
+import { isGhostTag } from '@affine/core/modules/tag/entities/internal-tag';
 import type {
   Filter,
   LiteralValue,
@@ -208,7 +209,7 @@ filterMatcher.register(
     defaultArgs: () => [],
     impl: tags => {
       const safeTags = safeArray(tags);
-      return safeTags.length > 0;
+      return safeTags.some(t => !isGhostTag(t as string));
     },
   }
 );
@@ -223,7 +224,7 @@ filterMatcher.register(
     defaultArgs: () => [],
     impl: tags => {
       const safeTags = safeArray(tags);
-      return safeTags.length === 0;
+      return safeTags.filter(t => !isGhostTag(t as string)).length === 0;
     },
   }
 );

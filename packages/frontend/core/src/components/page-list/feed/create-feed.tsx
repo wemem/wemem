@@ -118,10 +118,10 @@ export const CreateFeed = ({
             value={FeedType.WeChat}
             data-testid="feed-type-wechat-trigger"
           >
-            {t['ai.readease.editFeed.feedType.wechat']()}
+            {t['ai.readease.edit-subscription.feedType.wechat']()}
           </RadioButton>
           <RadioButton value={FeedType.RSS} data-testid="feed-type-rss-trigger">
-            {t['ai.readease.editFeed.feedType.rss']()}
+            {t['ai.readease.edit-subscription.feedType.rss']()}
           </RadioButton>
         </RadioButtonGroup>
         <Input
@@ -129,7 +129,7 @@ export const CreateFeed = ({
           value={value}
           data-testid="input-collection-title"
           placeholder={t[
-            `ai.readease.editFeed.feedType.${feedType}.placeholder`
+            `ai.readease.edit-subscription.feedType.${feedType}.placeholder`
           ]()}
           onChange={useCallback((value: string) => onChange(value), [onChange])}
           onEnter={save}
@@ -137,13 +137,15 @@ export const CreateFeed = ({
         ></Input>
         {showTips ? (
           <div className={styles.createTips}>
-            {t[`ai.readease.editFeed.feedType.${feedType}.createTips`]()}
+            {t[
+              `ai.readease.edit-subscription.feedType.${feedType}.createTips`
+            ]()}
           </div>
         ) : null}
       </div>
       <div className={styles.footer}>
         <Button size="large" onClick={onCancel}>
-          {t['ai.readease.editFeed.button.cancel']()}
+          {t['ai.readease.edit-subscription.button.cancel']()}
         </Button>
         <Button
           size="large"
@@ -152,7 +154,7 @@ export const CreateFeed = ({
           disabled={isNameEmpty}
           onClick={save}
         >
-          {onConfirmText ?? t['ai.readease.editFeed.button.create']()}
+          {onConfirmText ?? t['ai.readease.edit-subscription.button.create']()}
         </Button>
       </div>
     </div>

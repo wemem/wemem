@@ -1,11 +1,10 @@
-import { useDeleteFeed } from '@affine/core/components/page-list';
+import { useUnsubscribe } from '@affine/core/components/page-list';
 import type { Collection } from '@affine/env/filter';
 import { Trans } from '@affine/i18n';
 import { useService, WorkspaceService } from '@toeverything/infra';
 import { useCallback, useMemo, useRef, useState } from 'react';
 
 import { ListFloatingToolbar } from '../components/list-floating-toolbar';
-import { feedHeaderColsDef } from '../header-col-def-feed';
 import { FeedOperationCell } from '../operation-cell-feed';
 import { FeedListItemRenderer } from '../page-group-feed';
 import { ListTableHeader } from '../page-header';
@@ -36,7 +35,7 @@ export const VirtualizedFeedList = ({
     []
   );
   const currentWorkspace = useService(WorkspaceService).workspace;
-  const deleteFeed = useDeleteFeed();
+  const deleteFeed = useUnsubscribe();
   const feedOperations = useFeedOperationsRenderer();
 
   const filteredSelectedCollectionIds = useMemo(() => {
@@ -57,7 +56,7 @@ export const VirtualizedFeedList = ({
   );
 
   const feedHeaderRenderer = useCallback(() => {
-    return <ListTableHeader headerCols={feedHeaderColsDef} />;
+    return <ListTableHeader headerCols={[]} />;
   }, []);
 
   const feedItemRenderer = useCallback((item: ListItem) => {

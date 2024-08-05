@@ -90,25 +90,27 @@ export const EditFeed = ({
   return (
     <div>
       <div className={styles.content}>
-        <div className={styles.label}>{t['ai.readease.editFeed.name']()}</div>
+        <div className={styles.label}>
+          {t['ai.readease.edit-subscription.name']()}
+        </div>
         <Input
           autoFocus
           value={value}
           data-testid="input-collection-title"
-          placeholder={t['ai.readease.editFeed.placeholder']()}
+          placeholder={t['ai.readease.edit-subscription.placeholder']()}
           onChange={useCallback((value: string) => onChange(value), [onChange])}
           onEnter={save}
           onKeyDown={onKeyDown}
         ></Input>
         {showTips ? (
           <div className={styles.createTips}>
-            {t[`ai.readease.editFeed.editTips`]()}
+            {t[`ai.readease.edit-subscription.editTips`]()}
           </div>
         ) : null}
       </div>
       <div className={styles.footer}>
         <Button size="large" onClick={onCancel}>
-          {t['ai.readease.editFeed.button.cancel']()}
+          {t['ai.readease.edit-subscription.button.cancel']()}
         </Button>
         <Button
           size="large"
@@ -117,7 +119,7 @@ export const EditFeed = ({
           disabled={isNameEmpty}
           onClick={save}
         >
-          {onConfirmText ?? t['ai.readease.editFeed.button.create']()}
+          {onConfirmText ?? t['ai.readease.edit-subscription.button.create']()}
         </Button>
       </div>
     </div>

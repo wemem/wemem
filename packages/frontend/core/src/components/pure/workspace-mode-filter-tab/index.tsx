@@ -72,12 +72,6 @@ export const WorkspaceModeFilterTab = ({
             className: styles.filterTab,
           },
           {
-            value: 'subscriptions',
-            label: t['ai.readease.feeds.header'](),
-            testId: 'workspace-feeds-button',
-            className: styles.filterTab,
-          },
-          {
             value: 'collections',
             label: t['com.affine.collections.header'](),
             testId: 'workspace-collections-button',

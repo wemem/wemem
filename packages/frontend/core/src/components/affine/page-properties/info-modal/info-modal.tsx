@@ -5,6 +5,7 @@ import {
   Scrollable,
 } from '@affine/component';
 import { DocsSearchService } from '@affine/core/modules/docs-search';
+import { SubscriptionTag } from '@affine/core/modules/tag/entities/internal-tag';
 import type { Doc } from '@blocksuite/store';
 import {
   LiveData,
@@ -52,7 +53,10 @@ export const InfoModal = ({
     )
   );
 
-  if (!manager.page || manager.readonly) {
+  const hasSubscriptionTag = page.meta?.tags.some(
+    tag => tag === SubscriptionTag.id
+  );
+  if (!manager.page || (!hasSubscriptionTag && manager.readonly)) {
     return null;
   }
 

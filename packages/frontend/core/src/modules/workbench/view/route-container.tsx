@@ -10,6 +10,7 @@ import { appSidebarOpenAtom } from '../../../components/app-sidebar/index.jotai'
 import { SidebarSwitch } from '../../../components/app-sidebar/sidebar-header/sidebar-switch';
 import { RightSidebarService } from '../../right-sidebar';
 import { ViewService } from '../services/view';
+import { WorkbenchService } from '../services/workbench';
 import * as styles from './route-container.css';
 import { useViewPosition } from './use-view-position';
 
@@ -19,7 +20,7 @@ export interface Props {
   };
 }
 
-const ToggleButton = ({
+export const ToggleButton = ({
   onToggle,
   className,
   show,
@@ -53,6 +54,14 @@ export const RouteContainer = ({ route }: Props) => {
   }, [rightSidebar]);
   const isWindowsDesktop = environment.isDesktop && environment.isWindows;
 
+  const currentPath = useLiveData(
+    useService(WorkbenchService).workbench.location$.map(
+      location => location.pathname
+    )
+  );
+
+  const isSubscription = currentPath.includes('/subscription/');
+
   useEffect(() => {
     const container = viewHeaderContainerRef.current;
     if (!container) return;
@@ -62,7 +71,10 @@ export const RouteContainer = ({ route }: Props) => {
   }, [view.headerContentWidth$]);
   return (
     <div className={styles.root}>
-      <div className={styles.header}>
+      <div
+        className={styles.header}
+        style={isSubscription ? { display: 'none' } : {}}
+      >
         {viewPosition.isFirst && (
           <SidebarSwitch
             show={!leftSidebarOpen}

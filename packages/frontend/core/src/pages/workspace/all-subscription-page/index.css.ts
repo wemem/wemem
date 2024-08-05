@@ -40,8 +40,31 @@ export const headerCreateNewButtonHidden = style({
 
 export const body = style({
   display: 'flex',
-  flexDirection: 'column',
   flex: 1,
   height: '100%',
   width: '100%',
+});
+
+export const list = style({
+  display: 'flex',
+  flex: 1,
+  flexDirection: 'column',
+  height: '100%',
+  width: '100%',
+});
+
+export const PageListWrapperStyle = style({
+  selectors: {
+    '&[data-has-border=true]': {
+      borderRight: `1px solid ${cssVar('borderColor')}`,
+    },
+    '&[data-is-floating="true"]': {
+      backgroundColor: cssVar('backgroundPrimaryColor'),
+    },
+  },
+});
+
+export const subcriptionDocDetail = style({
+  width: '100%',
+  position: 'relative',
 });

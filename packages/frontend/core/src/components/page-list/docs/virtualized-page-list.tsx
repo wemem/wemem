@@ -62,6 +62,7 @@ export const VirtualizedPageList = ({
   setHideHeaderCreateNewPage,
   currentFilters,
   onChangeCurrentFilters,
+  wrapTo,
 }: {
   tag?: Tag;
   collection?: Collection;
@@ -73,6 +74,7 @@ export const VirtualizedPageList = ({
   emptyComponent?: ReactNode;
   currentFilters?: Filter[];
   onChangeCurrentFilters?: (filters: Filter[]) => void;
+  wrapTo?: (to: string) => string;
 }) => {
   const listRef = useRef<ItemListHandle>(null);
   const [showFloatingToolbar, setShowFloatingToolbar] = useState(false);
@@ -145,19 +147,6 @@ export const VirtualizedPageList = ({
         />
       );
     }
-    if (feedDocs) {
-      return (
-        <FeedDocsPageListHeader
-          filteredPageMetas={filteredPageMetas}
-          workspaceId={currentWorkspace.id}
-          docCollection={currentWorkspace.docCollection}
-          // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-          currentFilters={currentFilters!}
-          // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-          onChangeCurrentFilters={onChangeCurrentFilters!}
-        />
-      );
-    }
 
     return (
       <PageListHeader
@@ -173,8 +162,6 @@ export const VirtualizedPageList = ({
     currentWorkspace.docCollection,
     currentWorkspace.id,
     feed,
-    feedDocs,
-    filteredPageMetas,
     onChangeCurrentFilters,
     tag,
   ]);
@@ -217,6 +204,7 @@ export const VirtualizedPageList = ({
         onSelectedIdsChange={setSelectedPageIds}
         items={pageMetasToRender}
         rowAsLink
+        wrapTo={wrapTo}
         isPreferredEdgeless={isPreferredEdgeless}
         docCollection={currentWorkspace.docCollection}
         operationsRenderer={pageOperationRenderer}

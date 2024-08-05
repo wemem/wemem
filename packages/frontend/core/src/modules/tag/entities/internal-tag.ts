@@ -1,3 +1,4 @@
+import { tag } from '@affine/component/auth-components/password-input/style.css';
 import { tagColors } from '@affine/core/components/affine/page-properties/common';
 import type { Tag } from '@affine/env/filter';
 import { useI18n } from '@affine/i18n';
@@ -5,7 +6,9 @@ import { useCallback } from 'react';
 
 export const InternalTagPrefix = 'ai.readease.internal-tags.';
 
-export const FeedTag: Tag = {
+export const RefPageTagPrefix = `${InternalTagPrefix}ref-page.`;
+
+export const SubscriptionTag: Tag = {
   id: 'Feed',
   value: `${InternalTagPrefix}feed`,
   color: tagColors[5][0],
@@ -69,4 +72,20 @@ export const useTagI18N = () => {
   );
 };
 
-export const InternalTags = [FeedTag, SeenTag, UnseenTag];
+export const InternalTags = [SubscriptionTag, SeenTag, UnseenTag];
+
+export const isGhostTag = (tagId: string) => {
+  return (
+    InternalTags.some(tag => tag.id === tagId && tag.ghost) || // 明确表明是幽灵标签
+    tagId.includes(RefPageTagPrefix) || // 精读文章时的引用标签
+    tagId.includes('http')
+  ); //RSS 地址
+};
+
+export const getRefPageId = (tags?: string[]) => {
+  const refPageTag = tags?.findLast(tag => tag.startsWith(RefPageTagPrefix));
+  if (refPageTag) {
+    return refPageTag.slice(RefPageTagPrefix.length);
+  }
+  return;
+};

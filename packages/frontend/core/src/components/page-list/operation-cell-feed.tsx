@@ -6,8 +6,8 @@ import {
   toast,
   Tooltip,
 } from '@affine/component';
-import { useDeleteFeed } from '@affine/core/components/page-list/feed';
-import { useEditFeed } from '@affine/core/components/page-list/feed/use-edit-feed';
+import { useUnsubscribe } from '@affine/core/components/page-list/feed';
+import { useEditSubscription } from '@affine/core/components/page-list/feed/use-edit-feed';
 import { FavoriteItemsAdapter } from '@affine/core/modules/properties';
 import type { Collection } from '@affine/env/filter';
 import { useI18n } from '@affine/i18n';
@@ -31,9 +31,10 @@ export const FeedOperationCell = ({ collection }: FeedOperationCellProps) => {
     favAdapter.isFavorite$(collection.id, 'collection')
   );
 
-  const { handleEditFeed, node: editNameModal } = useEditFeed(collection);
+  const { handleEditFeed, node: editNameModal } =
+    useEditSubscription(collection);
 
-  const deleteFeed = useDeleteFeed();
+  const deleteFeed = useUnsubscribe();
 
   const handleDelete = useCallback(() => {
     return deleteFeed(collection.id);

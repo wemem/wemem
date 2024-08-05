@@ -6,6 +6,7 @@ import {
   filterPage,
   RssIcon,
   stopPropagation,
+  type CollectionMeta,
 } from '@affine/core/components/page-list';
 import { FeedAvatar } from '@affine/core/components/page-list/feed/avatar';
 import { Doc } from '@affine/core/components/pure/workspace-slider-bar/collections';
@@ -36,6 +37,9 @@ import {
 import * as draggableMenuItemStyles from '../components/draggable-menu-item.css';
 import type { SubscriptionsListProps } from '../index';
 import * as styles from './styles.css';
+import { SubscriptionOperations } from './subscription-operations';
+import { EditSubscriptionModal } from './edit-subscription-modal';
+import { useEditSubscription } from './subscription-hooks';
 
 export const FeedSidebarNavItem = ({
   feed,
@@ -100,7 +104,7 @@ export const FeedSidebarNavItem = ({
         data-feed-id={feed.id}
         data-type="feed-list-item"
         active={currentPath.includes(path)}
-        icon={<FeedAvatar image={feed.feed?.image} />}
+        icon={<FeedAvatar image={feed.subscription?.icon} />}
         to={path}
         onCollapsedChange={setCollapsed}
         linkComponent={WorkbenchLink}
@@ -156,8 +160,8 @@ export const FeedSidebarNavItem = ({
   );
 };
 
-const unseenPath = `/subscription/seen/false`;
-const seenPath = `/subscription/seen/true`;
+const unseenPath = `/subscription/seen`;
+const seenPath = `/subscription/unseen`;
 
 export const FeedSidebarReadAll = () => {
   const t = useI18n();
@@ -204,11 +208,77 @@ export const FeedSidebarReadFeeds = () => {
       active={
         currentPath.includes(unseenPath) || currentPath.includes(seenPath)
       }
-      icon={<RssIcon />}
+      icon={<FeedAvatar />}
       to={unseenPath}
       linkComponent={WorkbenchLink}
     >
-      <span>{t['ai.readease.rootAppSidebar.feeds.read-feeds']()}</span>
+      <span>{t['ai.readease.rootAppSidebar.feeds.all']()}</span>
+    </SidebarMenuLinkItem>
+  );
+};
+
+export const SubscriptionSidebarNavItem = ({
+  subscriptionMeta,
+}: {
+  subscriptionMeta: CollectionMeta;
+}) => {
+  const currentPath = useLiveData(
+    useService(WorkbenchService).workbench.location$.map(
+      location => location.pathname
+    )
+  );
+  const { node: editSubscriptionModal, handleEditSubscription } =
+    useEditSubscription(subscriptionMeta);
+
+  const seenPath = `/subscription/${subscriptionMeta.id}/seen`;
+  const unseenPath = `/subscription/${subscriptionMeta.id}/unseen`;
+
+  return (
+    <SidebarMenuLinkItem
+      className={clsx(
+        draggableMenuItemStyles.draggableMenuItem,
+        styles.menuItem
+      )}
+      data-testid="feed-docs-unseen"
+      data-type="feed-docs-unseen"
+      active={
+        currentPath.includes(seenPath) || currentPath.includes(unseenPath)
+      }
+      icon={
+        <FeedAvatar
+          image={subscriptionMeta.subscription?.icon}
+          name={subscriptionMeta.title}
+        />
+      }
+      to={unseenPath}
+      linkComponent={WorkbenchLink}
+      postfix={
+        <div
+          onClick={stopPropagation}
+          onMouseDown={e => {
+            // prevent drag
+            e.stopPropagation();
+          }}
+          style={{ display: 'flex', alignItems: 'center' }}
+        >
+          <SubscriptionOperations
+            subscriptionMeta={subscriptionMeta}
+            openRenameModal={handleEditSubscription}
+          >
+            <IconButton
+              data-testid="tag-options"
+              type="plain"
+              size="small"
+              style={{ marginLeft: 4 }}
+            >
+              <MoreHorizontalIcon />
+            </IconButton>
+          </SubscriptionOperations>
+          {editSubscriptionModal}
+        </div>
+      }
+    >
+      <span>{subscriptionMeta.title}</span>
     </SidebarMenuLinkItem>
   );
 };
@@ -240,41 +310,21 @@ export const FeedSidebarReadNewsletter = () => {
   );
 };
 
-export const ManageSubscriptions = () => {
-  const t = useI18n();
-
-  const currentPath = useLiveData(
-    useService(WorkbenchService).workbench.location$.map(
-      location => location.pathname
-    )
-  );
-  const path = '/subscription/manage';
-
-  return (
-    <SidebarMenuLinkItem
-      className={clsx(
-        draggableMenuItemStyles.draggableMenuItem,
-        styles.menuItem
-      )}
-      data-testid="subscription-item"
-      data-type="subscription-list-item"
-      active={currentPath === path}
-      icon={<VscSettings />}
-      to={path}
-      linkComponent={WorkbenchLink}
-      collapsed={undefined}
-    >
-      <span>{t['ai.readease.rootAppSidebar.feeds.manage-feeds']()}</span>
-    </SidebarMenuLinkItem>
-  );
-};
-
 export const SubscriptionsList = ({
   docCollection,
 }: SubscriptionsListProps) => {
-  const subscriptions = useLiveData(
-    useService(SubscriptionService).subscriptions$
-  );
+  const subscriptionService = useService(SubscriptionService);
+  const subscriptions = useLiveData(subscriptionService.subscriptions$);
+  const subscriptionsMetas = useMemo(() => {
+    const collectionsList: CollectionMeta[] = subscriptions.map(collection => {
+      return {
+        ...collection,
+        title: collection.name,
+      };
+    });
+    return collectionsList;
+  }, [subscriptions]);
+
   const t = useI18n();
   const subscribeFeed = useService(SubscriptionsService).subscribeFeed;
   const handleOpenNewFeedModal = useCallback(() => {
@@ -297,12 +347,21 @@ export const SubscriptionsList = ({
       <CategoryDivider label={t['ai.readease.rootAppSidebar.feeds']()}>
         <SubscribeButton onClick={handleOpenNewFeedModal} />
       </CategoryDivider>
-      <div data-testid="subscriptions" className={styles.wrapper}>
-        {/* <FeedSidebarReadAll /> */}
-        <FeedSidebarReadFeeds />
-        {/* <FeedSidebarReadNewsletter /> */}
-        <ManageSubscriptions />
-      </div>
+      {subscriptions.length > 0 && (
+        <div data-testid="subscriptions" className={styles.wrapper}>
+          {/* <FeedSidebarReadAll /> */}
+          <FeedSidebarReadFeeds />
+          {subscriptionsMetas.map(meta => {
+            return (
+              <SubscriptionSidebarNavItem
+                key={meta.id}
+                subscriptionMeta={meta}
+              />
+            );
+          })}
+          {/* <FeedSidebarReadNewsletter /> */}
+        </div>
+      )}
     </>
   );
 };

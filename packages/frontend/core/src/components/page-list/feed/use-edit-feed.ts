@@ -4,13 +4,13 @@ import { useI18n } from '@affine/i18n';
 import { useService } from '@toeverything/infra';
 import { useCallback } from 'react';
 
-import { useEditFeedModal } from './use-edit-feed-modal';
+import { useEditSubscriptionModal } from './use-edit-feed-modal';
 
-export const useEditFeed = (collection: Collection) => {
+export const useEditSubscription = (collection: Collection) => {
   const feedService = useService(SubscriptionService);
   const t = useI18n();
-  const { node, open } = useEditFeedModal({
-    title: t['ai.readease.editFeed.editFeed'](),
+  const { node, open } = useEditSubscriptionModal({
+    title: t['ai.readease.edit-subscription.editFeed'](),
     showTips: true,
   });
 

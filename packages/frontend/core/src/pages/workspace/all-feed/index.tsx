@@ -3,12 +3,12 @@ import {
   FeedListHeader,
   VirtualizedFeedList,
 } from '@affine/core/components/page-list/feeds';
-import { SubscriptionsService } from '../../../modules/feed/subscribe-feed';
 import { SubscriptionService } from '@affine/core/modules/feed/services/subscription-service';
 import { mixpanel } from '@affine/core/utils';
 import { useLiveData, useService } from '@toeverything/infra';
 import { useCallback, useMemo, useState } from 'react';
 
+import { SubscriptionsService } from '../../../modules/feed/subscribe-feed';
 import { ViewBodyIsland, ViewHeaderIsland } from '../../../modules/workbench';
 import { EmptyFeedList } from '../page-list-empty-feed';
 import { AllFeedHeader } from './header';

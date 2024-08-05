@@ -1,11 +1,10 @@
-import { useCallback, useState } from 'react';
 import { EditFeedModal } from '@affine/core/components/page-list/feed/edit-feed';
+import { useCallback, useState } from 'react';
 
-
-export const useEditFeedModal = ({
-                                   title,
-                                   showTips,
-                                 }: {
+export const useEditSubscriptionModal = ({
+  title,
+  showTips,
+}: {
   title: string;
   showTips?: boolean;
 }) => {

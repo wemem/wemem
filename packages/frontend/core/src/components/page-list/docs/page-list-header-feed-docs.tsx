@@ -66,9 +66,6 @@ export const FeedDocsPageListHeader = ({
   return (
     <div className={styles.docListHeader}>
       <div className={styles.docListHeaderTitle}>
-        <div style={{ cursor: 'pointer', display: floating ? 'none' : 'flex' }}>
-          {t['ai.readease.feed-docs.header']()}
-        </div>
         <div className={feedStyles.listRightButton}>
           <RadioButtonGroup
             value={params.status}

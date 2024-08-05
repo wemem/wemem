@@ -1,6 +1,6 @@
 import type { MenuItemProps } from '@affine/component';
 import { Menu, MenuIcon, MenuItem } from '@affine/component';
-import { useDeleteFeed } from '@affine/core/components/page-list';
+import { useUnsubscribe } from '@affine/core/components/page-list';
 import { useAppSettingHelper } from '@affine/core/hooks/affine/use-app-setting-helper';
 import { SubscriptionService } from '@affine/core/modules/feed/services/subscription-service';
 import { WorkbenchService } from '@affine/core/modules/workbench';
@@ -25,11 +25,11 @@ export const FeedOperations = ({
   const { appSettings } = useAppSettingHelper();
   const service = useService(SubscriptionService);
   const workbench = useService(WorkbenchService).workbench;
-  const deleteFeed = useDeleteFeed();
+  const deleteFeed = useUnsubscribe();
   const t = useI18n();
   const { open: openEditFeedNameModal, node: editNameModal } =
     useCreateFeedModal({
-      title: t['ai.readease.editFeed.editFeed'](),
+      title: t['ai.readease.edit-subscription.editFeed'](),
     });
 
   const showEditName = useCallback(() => {
