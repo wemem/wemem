@@ -1,13 +1,13 @@
 import { IconButton } from '@affine/component/ui/button';
 import { PlusIcon } from '@blocksuite/icons/rc';
-import type { ReactElement } from 'react';
+import type { MouseEventHandler, ReactElement } from 'react';
 
 export const AddTagButton = ({
   node,
   onClick,
 }: {
   node: ReactElement | null;
-  onClick: () => void;
+  onClick: MouseEventHandler;
 }) => {
   return (
     <>

@@ -2,11 +2,10 @@ import { toast } from '@affine/component';
 import { RenameModal } from '@affine/component/rename-modal';
 import { IconButton } from '@affine/component/ui/button';
 import {
+  type CollectionMeta,
   FeedOperations,
   filterPage,
-  RssIcon,
   stopPropagation,
-  type CollectionMeta,
 } from '@affine/core/components/page-list';
 import { FeedAvatar } from '@affine/core/components/page-list/feed/avatar';
 import { Doc } from '@affine/core/components/pure/workspace-slider-bar/collections';
@@ -25,21 +24,22 @@ import type { DocCollection } from '@blocksuite/store';
 import * as Collapsible from '@radix-ui/react-collapsible';
 import { useLiveData, useService } from '@toeverything/infra';
 import clsx from 'clsx';
+import { useAtom } from 'jotai';
+import { atomWithStorage } from 'jotai/utils';
 import { useCallback, useMemo, useState } from 'react';
-import { VscInbox, VscMail, VscSettings } from 'react-icons/vsc';
+import { VscInbox, VscMail } from 'react-icons/vsc';
 
 import { SubscriptionsService } from '../../../../modules/feed/subscribe-feed';
 import { WorkbenchService } from '../../../../modules/workbench';
 import {
-  CategoryDivider,
+  CollapsibleCategoryDivider,
   MenuLinkItem as SidebarMenuLinkItem,
 } from '../../../app-sidebar';
 import * as draggableMenuItemStyles from '../components/draggable-menu-item.css';
 import type { SubscriptionsListProps } from '../index';
 import * as styles from './styles.css';
-import { SubscriptionOperations } from './subscription-operations';
-import { EditSubscriptionModal } from './edit-subscription-modal';
 import { useEditSubscription } from './subscription-hooks';
+import { SubscriptionOperations } from './subscription-operations';
 
 export const FeedSidebarNavItem = ({
   feed,
@@ -80,11 +80,6 @@ export const FeedSidebarNavItem = ({
   const handleOpen = useCallback(() => {
     setOpen(true);
   }, []);
-
-  const allPagesMeta = useMemo(
-    () => Object.fromEntries(pages.map(v => [v.id, v])),
-    [pages]
-  );
 
   const pagesToRender = pages.filter(meta => {
     if (meta.trash) return false;
@@ -147,10 +142,8 @@ export const FeedSidebarNavItem = ({
                 parentId={dndId}
                 inAllowList={false}
                 removeFromAllowList={() => {}}
-                allPageMeta={allPagesMeta}
-                doc={page}
+                docId={page.id}
                 key={page.id}
-                docCollection={docCollection}
               />
             );
           })}
@@ -310,9 +303,13 @@ export const FeedSidebarReadNewsletter = () => {
   );
 };
 
-export const SubscriptionsList = ({
-  docCollection,
-}: SubscriptionsListProps) => {
+export const collapsedAtom = atomWithStorage(
+  'subscription-sidebar-collapsed',
+  true
+);
+
+export const SubscriptionsList = (_props: SubscriptionsListProps) => {
+  const [collapsed, setCollapsed] = useAtom(collapsedAtom);
   const subscriptionService = useService(SubscriptionService);
   const subscriptions = useLiveData(subscriptionService.subscriptions$);
   const subscriptionsMetas = useMemo(() => {
@@ -334,20 +331,16 @@ export const SubscriptionsList = ({
       control: 'new subscription button',
     });
   }, [subscribeFeed]);
-
-  if (subscriptions.length === 0) {
-    return (
-      <CategoryDivider label={t['ai.readease.rootAppSidebar.feeds']()}>
-        <SubscribeButton onClick={handleOpenNewFeedModal} />
-      </CategoryDivider>
-    );
-  }
   return (
     <>
-      <CategoryDivider label={t['ai.readease.rootAppSidebar.feeds']()}>
+      <CollapsibleCategoryDivider
+        label={t['ai.readease.rootAppSidebar.feeds']()}
+        onCollapsedChange={setCollapsed}
+        collapsed={collapsed}
+      >
         <SubscribeButton onClick={handleOpenNewFeedModal} />
-      </CategoryDivider>
-      {subscriptions.length > 0 && (
+      </CollapsibleCategoryDivider>
+      {subscriptions.length > 0 && !collapsed && (
         <div data-testid="subscriptions" className={styles.wrapper}>
           {/* <FeedSidebarReadAll /> */}
           <FeedSidebarReadFeeds />

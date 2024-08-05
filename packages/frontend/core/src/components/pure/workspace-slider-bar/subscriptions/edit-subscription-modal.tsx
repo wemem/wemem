@@ -99,7 +99,13 @@ export const EditSubscription = ({
           data-testid="input-collection-title"
           placeholder={t['ai.readease.edit-subscription.placeholder']()}
           onChange={useCallback((value: string) => onChange(value), [onChange])}
-          onEnter={save}
+          // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+          // @ts-expect-error
+          onEnter={e => {
+            e.stopPropagation();
+            e.preventDefault();
+            save();
+          }}
           onKeyDown={onKeyDown}
         ></Input>
         {showTips ? (

@@ -25,6 +25,8 @@ import { type AnimateLayoutChanges, useSortable } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
 import * as Collapsible from '@radix-ui/react-collapsible';
 import { useLiveData, useService } from '@toeverything/infra';
+import { useAtom } from 'jotai';
+import { atomWithStorage } from 'jotai/utils';
 import { useCallback, useMemo, useState } from 'react';
 
 import {
@@ -34,7 +36,7 @@ import {
 import { WorkbenchService } from '../../../../modules/workbench';
 import { WorkbenchLink } from '../../../../modules/workbench/view/workbench-link';
 import {
-  CategoryDivider,
+  CollapsibleCategoryDivider,
   MenuLinkItem as SidebarMenuLinkItem,
 } from '../../../app-sidebar';
 import { DragMenuItemOverlay } from '../components/drag-menu-item-overlay';
@@ -280,11 +282,14 @@ export const TagSidebarNavItemContent = ({
   );
 };
 
+export const collapsedAtom = atomWithStorage('tag-sidebar-collapsed', true);
+
 export type TagsListProps = {
   docCollection: DocCollection;
 };
 
 export const TagsList = ({ docCollection: workspace }: TagsListProps) => {
+  const [collapsed, setCollapsed] = useAtom(collapsedAtom);
   const tagList = useService(TagService).tagList;
   const tags = useLiveData(tagList.tags$);
   const t = useI18n();
@@ -298,14 +303,17 @@ export const TagsList = ({ docCollection: workspace }: TagsListProps) => {
 
   return (
     <>
-      <CategoryDivider label={t['ai.readease.rootAppSidebar.tags']()}>
+      <CollapsibleCategoryDivider
+        label={t['ai.readease.rootAppSidebar.tags']()}
+        onCollapsedChange={setCollapsed}
+        collapsed={collapsed}
+      >
         <AddTagButton node={node} onClick={onCreate} />
-      </CategoryDivider>
-      {tags.length !== 0 && (
+      </CollapsibleCategoryDivider>
+      {tags.length !== 0 && !collapsed && (
         <div data-testid="tags" className={styles.wrapper}>
           {tags.map(tag => {
             const dragItemId = getDNDId('sidebar-tags', 'tag', tag.id);
-
             return (
               <TagSidebarNavItem
                 key={tag.id}

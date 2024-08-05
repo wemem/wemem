@@ -8,8 +8,10 @@ import { Button, IconButton } from '@affine/component/ui/button';
 import { usePageHelper } from '@affine/core/components/blocksuite/block-suite-page-list/utils';
 import {
   CollectionOperations,
+  createEmptyCollection,
   filterPage,
   stopPropagation,
+  useEditCollectionName,
 } from '@affine/core/components/page-list';
 import {
   type DNDIdentifier,
@@ -17,6 +19,7 @@ import {
   parseDNDId,
   resolveDragEndIntent,
 } from '@affine/core/hooks/affine/use-global-dnd-helper';
+import { useNavigateHelper } from '@affine/core/hooks/use-navigate-helper';
 import { CollectionService } from '@affine/core/modules/collection';
 import { FavoriteItemsAdapter } from '@affine/core/modules/properties';
 import type { Collection } from '@affine/env/filter';
@@ -26,21 +29,27 @@ import {
   PlusIcon,
   ViewLayersIcon,
 } from '@blocksuite/icons/rc';
-import type { DocCollection } from '@blocksuite/store';
+import { type DocCollection, nanoid } from '@blocksuite/store';
 import { type AnimateLayoutChanges, useSortable } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
 import * as Collapsible from '@radix-ui/react-collapsible';
 import { useLiveData, useService } from '@toeverything/infra';
+import { useAtom } from 'jotai';
+import { atomWithStorage } from 'jotai/utils';
 import { useCallback, useMemo, useState } from 'react';
 
 import { useAllPageListConfig } from '../../../../hooks/affine/use-all-page-list-config';
 import { useBlockSuiteDocMeta } from '../../../../hooks/use-block-suite-page-meta';
 import { WorkbenchService } from '../../../../modules/workbench';
 import { WorkbenchLink } from '../../../../modules/workbench/view/workbench-link';
-import { MenuLinkItem as SidebarMenuLinkItem } from '../../../app-sidebar';
+import {
+  CollapsibleCategoryDivider,
+  MenuLinkItem as SidebarMenuLinkItem,
+} from '../../../app-sidebar';
 import { DragMenuItemOverlay } from '../components/drag-menu-item-overlay';
 import * as draggableMenuItemStyles from '../components/draggable-menu-item.css';
 import type { CollectionsListProps } from '../index';
+import { AddCollectionButton } from './add-collection-button';
 import { Doc } from './doc';
 import * as styles from './styles.css';
 
@@ -319,5 +328,87 @@ export const CollectionsList = ({
         );
       })}
     </div>
+  );
+};
+
+export const collapsedAtom = atomWithStorage(
+  'collection-sidebar-collapsed',
+  true
+);
+
+export const ReadEaseCollectionsList = ({
+  docCollection: workspace,
+  onCreate: _onCreate,
+}: CollectionsListProps) => {
+  const collections = useLiveData(useService(CollectionService).collections$);
+  const t = useI18n();
+  const navigateHelper = useNavigateHelper();
+  const [collapsed, setCollapsed] = useAtom(collapsedAtom);
+  const collection = useService(CollectionService);
+  const { node, open } = useEditCollectionName({
+    title: t['com.affine.editCollection.createCollection'](),
+    showTips: true,
+  });
+  const handleCreateCollection = useCallback(() => {
+    open('')
+      .then(name => {
+        const id = nanoid();
+        collection.addCollection(createEmptyCollection(id, { name }));
+        navigateHelper.jumpToCollection(workspace.id, id);
+      })
+      .catch(err => {
+        console.error(err);
+      });
+  }, [workspace.id, collection, navigateHelper, open]);
+
+  if (collections.length === 0) {
+    // return (
+    //   <div className={styles.emptyCollectionWrapper}>
+    //     <div className={styles.emptyCollectionContent}>
+    //       <div className={styles.emptyCollectionIconWrapper}>
+    //         <ViewLayersIcon className={styles.emptyCollectionIcon} />
+    //       </div>
+    //       <div
+    //         data-testid="slider-bar-collection-null-description"
+    //         className={styles.emptyCollectionMessage}
+    //       >
+    //         {t['com.affine.collections.empty.message']()}
+    //       </div>
+    //     </div>
+    //     <Button className={styles.emptyCollectionNewButton} onClick={onCreate}>
+    //       {t['com.affine.collections.empty.new-collection-button']()}
+    //     </Button>
+    //   </div>
+    // );
+  }
+  return (
+    <>
+      <CollapsibleCategoryDivider
+        label={t['com.affine.rootAppSidebar.collections']()}
+        onCollapsedChange={setCollapsed}
+        collapsed={collapsed}
+      >
+        <AddCollectionButton node={node} onClick={handleCreateCollection} />
+      </CollapsibleCategoryDivider>
+      <div data-testid="collections" className={styles.wrapper}>
+        {!collapsed &&
+          collections.map(view => {
+            const dragItemId = getDNDId(
+              'sidebar-collections',
+              'collection',
+              view.id
+            );
+
+            return (
+              <CollectionSidebarNavItem
+                key={view.id}
+                collection={view}
+                docCollection={workspace}
+                dndId={dragItemId}
+              />
+            );
+          })}
+      </div>
+    </>
   );
 };

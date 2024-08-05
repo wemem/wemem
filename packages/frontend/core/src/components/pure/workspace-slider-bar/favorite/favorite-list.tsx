@@ -1,4 +1,4 @@
-import { CategoryDivider } from '@affine/core/components/app-sidebar';
+import { CollapsibleCategoryDivider } from '@affine/core/components/app-sidebar';
 import {
   getDNDId,
   resolveDragEndIntent,
@@ -18,6 +18,8 @@ import {
   useService,
   useServices,
 } from '@toeverything/infra';
+import { useAtom } from 'jotai';
+import { atomWithStorage } from 'jotai/utils';
 import { Fragment, useCallback, useMemo } from 'react';
 
 import { CollectionSidebarNavItem } from '../collections';
@@ -26,6 +28,11 @@ import { AddFavouriteButton } from './add-favourite-button';
 // import EmptyItem from './empty-item';
 import { FavouriteDocSidebarNavItem } from './favourite-nav-item';
 import * as styles from './styles.css';
+
+export const collapsedAtom = atomWithStorage(
+  'favorite-sidebar-collapsed',
+  true
+);
 
 const FavoriteListInner = ({ docCollection: workspace }: FavoriteListProps) => {
   const { favoriteItemsAdapter, docsService, collectionService } = useServices({
@@ -95,6 +102,7 @@ const FavoriteListInner = ({ docCollection: workspace }: FavoriteListProps) => {
   );
 
   const t = useI18n();
+  const [collapsed, setCollapsed] = useAtom(collapsedAtom);
 
   return (
     <div
@@ -103,12 +111,17 @@ const FavoriteListInner = ({ docCollection: workspace }: FavoriteListProps) => {
       ref={setNodeRef}
       data-over={shouldRenderDragOver}
     >
-      <CategoryDivider label={t['com.affine.rootAppSidebar.favorites']()}>
+      <CollapsibleCategoryDivider
+        label={t['com.affine.rootAppSidebar.favorites']()}
+        onCollapsedChange={setCollapsed}
+        collapsed={collapsed}
+      >
         <AddFavouriteButton />
-      </CategoryDivider>
-      {favourites.map(item => {
-        return <Fragment key={item.id}>{renderFavItem(item)}</Fragment>;
-      })}
+      </CollapsibleCategoryDivider>
+      {!collapsed &&
+        favourites.map(item => {
+          return <Fragment key={item.id}>{renderFavItem(item)}</Fragment>;
+        })}
       {/* {favourites.length === 0 && <EmptyItem />} */}
     </div>
   );

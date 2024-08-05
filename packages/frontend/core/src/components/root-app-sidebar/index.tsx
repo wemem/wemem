@@ -1,5 +1,6 @@
 import { AnimatedDeleteIcon } from '@affine/component';
 import { AddFeedButton } from '@affine/core/components/app-sidebar/add-feed-button';
+import { TagsList } from '@affine/core/components/pure/workspace-slider-bar/tags';
 import { AppSidebarJournalButton } from '@affine/core/components/root-app-sidebar/journal-button';
 import { getDNDId } from '@affine/core/hooks/affine/use-global-dnd-helper';
 import { useAsyncCallback } from '@affine/core/hooks/affine-async-hooks';
@@ -35,8 +36,7 @@ import {
   SidebarScrollableContainer,
 } from '../app-sidebar';
 import { createEmptyCollection, useEditCollectionName } from '../page-list';
-import { CollectionsList } from '../pure/workspace-slider-bar/collections';
-import { AddCollectionButton } from '../pure/workspace-slider-bar/collections/add-collection-button';
+import { ReadEaseCollectionsList } from '../pure/workspace-slider-bar/collections';
 import FavoriteList from '../pure/workspace-slider-bar/favorite/favorite-list';
 import { SubscriptionsList } from '../pure/workspace-slider-bar/subscriptions';
 import { WorkspaceSelector } from '../workspace-selector';
@@ -45,7 +45,6 @@ import { workspaceAndUserWrapper, workspaceWrapper } from './index.css';
 // import { AppSidebarJournalButton } from './journal-button';
 // import { UpdaterButton } from './updater-button';
 import { UserInfo } from './user-info';
-import { TagsList } from '@affine/core/components/pure/workspace-slider-bar/tags';
 
 export type RootAppSidebarProps = {
   isPublicWorkspace: boolean;
@@ -159,7 +158,7 @@ export const RootAppSidebar = memo(
     });
 
     const collection = useService(CollectionService);
-    const { node, open } = useEditCollectionName({
+    const { node: _node, open } = useEditCollectionName({
       title: t['com.affine.editCollection.createCollection'](),
       showTips: true,
     });
@@ -250,10 +249,10 @@ export const RootAppSidebar = memo(
         </SidebarContainer>
         <SidebarScrollableContainer>
           <FavoriteList docCollection={docCollection} />
-          <CategoryDivider label={t['com.affine.rootAppSidebar.collections']()}>
+          {/* <CategoryDivider label={t['com.affine.rootAppSidebar.collections']()}>
             <AddCollectionButton node={node} onClick={handleCreateCollection} />
-          </CategoryDivider>
-          <CollectionsList
+          </CategoryDivider> */}
+          <ReadEaseCollectionsList
             docCollection={docCollection}
             onCreate={handleCreateCollection}
           />
