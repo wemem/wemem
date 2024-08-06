@@ -1,4 +1,4 @@
-import { SubscriptionService } from '@affine/core/modules/feed/services/subscription-service';
+import { SubscriptionService } from '@affine/core/modules/subscription/services/subscription-service';
 import type { Collection } from '@affine/env/filter';
 import { useI18n } from '@affine/i18n';
 import { useService } from '@toeverything/infra';

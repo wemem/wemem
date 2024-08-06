@@ -5,7 +5,7 @@ import {
 } from '@affine/component/global-loading';
 import { usePullFeedItemsInterval } from '@affine/core/hooks/use-pull-feed-items-interval';
 import { useRegisterNewFeedCommands } from '@affine/core/hooks/use-register-new-feed-commands';
-import { NewFeedModalComponent } from '@affine/core/modules/feed/subscribe-feed/views';
+import { NewFeedModalComponent } from '@affine/core/modules/subscription/subscribe-feed/views';
 import { useI18n } from '@affine/i18n';
 import { ZipTransformer } from '@blocksuite/blocks';
 import { assertExists } from '@blocksuite/global/utils';
@@ -61,7 +61,7 @@ import {
 import { useRegisterFindInPageCommands } from '../hooks/affine/use-register-find-in-page-commands';
 import { useNavigateHelper } from '../hooks/use-navigate-helper';
 import { useRegisterWorkspaceCommands } from '../hooks/use-register-workspace-commands';
-import { SubscriptionsService } from '../modules/feed/subscribe-feed';
+import { SubscriptionsService } from '@affine/core/modules/subscription/subscribe-feed';
 import { useRegisterNavigationCommands } from '../modules/navigation/view/use-register-navigation-commands';
 import { QuickSearchContainer } from '../modules/quicksearch';
 import { CMDKQuickSearchService } from '../modules/quicksearch/services/cmdk';

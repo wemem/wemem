@@ -7,8 +7,8 @@ import {
 import { useSubscribeToFeed } from '@affine/core/components/page-list';
 import { FeedAvatar } from '@affine/core/components/page-list/feed/avatar';
 import { useNavigateHelper } from '@affine/core/hooks/use-navigate-helper';
-import { SubscriptionsService } from '@affine/core/modules/feed/subscribe-feed';
-import { NewFeedCommandRegistry } from '@affine/core/modules/feed/subscribe-feed/commands';
+import { SubscriptionsService } from '@affine/core/modules/subscription/subscribe-feed';
+import { NewFeedCommandRegistry } from '@affine/core/modules/subscription/subscribe-feed/commands';
 import type { SearchSubscriptionsQuery } from '@affine/graphql';
 import { useI18n } from '@affine/i18n';
 import {

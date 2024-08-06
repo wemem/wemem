@@ -18,7 +18,7 @@ import { EmptySubscriptionPage } from './page-subscription-empty';
 import { SubscriptionDetailPage } from './subscription-detail-page';
 import { subscriptionSidebarOpen } from './subscription-sidebar-switch';
 import { useLiveData, useService } from '@toeverything/infra';
-import { SubscriptionService } from '@affine/core/modules/feed/services/subscription-service';
+import { SubscriptionService } from '@affine/core/modules/subscription/services/subscription-service';
 
 const MAX_WIDTH = 745;
 const MIN_WIDTH = 256;

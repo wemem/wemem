@@ -1,5 +1,5 @@
 import type { CollectionMeta } from '@affine/core/components/page-list';
-import { SubscriptionService } from '@affine/core/modules/feed/services/subscription-service';
+import { SubscriptionService } from '@affine/core/modules/subscription/services/subscription-service';
 import { useI18n } from '@affine/i18n';
 import { useService } from '@toeverything/infra';
 import { useCallback, useState } from 'react';

@@ -2,7 +2,7 @@ import type { MenuItemProps } from '@affine/component';
 import { Menu, MenuIcon, MenuItem } from '@affine/component';
 import { useUnsubscribe } from '@affine/core/components/page-list';
 import { useAppSettingHelper } from '@affine/core/hooks/affine/use-app-setting-helper';
-import { SubscriptionService } from '@affine/core/modules/feed/services/subscription-service';
+import { SubscriptionService } from '@affine/core/modules/subscription/services/subscription-service';
 import { WorkbenchService } from '@affine/core/modules/workbench';
 import type { Collection } from '@affine/env/filter';
 import { useI18n } from '@affine/i18n';

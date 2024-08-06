@@ -248,6 +248,7 @@ export const CMDKContainer = ({
 };
 
 const CMDKQuickSearchModalInner = ({
+  pageMeta,
   open,
   ...props
 }: CMDKModalProps & { pageMeta?: Partial<DocMeta> }) => {

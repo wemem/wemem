@@ -5,7 +5,7 @@ import {
 } from '@affine/core/components/page-list';
 import { useAsyncCallback } from '@affine/core/hooks/affine-async-hooks';
 import { CollectionService } from '@affine/core/modules/collection';
-import { SubscriptionService } from '@affine/core/modules/feed/services/subscription-service';
+import { SubscriptionService } from '@affine/core/modules/subscription/services/subscription-service';
 import { FilterContainer } from '@affine/core/pages/workspace/all-page/all-page-filter';
 import type { Collection, Filter } from '@affine/env/filter';
 import { Trans, useI18n } from '@affine/i18n';

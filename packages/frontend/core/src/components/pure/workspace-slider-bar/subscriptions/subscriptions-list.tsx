@@ -13,7 +13,7 @@ import { SubscribeButton } from '@affine/core/components/pure/workspace-slider-b
 import { useAllPageListConfig } from '@affine/core/hooks/affine/use-all-page-list-config';
 import { getDNDId } from '@affine/core/hooks/affine/use-global-dnd-helper';
 import { useBlockSuiteDocMeta } from '@affine/core/hooks/use-block-suite-page-meta';
-import { SubscriptionService } from '@affine/core/modules/feed/services/subscription-service';
+import { SubscriptionService } from '@affine/core/modules/subscription/services/subscription-service';
 import { FavoriteItemsAdapter } from '@affine/core/modules/properties';
 import { WorkbenchLink } from '@affine/core/modules/workbench';
 import { mixpanel } from '@affine/core/utils';
@@ -29,7 +29,7 @@ import { atomWithStorage } from 'jotai/utils';
 import { useCallback, useMemo, useState } from 'react';
 import { VscInbox, VscMail } from 'react-icons/vsc';
 
-import { SubscriptionsService } from '../../../../modules/feed/subscribe-feed';
+import { SubscriptionsService } from '@affine/core/modules/subscription/subscribe-feed';
 import { WorkbenchService } from '../../../../modules/workbench';
 import {
   CollapsibleCategoryDivider,

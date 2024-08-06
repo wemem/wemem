@@ -1,5 +1,5 @@
 import { GraphQLService } from '@affine/core/modules/cloud';
-import { SubscriptionService } from '@affine/core/modules/feed/services/subscription-service';
+import { SubscriptionService } from '@affine/core/modules/subscription/services/subscription-service';
 import {
   SubscriptionTag,
   UnseenTag,

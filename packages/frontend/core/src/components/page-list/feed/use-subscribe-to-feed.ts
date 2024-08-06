@@ -1,8 +1,8 @@
 import { tagColors } from '@affine/core/components/affine/page-properties/common';
 import { createEmptyCollection } from '@affine/core/components/page-list';
 import { useNavigateHelper } from '@affine/core/hooks/use-navigate-helper';
-import { SubscriptionService } from '@affine/core/modules/feed/services/subscription-service';
-import type { SubscriptionRecord } from '@affine/core/modules/feed/subscribe-feed/views/data-hooks';
+import { SubscriptionService } from '@affine/core/modules/subscription/services/subscription-service';
+import type { SubscriptionRecord } from '@affine/core/modules/subscription/subscribe-feed/views/data-hooks';
 import { TagService } from '@affine/core/modules/tag';
 import type { DocCollection } from '@blocksuite/store';
 import { useService } from '@toeverything/infra';

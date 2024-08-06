@@ -1,4 +1,3 @@
-import { configureFeedModule } from '@affine/core/modules/feed';
 import { configureQuotaModule } from '@affine/core/modules/quota';
 import { configureInfraModules, type Framework } from '@toeverything/infra';
 
@@ -15,17 +14,18 @@ import { configureQuickSearchModule } from './quicksearch';
 import { configureRightSidebarModule } from './right-sidebar';
 import { configureShareDocsModule } from './share-doc';
 import { configureStorageImpls } from './storage';
+import { configureFeedModule } from './subscription';
+import { configureSubscribeFeedModule } from './subscription/subscribe-feed';
 import { configureTagModule } from './tag';
 import { configureTelemetryModule } from './telemetry';
 import { configureWorkbenchModule } from './workbench';
-import { configureNewFeedModule } from './feed/subscribe-feed';
 
 export function configureCommonModules(framework: Framework) {
   configureInfraModules(framework);
   configureCollectionModule(framework);
   configureFeedModule(framework);
   configureNavigationModule(framework);
-  configureNewFeedModule(framework);
+  configureSubscribeFeedModule(framework);
   configureRightSidebarModule(framework);
   configureTagModule(framework);
   configureWorkbenchModule(framework);

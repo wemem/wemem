@@ -1364,7 +1364,7 @@
   "ai.readease.internal-tags.unseen": "Unseen",
   "ai.readease.internal-properties.author": "Author",
   "ai.readease.internal-properties.original": "Original",
-  "ai.readease.notification.message.feed-added": "Feed added",
+  "ai.readease.notification.message.feed-added": "Subscription added",
   "ai.readease.notification.action.feed-added": "Read newest items",
   "ai.readease.workspaceSubPath.later": "Later",
   "ai.readease.workspaceSubPath.archive": "Archive",

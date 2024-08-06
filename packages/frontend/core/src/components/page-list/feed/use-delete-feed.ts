@@ -1,4 +1,4 @@
-import { SubscriptionService } from '@affine/core/modules/feed/services/subscription-service';
+import { SubscriptionService } from '@affine/core/modules/subscription/services/subscription-service';
 import { TagService } from '@affine/core/modules/tag';
 import { useService } from '@toeverything/infra';
 import { useCallback } from 'react';

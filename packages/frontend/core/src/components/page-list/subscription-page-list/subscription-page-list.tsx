@@ -74,8 +74,6 @@ export const SubscriptionPageList = ({
   const pageOperations = usePageOperationsRenderer();
   const { isPreferredEdgeless } = usePageHelper(currentWorkspace.docCollection);
   const pageHeaderColsDef = usePageHeaderColsDef();
-
-  console.log('filters', filters);
   const filteredPageMetas = useFilteredPageMetas(pageMetas, {
     filters,
   });

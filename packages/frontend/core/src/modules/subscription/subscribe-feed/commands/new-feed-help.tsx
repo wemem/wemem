@@ -1,5 +1,5 @@
 import { popupWindow } from '@affine/core/utils';
-import type { useAFFiNEI18N } from '@affine/i18n/hooks';
+import type { useI18n } from '@affine/i18n';
 import { PiWechatLogo } from 'react-icons/pi';
 
 import { registerNewFeedCommand } from './registry';
@@ -7,7 +7,7 @@ import { registerNewFeedCommand } from './registry';
 export function registerNewFeedHelpCommands({
   t,
 }: {
-  t: ReturnType<typeof useAFFiNEI18N>;
+  t: ReturnType<typeof useI18n>;
 }) {
   const unsubs: Array<() => void> = [];
   unsubs.push(

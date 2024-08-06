@@ -123,12 +123,15 @@ export function useNavigateHelper() {
   const jumpToSubscription = useCallback(
     (
       workspaceId: string,
-      feedId: string,
+      subscriptionId: string,
       logic: RouteLogic = RouteLogic.PUSH
     ) => {
-      return navigate(`/workspace/${workspaceId}/subscription/${feedId}`, {
-        replace: logic === RouteLogic.REPLACE,
-      });
+      return navigate(
+        `/workspace/${workspaceId}/subscription/${subscriptionId}/unseen`,
+        {
+          replace: logic === RouteLogic.REPLACE,
+        }
+      );
     },
     [navigate]
   );

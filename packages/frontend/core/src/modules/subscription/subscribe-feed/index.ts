@@ -7,13 +7,13 @@ import {
 } from '@toeverything/infra';
 
 import { SubscribeFeed } from './entities/subscribe-feed';
-import { SubscriptionsService } from './services/subscriptions-service';
 import { RecentPagesService } from './services/recent-pages';
+import { SubscriptionsService } from './services/subscriptions-service';
 
 export * from './entities/subscribe-feed';
-export { SubscriptionsService, RecentPagesService };
+export { RecentPagesService, SubscriptionsService };
 
-export function configureNewFeedModule(framework: Framework) {
+export function configureSubscribeFeedModule(framework: Framework) {
   framework
     .scope(WorkspaceScope)
     .service(SubscriptionsService)
