@@ -153,8 +153,8 @@ export const FeedSidebarNavItem = ({
   );
 };
 
-const unseenPath = `/subscription/seen`;
-const seenPath = `/subscription/unseen`;
+const unseenPath = `/subscription/unseen`;
+const seenPath = `/subscription/seen`;
 
 export const FeedSidebarReadAll = () => {
   const t = useI18n();

@@ -44,9 +44,6 @@ export const AllPage = () => {
     filters: mergedFilters,
   });
 
-  console.log('filteredPageMetas', mergedFilters);
-  console.log('filteredPageMetas', filteredPageMetas);
-
   return (
     <>
       <ViewHeaderIsland>
@@ -62,7 +59,7 @@ export const AllPage = () => {
           {filteredPageMetas.length > 0 ? (
             <VirtualizedPageList
               setHideHeaderCreateNewPage={setHideHeaderCreateNew}
-              filters={filters}
+              filters={mergedFilters}
               currentFilters={filters}
               onChangeCurrentFilters={setFilters}
             />
