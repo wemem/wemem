@@ -1,4 +1,3 @@
-import { tag } from '@affine/component/auth-components/password-input/style.css';
 import { tagColors } from '@affine/core/components/affine/page-properties/common';
 import type { Tag } from '@affine/env/filter';
 import { useI18n } from '@affine/i18n';
@@ -9,8 +8,8 @@ export const InternalTagPrefix = 'ai.readease.internal-tags.';
 export const RefPageTagPrefix = `${InternalTagPrefix}ref-page.`;
 
 export const SubscriptionTag: Tag = {
-  id: 'Feed',
-  value: `${InternalTagPrefix}feed`,
+  id: 'Subscription',
+  value: `${InternalTagPrefix}subscription`,
   color: tagColors[5][0],
   ghost: true,
   createDate: Date.now(),

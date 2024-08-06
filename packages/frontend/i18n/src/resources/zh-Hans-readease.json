@@ -1322,7 +1322,7 @@
   "upgradeBrowser": "请升级至最新版Chrome浏览器以获得最佳体验。",
   "will be moved to Trash": "{{title}} 将被移到垃圾箱",
   "will delete member": "将删除成员",
-  "ai.readease.internal-tags.feed": "订阅",
+  "ai.readease.internal-tags.subscription": "订阅",
   "ai.readease.internal-tags.wechat": "微信",
   "ai.readease.internal-tags.rss": "RSS",
   "ai.readease.workspaceSubPath.later": "稍后读",
