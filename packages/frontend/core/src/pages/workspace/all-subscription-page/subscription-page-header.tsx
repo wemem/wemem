@@ -1,7 +1,10 @@
-import { Button } from '@affine/component';
+import { Button, IconButton, Tooltip } from '@affine/component';
 import { openInfoModalAtom } from '@affine/core/atoms';
-import { InfoModal } from '@affine/core/components/affine/page-properties';
-import { InfoButton } from '@affine/core/components/blocksuite/block-suite-header/info';
+import {
+  InfoModal,
+  PagePropertiesManager,
+} from '@affine/core/components/affine/page-properties';
+import { OriginalProperty } from '@affine/core/components/affine/page-properties/internal-properties';
 import { BlocksuiteHeaderTitle } from '@affine/core/components/blocksuite/block-suite-header/title';
 import { EditorModeSwitch } from '@affine/core/components/blocksuite/block-suite-mode-switch';
 import { FavoriteTag } from '@affine/core/components/page-list';
@@ -10,16 +13,14 @@ import {
   useToggleFavoritePage,
 } from '@affine/core/components/page-list/subscription-page-list/subscription-hooks';
 import { PageOperationCell } from '@affine/core/components/page-list/subscription-page-list/subscription-operation-cell';
+import { useCurrentWorkspacePropertiesAdapter } from '@affine/core/hooks/use-affine-adapter';
 import { FavoriteItemsAdapter } from '@affine/core/modules/properties';
 import { RightSidebarService } from '@affine/core/modules/right-sidebar';
 import { getRefPageId } from '@affine/core/modules/tag/entities/internal-tag';
 import { ToggleButton } from '@affine/core/modules/workbench/view/route-container';
 import { useI18n } from '@affine/i18n';
-import type {
-  Doc as BlocksuiteDoc,
-  DocCollection,
-  DocMeta,
-} from '@blocksuite/store';
+import { LinkIcon } from '@blocksuite/icons/rc';
+import type { DocCollection, DocMeta } from '@blocksuite/store';
 import {
   type Doc,
   type DocMode,
@@ -28,7 +29,7 @@ import {
   WorkspaceService,
 } from '@toeverything/infra';
 import { useAtom, useAtomValue } from 'jotai';
-import { useCallback } from 'react';
+import { useCallback, useMemo } from 'react';
 
 import * as styles from './subscription-page-header.css';
 import {
@@ -66,6 +67,13 @@ export function SubscriptionPageHeader({
 
   const [openInfoModal, setOpenInfoModal] = useAtom(openInfoModalAtom);
 
+  const adapter = useCurrentWorkspacePropertiesAdapter();
+  const originalUrl = useMemo(() => {
+    const manager = new PagePropertiesManager(adapter, page.id);
+    const originalProperty = manager.getCustomProperty(OriginalProperty.id);
+    return originalProperty ? originalProperty.value : null;
+  }, [adapter, page.id]);
+
   return (
     <div className={styles.header}>
       <SubscriptionSidebarSwitch show={!leftSidebarOpen} />
@@ -87,7 +95,7 @@ export function SubscriptionPageHeader({
           // eslint-disable-next-line @typescript-eslint/no-misused-promises
           onClick={toggleFavoritePage}
         />
-        {runtimeConfig.enableInfoModal ? <InfoButton /> : null}
+        {originalUrl && <OpenOriginal originalUrl={originalUrl} />}
         <PageOperationCell page={pageMeta} />
       </div>
       <div className={styles.spacer} />
@@ -118,3 +126,25 @@ export function SubscriptionPageHeader({
     </div>
   );
 }
+
+export const OpenOriginal = ({ originalUrl }: { originalUrl: string }) => {
+  const t = useI18n();
+  const handleClick = useCallback(
+    (e: React.MouseEvent<HTMLButtonElement>) => {
+      e.stopPropagation();
+      e.preventDefault();
+      window.open(originalUrl, '_blank');
+    },
+    [originalUrl]
+  );
+  return (
+    <Tooltip
+      content={t['ai.readease.subscription.detail.open-original']()}
+      side="top"
+    >
+      <IconButton onClick={handleClick}>
+        <LinkIcon />
+      </IconButton>
+    </Tooltip>
+  );
+};

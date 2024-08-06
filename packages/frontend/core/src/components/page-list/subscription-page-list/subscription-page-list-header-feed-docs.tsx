@@ -101,7 +101,7 @@ export const SubscriptionDocsPageListHeader = ({
         </div>
       </div>
       <div className={styles.rightButtonGroup}>
-        {params.status === 'false' && (
+        {params.status === 'unseen' && (
           <Button
             className={styles.addPageButton}
             loading={marking}

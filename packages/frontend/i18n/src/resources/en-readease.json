@@ -1393,6 +1393,7 @@
   "ai.readease.subscription.sidebar-switch.collapse": "Collapse subscription sidebar",
   "ai.readease.subscription.sidebar-switch.expand": "Expand subscription sidebar",
   "ai.readease.subscription.deep-reading": "Deep Reading",
+  "ai.readease.subscription.detail.open-original": "Open original",
   "ai.readease.edit-subscription.button.cancel": "Cancel",
   "ai.readease.edit-subscription.button.create": "Create",
   "ai.readease.edit-subscription.createFeed": "Create Subscription",
