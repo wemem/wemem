@@ -42,7 +42,7 @@ type EventResponse<Data = any> = Data extends never
       data: Data;
     };
 
-function Sync(workspaceId: string): `${string}:sync` {
+export function Sync(workspaceId: string): `${string}:sync` {
   return `${workspaceId}:sync`;
 }
 
