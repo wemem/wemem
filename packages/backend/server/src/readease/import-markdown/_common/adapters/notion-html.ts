@@ -1,6 +1,6 @@
 import { isEqual, sha } from '@blocksuite/global/utils';
 import type { DeltaInsert } from '@blocksuite/inline';
-import type {
+import {
   type AssetsManager,
   ASTWalker,
   BaseAdapter,
