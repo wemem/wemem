@@ -806,6 +806,7 @@ __metadata:
     graphql-upload: "npm:^16.0.2"
     html-validate: "npm:^8.20.1"
     ioredis: "npm:^5.3.2"
+    jszip: "npm:^3.10.1"
     keyv: "npm:^4.5.4"
     lodash-es: "npm:^4.17.21"
     mixpanel: "npm:^0.18.0"
@@ -31941,10 +31942,10 @@ __metadata:
   languageName: node
   linkType: hard
 
-"peek-readable@npm:^5.1.3":
-  version: 5.1.3
-  resolution: "peek-readable@npm:5.1.3"
-  checksum: 10/dc19d8941b0785b417a19743b219232a4a1a7b40014cc8139ff959cd0de4a0c668f7be13ee6f818fcf525ddefc20768fc1a53c6862f5e8d7103b5356c5770621
+"peek-readable@npm:^5.1.4":
+  version: 5.1.4
+  resolution: "peek-readable@npm:5.1.4"
+  checksum: 10/ca95a75ad12b4f94ee482e6f0c7517211cd063d319b62e39ba2741c5ce87b7dfbc1dd3dea7979abe499d46fbbe51efbc8976daca553729ca7ed535569ac6a24d
   languageName: node
   linkType: hard
 
@@ -36112,12 +36113,12 @@ __metadata:
   linkType: hard
 
 "strtok3@npm:^8.0.0":
-  version: 8.0.2
-  resolution: "strtok3@npm:8.0.2"
+  version: 8.0.5
+  resolution: "strtok3@npm:8.0.5"
   dependencies:
     "@tokenizer/token": "npm:^0.3.0"
-    peek-readable: "npm:^5.1.3"
-  checksum: 10/0ed6839b82f2f00ab7b99f218ffc13e5c72aa12a8d1dc6fa956a2e2f0240173e9fc4385894b20468c0d884c21820a05f361fc123659f02f41fa442199f0a0b60
+    peek-readable: "npm:^5.1.4"
+  checksum: 10/08c9b27cc40f735eb67245835d6246af53c022b6c2c213740189ea1f6dfaeb7305f2e19c3997d223c2c8f9cb7b04519a54f52c1216d88b10d47a989d85b486d4
   languageName: node
   linkType: hard
 
