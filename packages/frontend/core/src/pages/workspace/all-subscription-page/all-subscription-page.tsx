@@ -114,6 +114,11 @@ export const AllSubscriptionPage = () => {
   const clientBorder = true;
   const hasRightBorder = true;
 
+  // open sidebar when subscriptionId changes
+  useEffect(() => {
+    setOpen(true);
+  }, [setOpen, subscriptionId]);
+
   return (
     <>
       <ViewHeader />
@@ -142,7 +147,6 @@ export const AllSubscriptionPage = () => {
               />
               <SubscriptionPageList
                 filters={[filter, ...currentFilters]}
-                feedDocs={true}
                 currentFilters={currentFilters}
                 onChangeCurrentFilters={setCurrentFilters}
                 wrapTo={to => `/subscription/seen/${params.status}${to}`}

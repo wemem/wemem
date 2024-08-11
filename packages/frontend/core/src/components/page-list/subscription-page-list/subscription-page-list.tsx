@@ -2,11 +2,11 @@ import { toast } from '@affine/component';
 import { useTrashModalHelper } from '@affine/core/hooks/affine/use-trash-modal-helper';
 import { useBlockSuiteDocMeta } from '@affine/core/hooks/use-block-suite-page-meta';
 import { CollectionService } from '@affine/core/modules/collection';
-import type { Collection, Filter } from '@affine/env/filter';
+import type { Filter } from '@affine/env/filter';
 import { Trans, useI18n } from '@affine/i18n';
 import type { DocMeta } from '@blocksuite/store';
 import { useService, WorkspaceService } from '@toeverything/infra';
-import { type ReactNode, useCallback, useMemo, useRef, useState } from 'react';
+import { useCallback, useMemo, useRef, useState } from 'react';
 
 import { usePageHelper } from '../../blocksuite/block-suite-page-list/utils';
 import { ListFloatingToolbar } from '../components/list-floating-toolbar';
@@ -18,7 +18,6 @@ import { usePageHeaderColsDef } from './subscription-header-col-def';
 import { useSubscriptionPageItemGroupDefinitions } from './subscription-hooks';
 import { PageOperationCell } from './subscription-operation-cell';
 import { PageListItemRenderer } from './subscription-page-group';
-import { SubscriptionPageListHeader } from './subscription-page-list-header';
 import { SubscriptionDocsPageListHeader } from './subscription-page-list-header-feed-docs';
 
 const usePageOperationsRenderer = () => {
@@ -47,21 +46,12 @@ const usePageOperationsRenderer = () => {
 };
 
 export const SubscriptionPageList = ({
-  feed,
-  feedDocs,
   filters,
-  listItem,
-  setHideHeaderCreateNewPage,
   currentFilters,
   onChangeCurrentFilters,
   wrapTo,
 }: {
-  feed?: Collection;
-  feedDocs?: boolean;
   filters?: Filter[];
-  listItem?: DocMeta[];
-  setHideHeaderCreateNewPage?: (hide: boolean) => void;
-  emptyComponent?: ReactNode;
   currentFilters?: Filter[];
   onChangeCurrentFilters?: (filters: Filter[]) => void;
   wrapTo?: (to: string) => string;
@@ -78,11 +68,8 @@ export const SubscriptionPageList = ({
     filters,
   });
   const pageMetasToRender = useMemo(() => {
-    if (listItem) {
-      return listItem;
-    }
     return filteredPageMetas;
-  }, [filteredPageMetas, listItem]);
+  }, [filteredPageMetas]);
 
   const filteredSelectedPageIds = useMemo(() => {
     const ids = pageMetasToRender.map(page => page.id);
@@ -110,19 +97,6 @@ export const SubscriptionPageList = ({
   }, []);
 
   const heading = useMemo(() => {
-    if (feed) {
-      return (
-        <SubscriptionPageListHeader
-          workspaceId={currentWorkspace.id}
-          collection={feed}
-          propertiesMeta={currentWorkspace.docCollection.meta.properties}
-          // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-          currentFilters={currentFilters!}
-          // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-          onChangeCurrentFilters={onChangeCurrentFilters!}
-        />
-      );
-    }
     return (
       <SubscriptionDocsPageListHeader
         filteredPageMetas={filteredPageMetas}
@@ -138,7 +112,6 @@ export const SubscriptionPageList = ({
     currentFilters,
     currentWorkspace.docCollection,
     currentWorkspace.id,
-    feed,
     filteredPageMetas,
     onChangeCurrentFilters,
   ]);
@@ -173,7 +146,6 @@ export const SubscriptionPageList = ({
         selectable="toggle"
         draggable
         atTopThreshold={80}
-        atTopStateChange={setHideHeaderCreateNewPage}
         onSelectionActiveChange={setShowFloatingToolbar}
         heading={heading}
         groupBy={group}
