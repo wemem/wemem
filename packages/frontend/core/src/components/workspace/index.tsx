@@ -1,3 +1,4 @@
+import { useAppSettingHelper } from '@affine/core/hooks/affine/use-app-setting-helper';
 import {
   DocsService,
   GlobalContextService,
@@ -26,52 +27,53 @@ export const AppContainer = ({
   ...rest
 }: WorkspaceRootProps) => {
   const noisyBackground = useNoisyBackground && environment.isDesktop;
+  const blurBackground = environment.isDesktop && useBlurBackground;
   return (
     <div
       {...rest}
       className={clsx(appStyle, {
         'noisy-background': noisyBackground,
-        'blur-background': environment.isDesktop && useBlurBackground,
+        'blur-background': blurBackground,
       })}
       data-noise-background={noisyBackground}
       data-is-resizing={resizing}
+      data-blur-background={blurBackground}
     >
       {children}
     </div>
   );
 };
 
-export interface MainContainerProps extends HTMLAttributes<HTMLDivElement> {
-  clientBorder?: boolean;
-}
+export interface MainContainerProps extends HTMLAttributes<HTMLDivElement> {}
 
 export const MainContainer = forwardRef<
   HTMLDivElement,
   PropsWithChildren<MainContainerProps>
->(function MainContainer(
-  { className, children, clientBorder, ...props },
-  ref
-): ReactElement {
+>(function MainContainer({ className, children, ...props }, ref): ReactElement {
   const appSideBarOpen = useAtomValue(appSidebarOpenAtom);
+  const { appSettings } = useAppSettingHelper();
+
   return (
     <div
       {...props}
       className={clsx(mainContainerStyle, className)}
-      data-is-macos={environment.isDesktop && environment.isMacOs}
+      data-is-desktop={environment.isDesktop}
       data-transparent={false}
-      data-client-border={clientBorder}
+      data-client-border={appSettings.clientBorder}
       data-side-bar-open={appSideBarOpen}
       data-testid="main-container"
       ref={ref}
     >
-      {children}
+      <div className={mainContainerStyle}>{children}</div>
     </div>
   );
 });
 
 MainContainer.displayName = 'MainContainer';
 
-export const ToolContainer = (props: PropsWithChildren): ReactElement => {
+export const ToolContainer = (
+  props: PropsWithChildren<{ className?: string }>
+): ReactElement => {
   const docId = useLiveData(
     useService(GlobalContextService).globalContext.docId.$
   );
@@ -79,11 +81,7 @@ export const ToolContainer = (props: PropsWithChildren): ReactElement => {
   const doc = useLiveData(docId ? docRecordList.doc$(docId) : undefined);
   const inTrash = useLiveData(doc?.meta$)?.trash;
   return (
-    <div
-      className={clsx(toolStyle, {
-        trash: inTrash,
-      })}
-    >
+    <div className={clsx(toolStyle, { trash: inTrash }, props.className)}>
       {props.children}
     </div>
   );

@@ -1,9 +1,9 @@
 import { FavoriteTag } from '@affine/core/components/page-list';
-import { FavoriteItemsAdapter } from '@affine/core/modules/properties';
+import { track } from '@affine/core/mixpanel';
+import { CompatibleFavoriteItemsAdapter } from '@affine/core/modules/properties';
 import { toast } from '@affine/core/utils';
 import { useI18n } from '@affine/i18n';
-import { assertExists } from '@blocksuite/global/utils';
-import { useLiveData, useService, WorkspaceService } from '@toeverything/infra';
+import { useLiveData, useService } from '@toeverything/infra';
 import { useCallback } from 'react';
 
 export interface FavoriteButtonProps {
@@ -12,11 +12,7 @@ export interface FavoriteButtonProps {
 
 export const useFavorite = (pageId: string) => {
   const t = useI18n();
-  const workspace = useService(WorkspaceService).workspace;
-  const docCollection = workspace.docCollection;
-  const currentPage = docCollection.getDoc(pageId);
-  const favAdapter = useService(FavoriteItemsAdapter);
-  assertExists(currentPage);
+  const favAdapter = useService(CompatibleFavoriteItemsAdapter);
 
   const favorite = useLiveData(favAdapter.isFavorite$(pageId, 'doc'));
 
@@ -35,11 +31,16 @@ export const useFavorite = (pageId: string) => {
 export const FavoriteButton = ({ pageId }: FavoriteButtonProps) => {
   const { favorite, toggleFavorite } = useFavorite(pageId);
 
+  const handleFavorite = useCallback(() => {
+    track.$.header.actions.toggleFavorite();
+    toggleFavorite();
+  }, [toggleFavorite]);
+
   return (
     <FavoriteTag
       data-testid="pin-button"
       active={!!favorite}
-      onClick={toggleFavorite}
+      onClick={handleFavorite}
     />
   );
 };

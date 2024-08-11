@@ -5,17 +5,10 @@ import { useLiveData, useService } from '@toeverything/infra';
 import clsx from 'clsx';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 
-import { tagColors } from '../../affine/page-properties/common';
 import type { TagMeta } from '../types';
 import * as styles from './create-tag.css';
 
-export const TagIcon = ({
-  color,
-  large,
-}: {
-  color: string;
-  large?: boolean;
-}) => (
+const TagIcon = ({ color, large }: { color: string; large?: boolean }) => (
   <div
     className={clsx(styles.tagColorIcon, {
       ['large']: large,
@@ -38,7 +31,8 @@ export const CreateOrEditTag = ({
   onOpenChange: (open: boolean) => void;
   tagMeta?: TagMeta;
 }) => {
-  const tagList = useService(TagService).tagList;
+  const tagService = useService(TagService);
+  const tagList = tagService.tagList;
   const tagOptions = useLiveData(tagList.tagMetas$);
   const tag = useLiveData(tagList.tagByTagId$(tagMeta?.id));
   const t = useI18n();
@@ -49,14 +43,16 @@ export const CreateOrEditTag = ({
     setTagName(value);
   }, []);
 
-  const [tagIcon, setTagIcon] = useState(tagMeta?.color || randomTagColor());
+  const [tagIcon, setTagIcon] = useState(
+    tagMeta?.color || tagService.randomTagColor()
+  );
 
   const handleChangeIcon = useCallback((value: string) => {
     setTagIcon(value);
   }, []);
 
   const tags = useMemo(() => {
-    return tagColors.map(([_, color]) => {
+    return tagService.tagColors.map(([name, color]) => {
       return {
         name: name,
         color: color,
@@ -66,7 +62,7 @@ export const CreateOrEditTag = ({
         },
       };
     });
-  }, [handleChangeIcon]);
+  }, [handleChangeIcon, tagService.tagColors]);
 
   const items = useMemo(() => {
     const tagItems = tags.map(item => {
@@ -87,11 +83,11 @@ export const CreateOrEditTag = ({
 
   const onClose = useCallback(() => {
     if (!tagMeta) {
-      handleChangeIcon(randomTagColor());
+      handleChangeIcon(tagService.randomTagColor());
       setTagName('');
     }
     onOpenChange(false);
-  }, [handleChangeIcon, onOpenChange, tagMeta]);
+  }, [handleChangeIcon, onOpenChange, tagMeta, tagService]);
 
   const onConfirm = useCallback(() => {
     if (!tagName?.trim()) return;
@@ -135,8 +131,8 @@ export const CreateOrEditTag = ({
 
   useEffect(() => {
     setTagName(tagMeta?.title || '');
-    setTagIcon(tagMeta?.color || randomTagColor());
-  }, [tagMeta?.color, tagMeta?.title]);
+    setTagIcon(tagMeta?.color || tagService.randomTagColor());
+  }, [tagMeta?.color, tagMeta?.title, tagService]);
 
   if (!open) {
     return null;
@@ -167,7 +163,7 @@ export const CreateOrEditTag = ({
       <Button className={styles.cancelBtn} onClick={onClose}>
         {t['Cancel']()}
       </Button>
-      <Button type="primary" onClick={onConfirm} disabled={!tagName}>
+      <Button variant="primary" onClick={onConfirm} disabled={!tagName}>
         {tagMeta ? t['Save']() : t['Create']()}
       </Button>
     </div>

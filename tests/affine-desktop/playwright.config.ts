@@ -16,10 +16,15 @@ import type { PlaywrightTestConfig } from '@playwright/test';
 const config: PlaywrightTestConfig = {
   testDir: './e2e',
   fullyParallel: true,
+  workers: 1,
   timeout: process.env.CI ? 50_000 : 30_000,
+  expect: {
+    timeout: process.env.CI ? 15_000 : 5_000,
+  },
   outputDir: testResultDir,
   use: {
     viewport: { width: 1440, height: 800 },
+    trace: 'on-first-retry',
   },
 };
 

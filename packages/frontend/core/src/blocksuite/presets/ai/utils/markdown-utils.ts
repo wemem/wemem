@@ -80,6 +80,9 @@ export async function getContentFromSlice(
     middlewares: [titleMiddleware, embedSyncedDocMiddleware('content')],
   });
   const snapshot = await job.sliceToSnapshot(slice);
+  if (!snapshot) {
+    return '';
+  }
   processTextInSnapshot(snapshot, host);
   const adapter =
     type === 'markdown' ? new MarkdownAdapter(job) : new PlainTextAdapter(job);
@@ -96,6 +99,9 @@ export async function getPlainTextFromSlice(host: EditorHost, slice: Slice) {
     middlewares: [titleMiddleware],
   });
   const snapshot = await job.sliceToSnapshot(slice);
+  if (!snapshot) {
+    return '';
+  }
   processTextInSnapshot(snapshot, host);
   const plainTextAdapter = new PlainTextAdapter(job);
   const plainText = await plainTextAdapter.fromSliceSnapshot({
@@ -142,6 +148,7 @@ export const markdownToSnapshot = async (
 export async function insertFromMarkdown(
   host: EditorHost,
   markdown: string,
+  doc: Doc,
   parent?: string,
   index?: number
 ) {
@@ -154,11 +161,13 @@ export async function insertFromMarkdown(
     const blockSnapshot = snapshots[i];
     const model = await job.snapshotToBlock(
       blockSnapshot,
-      host.std.doc,
+      doc,
       parent,
       (index ?? 0) + i
     );
-    models.push(model);
+    if (model) {
+      models.push(model);
+    }
   }
 
   return models;
@@ -178,7 +187,11 @@ export async function replaceFromMarkdown(
 export async function markDownToDoc(host: EditorHost, answer: string) {
   const schema = host.std.doc.collection.schema;
   // Should not create a new doc in the original collection
-  const collection = new DocCollection({ schema });
+  const collection = new DocCollection({
+    schema,
+    disableBacklinkIndex: true,
+    disableSearchIndex: true,
+  });
   collection.meta.initialize();
   const job = new Job({
     collection,

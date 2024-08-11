@@ -8,6 +8,7 @@ import {
   Tooltip,
 } from '@affine/component';
 import { useCurrentWorkspacePropertiesAdapter } from '@affine/core/hooks/use-affine-adapter';
+import { track } from '@affine/core/mixpanel';
 import { DocLinksService } from '@affine/core/modules/doc-link';
 import type {
   PageInfoCustomProperty,
@@ -27,7 +28,6 @@ import {
   ToggleExpandIcon,
   ViewIcon,
 } from '@blocksuite/icons/rc';
-import type { Doc } from '@blocksuite/store';
 import type { DragEndEvent, DraggableAttributes } from '@dnd-kit/core';
 import {
   DndContext,
@@ -682,6 +682,7 @@ export const PagePropertiesTableHeader = ({
   const dTimestampElement = useDebouncedValue(timestampElement, 500);
 
   const handleCollapse = useCallback(() => {
+    track.doc.inlineDocInfo.$.toggle();
     onOpenChange(!open);
   }, [onOpenChange, open]);
 
@@ -707,11 +708,9 @@ export const PagePropertiesTableHeader = ({
         </div>
         {properties.length === 0 || manager.readonly ? null : (
           <PagePropertiesSettingsPopup>
-            <IconButton
-              data-testid="page-info-show-more"
-              type="plain"
-              icon={<MoreHorizontalIcon />}
-            />
+            <IconButton data-testid="page-info-show-more" size="20">
+              <MoreHorizontalIcon />
+            </IconButton>
           </PagePropertiesSettingsPopup>
         )}
         <Collapsible.Trigger asChild role="button" onClick={handleCollapse}>
@@ -719,15 +718,12 @@ export const PagePropertiesTableHeader = ({
             className={styles.tableHeaderCollapseButtonWrapper}
             data-testid="page-info-collapse"
           >
-            <IconButton
-              type="plain"
-              icon={
-                <ToggleExpandIcon
-                  className={styles.collapsedIcon}
-                  data-collapsed={!open}
-                />
-              }
-            />
+            <IconButton size="20">
+              <ToggleExpandIcon
+                className={styles.collapsedIcon}
+                data-collapsed={!open}
+              />
+            </IconButton>
           </div>
         </Collapsible.Trigger>
       </div>
@@ -1064,8 +1060,8 @@ export const PagePropertiesAddProperty = () => {
   return (
     <Menu {...menuOptions}>
       <Button
-        type="plain"
-        icon={<PlusIcon />}
+        variant="plain"
+        prefix={<PlusIcon />}
         className={styles.addPropertyButton}
       >
         {t['com.affine.page-properties.add-property']()}
@@ -1092,21 +1088,21 @@ const PagePropertiesTableInner = () => {
   );
 };
 
-export const usePagePropertiesManager = (page: Doc) => {
+export const usePagePropertiesManager = (docId: string) => {
   // the workspace properties adapter adapter is reactive,
   // which means it's reference will change when any of the properties change
   // also it will trigger a re-render of the component
   const adapter = useCurrentWorkspacePropertiesAdapter();
   const manager = useMemo(() => {
-    return new PagePropertiesManager(adapter, page.id);
-  }, [adapter, page.id]);
+    return new PagePropertiesManager(adapter, docId);
+  }, [adapter, docId]);
   return manager;
 };
 
 // this is the main component that renders the page properties table at the top of the page below
 // the page title
-export const PagePropertiesTable = ({ page }: { page: Doc }) => {
-  const manager = usePagePropertiesManager(page);
+export const PagePropertiesTable = ({ docId }: { docId: string }) => {
+  const manager = usePagePropertiesManager(docId);
 
   // if the given page is not in the current workspace, then we don't render anything
   // eg. when it is in history modal

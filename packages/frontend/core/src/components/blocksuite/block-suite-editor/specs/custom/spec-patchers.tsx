@@ -7,6 +7,7 @@ import {
   toReactNode,
   type useConfirmModal,
 } from '@affine/component';
+import { track } from '@affine/core/mixpanel';
 import { DocsSearchService } from '@affine/core/modules/docs-search';
 import { resolveLinkToDoc } from '@affine/core/modules/navigation';
 import type { PeekViewService } from '@affine/core/modules/peek-view';
@@ -18,9 +19,8 @@ import {
   QuickSearchService,
   RecentDocsQuickSearchSession,
 } from '@affine/core/modules/quicksearch';
-import { mixpanel } from '@affine/core/utils';
 import { DebugLogger } from '@affine/debug';
-import type { BlockSpec, WidgetElement } from '@blocksuite/block-std';
+import type { BlockSpec, WidgetComponent } from '@blocksuite/block-std';
 import {
   type AffineReference,
   AffineSlashMenuWidget,
@@ -30,6 +30,8 @@ import {
   type RootService,
 } from '@blocksuite/blocks';
 import { LinkIcon } from '@blocksuite/icons/rc';
+import { AIChatBlockSchema } from '@blocksuite/presets';
+import type { BlockSnapshot } from '@blocksuite/store';
 import {
   type DocMode,
   type DocService,
@@ -53,7 +55,7 @@ function patchSpecService<Spec extends BlockSpec>(
       ? BlockService
       : never
   ) => (() => void) | void,
-  onWidgetConnected?: (component: WidgetElement) => void
+  onWidgetConnected?: (component: WidgetComponent) => void
 ) {
   const oldSetup = spec.setup;
   spec.setup = (slots, disposableGroup) => {
@@ -130,9 +132,9 @@ export function patchNotificationService(
           openConfirmModal({
             title: toReactNode(title),
             description: toReactNode(message),
+            confirmText,
             confirmButtonOptions: {
-              children: confirmText,
-              type: 'primary',
+              variant: 'primary',
             },
             cancelText,
             onConfirm: () => {
@@ -173,13 +175,11 @@ export function patchNotificationService(
           openConfirmModal({
             title: toReactNode(title),
             description: description,
+            confirmText: confirmText ?? 'Confirm',
             confirmButtonOptions: {
-              children: confirmText ?? 'Confirm',
-              type: 'primary',
+              variant: 'primary',
             },
-            cancelButtonOptions: {
-              children: cancelText ?? 'Cancel',
-            },
+            cancelText: cancelText ?? 'Cancel',
             onConfirm: () => {
               resolve(value);
             },
@@ -405,13 +405,14 @@ export function patchQuickSearchService(
                     resolve({
                       userInput: result.payload.url,
                     });
-                  } else if (
-                    result.source === 'creation' &&
-                    result.id === 'creation:create-page'
-                  ) {
+                  } else if (result.source === 'creation') {
                     const docsService = framework.get(DocsService);
+                    const mode =
+                      result.id === 'creation:create-edgeless'
+                        ? 'edgeless'
+                        : 'page';
                     const newDoc = docsService.createDoc({
-                      mode: 'page',
+                      mode,
                       title: result.payload.title,
                     });
                     resolve({
@@ -437,7 +438,7 @@ export function patchQuickSearchService(
         },
       };
     },
-    (component: WidgetElement) => {
+    (component: WidgetComponent) => {
       if (component instanceof AffineSlashMenuWidget) {
         component.config.items.forEach(item => {
           if (
@@ -445,11 +446,12 @@ export function patchQuickSearchService(
             (item.name === 'Linked Doc' || item.name === 'Link')
           ) {
             const oldAction = item.action;
-            item.action = async ({ model, rootElement }) => {
-              const { host, service, std } = rootElement;
+            item.action = async ({ model, rootComponent }) => {
+              const { host, service, std } = rootComponent;
               const { quickSearchService } = service;
 
-              if (!quickSearchService) return oldAction({ model, rootElement });
+              if (!quickSearchService)
+                return oldAction({ model, rootComponent });
 
               const result = await quickSearchService.searchDoc({});
               if (result === null) return;
@@ -464,30 +466,11 @@ export function patchQuickSearchService(
                     pageId: linkedDoc.id,
                   },
                 ]);
-                const isEdgeless =
-                  rootElement instanceof EdgelessRootBlockComponent;
                 if (result.isNewDoc) {
-                  mixpanel.track('DocCreated', {
-                    control: 'linked doc',
-                    module: 'slash commands',
-                    type: 'linked doc',
-                    category: 'doc',
-                    page: isEdgeless ? 'whiteboard editor' : 'page editor',
-                  });
-                  mixpanel.track('LinkedDocCreated', {
-                    control: 'new doc',
-                    module: 'slash commands',
-                    type: 'doc',
-                    page: isEdgeless ? 'whiteboard editor' : 'page editor',
-                  });
-                } else {
-                  mixpanel.track('LinkedDocCreated', {
-                    control: 'linked doc',
-                    module: 'slash commands',
-                    type: 'doc',
-                    page: isEdgeless ? 'whiteboard editor' : 'page editor',
-                  });
+                  track.doc.editor.slashMenu.createDoc({ control: 'linkDoc' });
+                  track.doc.editor.slashMenu.linkDoc({ control: 'createDoc' });
                 }
+                track.doc.editor.slashMenu.linkDoc({ control: 'linkDoc' });
               } else if ('userInput' in result) {
                 const embedOptions = service.getEmbedBlockOptions(
                   result.userInput
@@ -511,10 +494,65 @@ export function patchQuickSearchService(
   return specs;
 }
 
+export function patchEdgelessClipboard(specs: BlockSpec[]) {
+  const rootSpec = specs.find(
+    spec => spec.schema.model.flavour === 'affine:page'
+  ) as BlockSpec<string, RootService>;
+
+  if (!rootSpec) {
+    return specs;
+  }
+
+  const oldSetup = rootSpec.setup;
+  rootSpec.setup = (slots, disposableGroup) => {
+    oldSetup?.(slots, disposableGroup);
+    disposableGroup.add(
+      slots.viewConnected.on(view => {
+        const component = view.component;
+        if (component instanceof EdgelessRootBlockComponent) {
+          const AIChatBlockFlavour = AIChatBlockSchema.model.flavour;
+          const createFunc = (blocks: BlockSnapshot[]) => {
+            const blockIds = blocks.map(({ props }) => {
+              const {
+                xywh,
+                scale,
+                messages,
+                sessionId,
+                rootDocId,
+                rootWorkspaceId,
+              } = props;
+              const blockId = component.service.addBlock(
+                AIChatBlockFlavour,
+                {
+                  xywh,
+                  scale,
+                  messages,
+                  sessionId,
+                  rootDocId,
+                  rootWorkspaceId,
+                },
+                component.surface.model.id
+              );
+              return blockId;
+            });
+            return blockIds;
+          };
+          component.clipboardController.registerBlock(
+            AIChatBlockFlavour,
+            createFunc
+          );
+        }
+      })
+    );
+  };
+
+  return specs;
+}
+
 @customElement('affine-linked-doc-ref-block')
 // @ts-expect-error ignore private warning for overriding _load
 export class LinkedDocBlockComponent extends EmbedLinkedDocBlockComponent {
-  override _load() {
+  override async _load() {
     this.isBannerEmpty = true;
   }
 }

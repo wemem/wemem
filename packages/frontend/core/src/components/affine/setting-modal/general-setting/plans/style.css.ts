@@ -177,7 +177,19 @@ export const planPriceDesc = style({
 });
 export const planAction = style({
   width: '100%',
-  fontWeight: 500,
+});
+export const resumeAction = style([planAction, {}]);
+export const resumeContent = style({
+  selectors: {
+    [`&[data-show-hover="true"], ${resumeAction}:hover &[data-show-hover="false"]`]:
+      {
+        display: 'none',
+      },
+    [`&[data-show-hover="false"], ${resumeAction}:hover &[data-show-hover="true"]`]:
+      {
+        display: 'block',
+      },
+  },
 });
 export const planBenefits = style({
   fontSize: cssVar('fontXs'),

@@ -95,11 +95,7 @@ export const FeedDocsPageListHeader = ({
       </div>
       <div className={styles.rightButtonGroup}>
         {params.status === 'false' && (
-          <Button
-            className={styles.addPageButton}
-            loading={marking}
-            onClick={onMarkAllAsSeen}
-          >
+          <Button loading={marking} onClick={onMarkAllAsSeen}>
             {t['ai.readease.feed-docs.mark-all-as-seen']()}
           </Button>
         )}

@@ -6,7 +6,7 @@ import type { createStore } from 'jotai';
 
 import { openSettingModalAtom, openWorkspaceListModalAtom } from '../atoms';
 import type { useNavigateHelper } from '../hooks/use-navigate-helper';
-import { mixpanel } from '../utils/mixpanel';
+import { track } from '../mixpanel';
 import { registerAffineCommand } from './registry';
 
 export function registerAffineNavigationCommands({
@@ -28,6 +28,10 @@ export function registerAffineNavigationCommands({
       icon: <ArrowRightBigIcon />,
       label: t['com.affine.cmdk.affine.navigation.goto-all-pages'](),
       run() {
+        track.$.cmdk.navigation.navigate({
+          to: 'allDocs',
+        });
+
         navigationHelper.jumpToSubPath(docCollection.id, WorkspaceSubPath.ALL);
       },
     })
@@ -40,6 +44,10 @@ export function registerAffineNavigationCommands({
       icon: <ArrowRightBigIcon />,
       label: 'Go to Collection List',
       run() {
+        track.$.cmdk.navigation.navigate({
+          to: 'collectionList',
+        });
+
         navigationHelper.jumpToCollections(docCollection.id);
       },
     })
@@ -52,6 +60,10 @@ export function registerAffineNavigationCommands({
       icon: <ArrowRightBigIcon />,
       label: 'Go to Tag List',
       run() {
+        track.$.cmdk.navigation.navigate({
+          to: 'tagList',
+        });
+
         navigationHelper.jumpToTags(docCollection.id);
       },
     })
@@ -64,6 +76,10 @@ export function registerAffineNavigationCommands({
       icon: <ArrowRightBigIcon />,
       label: t['com.affine.cmdk.affine.navigation.goto-workspace'](),
       run() {
+        track.$.cmdk.navigation.navigate({
+          to: 'workspace',
+        });
+
         store.set(openWorkspaceListModalAtom, true);
       },
     })
@@ -77,10 +93,7 @@ export function registerAffineNavigationCommands({
       label: t['com.affine.cmdk.affine.navigation.open-settings'](),
       keyBinding: '$mod+,',
       run() {
-        mixpanel.track('SettingsViewed', {
-          // page:
-          segment: 'cmdk',
-        });
+        track.$.cmdk.settings.openSettings();
         store.set(openSettingModalAtom, s => ({
           activeTab: 'appearance',
           open: !s.open,
@@ -96,10 +109,7 @@ export function registerAffineNavigationCommands({
       icon: <ArrowRightBigIcon />,
       label: t['com.affine.cmdk.affine.navigation.open-account-settings'](),
       run() {
-        mixpanel.track('AccountSettingsViewed', {
-          // page:
-          segment: 'cmdk',
-        });
+        track.$.cmdk.settings.openSettings({ to: 'account' });
         store.set(openSettingModalAtom, s => ({
           activeTab: 'account',
           open: !s.open,
@@ -115,6 +125,10 @@ export function registerAffineNavigationCommands({
       icon: <ArrowRightBigIcon />,
       label: t['com.affine.cmdk.affine.navigation.goto-trash'](),
       run() {
+        track.$.cmdk.navigation.navigate({
+          to: 'trash',
+        });
+
         navigationHelper.jumpToSubPath(
           docCollection.id,
           WorkspaceSubPath.TRASH

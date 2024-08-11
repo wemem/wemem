@@ -2,14 +2,21 @@ import {
   AIEdgelessRootBlockSpec,
   AIPageRootBlockSpec,
 } from '@affine/core/blocksuite/presets/ai';
-import { mixpanel } from '@affine/core/utils';
-import type { BlockSpec } from '@blocksuite/block-std';
-import type { RootService, TelemetryEventMap } from '@blocksuite/blocks';
+import { mixpanel } from '@affine/core/mixpanel';
+import type {
+  EdgelessRootBlockSpecType,
+  PageRootBlockSpecType,
+  RootService,
+  TelemetryEventMap,
+} from '@blocksuite/blocks';
 import {
   AffineCanvasTextFonts,
   EdgelessRootService,
   PageRootService,
 } from '@blocksuite/blocks';
+import { type FrameworkProvider } from '@toeverything/infra';
+
+import { createLinkedWidgetConfig } from './linked-widget';
 
 function customLoadFonts(service: RootService): void {
   if (runtimeConfig.isSelfHosted) {
@@ -35,18 +42,32 @@ function withAffineRootService(Service: typeof RootService) {
         eventName: T,
         props: TelemetryEventMap[T]
       ) => {
-        mixpanel.track(eventName, props);
+        mixpanel.track(eventName as string, props as Record<string, unknown>);
       },
     };
   };
 }
 
-export const CustomPageRootBlockSpec: BlockSpec = {
-  ...AIPageRootBlockSpec,
-  service: withAffineRootService(PageRootService),
-};
+export function createPageRootBlockSpec(
+  framework: FrameworkProvider
+): PageRootBlockSpecType {
+  return {
+    ...AIPageRootBlockSpec,
+    service: withAffineRootService(PageRootService),
+    config: {
+      linkedWidget: createLinkedWidgetConfig(framework),
+    },
+  };
+}
 
-export const CustomEdgelessRootBlockSpec: BlockSpec = {
-  ...AIEdgelessRootBlockSpec,
-  service: withAffineRootService(EdgelessRootService),
-};
+export function createEdgelessRootBlockSpec(
+  framework: FrameworkProvider
+): EdgelessRootBlockSpecType {
+  return {
+    ...AIEdgelessRootBlockSpec,
+    service: withAffineRootService(EdgelessRootService),
+    config: {
+      linkedWidget: createLinkedWidgetConfig(framework),
+    },
+  };
+}

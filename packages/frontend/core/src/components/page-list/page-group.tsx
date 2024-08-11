@@ -219,7 +219,7 @@ export const listsPropsAtom = selectAtom(
   listPropsAtom,
   props => {
     return Object.fromEntries(
-      requiredPropNames.map(name => [name, props[name]])
+      requiredPropNames.map(name => [name, props?.[name]])
     ) as RequiredProps<ListItem>;
   },
   shallowEqual

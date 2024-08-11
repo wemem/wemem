@@ -56,9 +56,7 @@ export const FeedPageListHeader = ({
           </div>
         </div>
         <div className={styles.rightButtonGroup}>
-          <Button className={styles.addPageButton} onClick={handleEditFeed}>
-            {t['Edit']()}
-          </Button>
+          <Button onClick={handleEditFeed}>{t['Edit']()}</Button>
           <PageDisplayMenu />
         </div>
       </div>

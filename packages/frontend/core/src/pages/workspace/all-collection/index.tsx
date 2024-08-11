@@ -6,13 +6,17 @@ import {
   VirtualizedCollectionList,
 } from '@affine/core/components/page-list';
 import { useNavigateHelper } from '@affine/core/hooks/use-navigate-helper';
+import {
+  ViewIcon,
+  ViewTitle,
+} from '@affine/core/modules/workbench/view/view-meta';
 import { useI18n } from '@affine/i18n';
 import { useLiveData, useService, WorkspaceService } from '@toeverything/infra';
 import { nanoid } from 'nanoid';
 import { useCallback, useMemo, useState } from 'react';
 
 import { CollectionService } from '../../../modules/collection';
-import { ViewBodyIsland, ViewHeaderIsland } from '../../../modules/workbench';
+import { ViewBody, ViewHeader } from '../../../modules/workbench';
 import { EmptyCollectionList } from '../page-list-empty';
 import { AllCollectionHeader } from './header';
 import * as styles from './index.css';
@@ -55,13 +59,15 @@ export const AllCollection = () => {
 
   return (
     <>
-      <ViewHeaderIsland>
+      <ViewTitle title={t['Collections']()} />
+      <ViewIcon icon="collection" />
+      <ViewHeader>
         <AllCollectionHeader
           showCreateNew={!hideHeaderCreateNew}
           onCreateCollection={handleCreateCollection}
         />
-      </ViewHeaderIsland>
-      <ViewBodyIsland>
+      </ViewHeader>
+      <ViewBody>
         <div className={styles.body}>
           {collectionMetas.length > 0 ? (
             <VirtualizedCollectionList
@@ -82,7 +88,7 @@ export const AllCollection = () => {
             />
           )}
         </div>
-      </ViewBodyIsland>
+      </ViewBody>
     </>
   );
 };

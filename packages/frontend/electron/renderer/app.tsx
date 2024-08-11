@@ -5,7 +5,10 @@ import { NotificationCenter } from '@affine/component';
 import { AffineContext } from '@affine/component/context';
 import { GlobalLoading } from '@affine/component/global-loading';
 import { AppFallback } from '@affine/core/components/affine/app-container';
-import { configureCommonModules, configureImpls } from '@affine/core/modules';
+import { configureCommonModules } from '@affine/core/modules';
+import { configureAppTabsHeaderModule } from '@affine/core/modules/app-tabs-header';
+import { configureElectronStateStorageImpls } from '@affine/core/modules/storage';
+import { configureDesktopWorkbenchModule } from '@affine/core/modules/workbench';
 import {
   configureBrowserWorkspaceFlavours,
   configureSqliteWorkspaceEngineStorageProvider,
@@ -81,9 +84,11 @@ let languageLoadingPromise: Promise<void> | null = null;
 
 const framework = new Framework();
 configureCommonModules(framework);
-configureImpls(framework);
+configureElectronStateStorageImpls(framework);
 configureBrowserWorkspaceFlavours(framework);
 configureSqliteWorkspaceEngineStorageProvider(framework);
+configureDesktopWorkbenchModule(framework);
+configureAppTabsHeaderModule(framework);
 const frameworkProvider = framework.provider();
 
 // setup application lifecycle events, and emit application start event

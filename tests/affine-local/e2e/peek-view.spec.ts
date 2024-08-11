@@ -22,17 +22,18 @@ test('can open peek view via link popover', async ({ page }) => {
   await createLinkedPage(page, 'Test Page');
 
   await page.locator('affine-reference').hover();
+
   await expect(
     page.locator('.affine-reference-popover-container')
   ).toBeVisible();
 
   // click more button
-  // await page
-  //   .locator('.affine-reference-popover-container')
-  //   .locator('icon-button')
-  //   .last()
-  //   .click();
-  await page.locator('icon-button:has-text("center peek")').click();
+  await page
+    .locator('editor-menu-button editor-icon-button[aria-label="Open doc"]')
+    .click();
+  await page
+    .locator('editor-menu-action:has-text("Open in center peek")')
+    .click();
 
   // verify peek view is opened
   await expect(page.getByTestId('peek-view-modal')).toBeVisible();
@@ -68,8 +69,10 @@ test('can open peek view via db+click link card', async ({ page }) => {
   ).toBeVisible();
 
   await page
-    .locator('.affine-reference-popover-container')
-    .locator('.affine-reference-popover-view-selector-button.embed.card-view')
+    .locator('editor-menu-button editor-icon-button[aria-label="Switch view"]')
+    .click();
+  await page
+    .locator('editor-menu-button editor-menu-action[aria-label="Card view"]')
     .click();
 
   await expect(
@@ -116,7 +119,7 @@ test('can open peek view for embedded frames', async ({ page }) => {
 
   // select the note
   await page
-    .locator('affine-note:has-text("Test Frame")')
+    .locator('affine-edgeless-note:has-text("Test Frame")')
     .click({ force: true });
   // enter F to create a frame
   await page.keyboard.press('f');
@@ -137,7 +140,12 @@ test('can open peek view for embedded frames', async ({ page }) => {
 
   await page
     .locator('.surface-ref-toolbar-container')
-    .locator('icon-button:has-text("center peek")')
+    .locator('editor-icon-button[aria-label="Open doc"]')
+    .click();
+
+  await page
+    .locator('.surface-ref-toolbar-container')
+    .locator('editor-menu-action:has-text("center peek")')
     .click();
 
   // verify peek view is opened
@@ -145,7 +153,7 @@ test('can open peek view for embedded frames', async ({ page }) => {
 
   // check if page is in edgeless mode
   await expect(
-    page.locator('edgeless-editor').locator('edgeless-block-portal-frame')
+    page.locator('edgeless-editor').locator('affine-frame')
   ).toBeInViewport();
 
   // close peek view
@@ -158,7 +166,7 @@ test('can open peek view for embedded frames', async ({ page }) => {
 
   // check if page is in edgeless mode
   await expect(
-    page.locator('edgeless-editor').locator('edgeless-block-portal-frame')
+    page.locator('edgeless-editor').locator('affine-frame')
   ).toBeInViewport();
 
   // close peek view
@@ -168,7 +176,7 @@ test('can open peek view for embedded frames', async ({ page }) => {
   await page.locator('affine-surface-ref .affine-surface-ref').dblclick();
   // check if page is in edgeless mode
   await expect(
-    page.locator('edgeless-editor').locator('edgeless-block-portal-frame')
+    page.locator('edgeless-editor').locator('affine-frame')
   ).toBeInViewport();
 
   // can close modal when navigate

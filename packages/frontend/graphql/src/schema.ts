@@ -45,6 +45,11 @@ export interface BlobNotFoundDataType {
   workspaceId: Scalars['String']['output'];
 }
 
+export enum ChatHistoryOrder {
+  asc = 'asc',
+  desc = 'desc',
+}
+
 export interface ChatMessage {
   __typename?: 'ChatMessage';
   attachments: Maybe<Array<Scalars['String']['output']>>;
@@ -97,9 +102,7 @@ export interface CopilotMessageNotFoundDataType {
 export enum CopilotModels {
   DallE3 = 'DallE3',
   Gpt4Omni = 'Gpt4Omni',
-  Gpt4TurboPreview = 'Gpt4TurboPreview',
-  Gpt4VisionPreview = 'Gpt4VisionPreview',
-  Gpt35Turbo = 'Gpt35Turbo',
+  Gpt4OmniMini = 'Gpt4OmniMini',
   TextEmbedding3Large = 'TextEmbedding3Large',
   TextEmbedding3Small = 'TextEmbedding3Small',
   TextEmbeddingAda002 = 'TextEmbeddingAda002',
@@ -334,6 +337,7 @@ export enum ErrorNames {
   OAUTH_ACCOUNT_ALREADY_CONNECTED = 'OAUTH_ACCOUNT_ALREADY_CONNECTED',
   OAUTH_STATE_EXPIRED = 'OAUTH_STATE_EXPIRED',
   PAGE_IS_NOT_PUBLIC = 'PAGE_IS_NOT_PUBLIC',
+  PASSWORD_REQUIRED = 'PASSWORD_REQUIRED',
   RUNTIME_CONFIG_NOT_FOUND = 'RUNTIME_CONFIG_NOT_FOUND',
   SAME_EMAIL_PROVIDED = 'SAME_EMAIL_PROVIDED',
   SAME_SUBSCRIPTION_RECURRING = 'SAME_SUBSCRIPTION_RECURRING',
@@ -886,6 +890,7 @@ export interface Query {
   serverConfig: ServerConfigType;
   /** get all server runtime configurable settings */
   serverRuntimeConfig: Array<ServerRuntimeConfigType>;
+  serverServiceConfigs: Array<ServerServiceConfig>;
   /** Get user by email */
   user: Maybe<UserOrLimitedUser>;
   /** Get user by id */
@@ -953,8 +958,11 @@ export interface QueryWorkspaceArgs {
 
 export interface QueryChatHistoriesInput {
   action: InputMaybe<Scalars['Boolean']['input']>;
+  fork: InputMaybe<Scalars['Boolean']['input']>;
   limit: InputMaybe<Scalars['Int']['input']>;
+  messageOrder: InputMaybe<ChatHistoryOrder>;
   sessionId: InputMaybe<Scalars['String']['input']>;
+  sessionOrder: InputMaybe<ChatHistoryOrder>;
   skip: InputMaybe<Scalars['Int']['input']>;
 }
 
@@ -1084,6 +1092,8 @@ export interface ServerConfigType {
    * @deprecated use `features`
    */
   flavor: Scalars['String']['output'];
+  /** whether server has been initialized */
+  initialized: Scalars['Boolean']['output'];
   /** server identical name could be shown as badge on user interface */
   name: Scalars['String']['output'];
   oauthProviders: Array<OAuthProviderType>;
@@ -1119,6 +1129,12 @@ export interface ServerRuntimeConfigType {
   type: RuntimeConfigType;
   updatedAt: Scalars['DateTime']['output'];
   value: Scalars['JSON']['output'];
+}
+
+export interface ServerServiceConfig {
+  __typename?: 'ServerServiceConfig';
+  config: Scalars['JSONObject']['output'];
+  name: Scalars['String']['output'];
 }
 
 export interface SubscribeError {
@@ -1684,6 +1700,32 @@ export type GetCopilotHistoriesQuery = {
           role: string;
           content: string;
           attachments: Array<string> | null;
+          createdAt: string;
+        }>;
+      }>;
+    };
+  } | null;
+};
+
+export type GetCopilotHistoryIdsQueryVariables = Exact<{
+  workspaceId: Scalars['String']['input'];
+  docId: InputMaybe<Scalars['String']['input']>;
+  options: InputMaybe<QueryChatHistoriesInput>;
+}>;
+
+export type GetCopilotHistoryIdsQuery = {
+  __typename?: 'Query';
+  currentUser: {
+    __typename?: 'UserType';
+    copilot: {
+      __typename?: 'Copilot';
+      histories: Array<{
+        __typename?: 'CopilotHistories';
+        sessionId: string;
+        messages: Array<{
+          __typename?: 'ChatMessage';
+          id: string | null;
+          role: string;
           createdAt: string;
         }>;
       }>;
@@ -2523,6 +2565,11 @@ export type Queries =
       name: 'getCopilotHistoriesQuery';
       variables: GetCopilotHistoriesQueryVariables;
       response: GetCopilotHistoriesQuery;
+    }
+  | {
+      name: 'getCopilotHistoryIdsQuery';
+      variables: GetCopilotHistoryIdsQueryVariables;
+      response: GetCopilotHistoryIdsQuery;
     }
   | {
       name: 'getCopilotSessionsQuery';

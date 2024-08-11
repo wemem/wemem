@@ -64,7 +64,7 @@ export function pageReferenceRenderer({
     <>
       {icon}
       <span className="affine-reference-title">
-        {title ? title : 'Untitled'}
+        {title ? title : t['Untitled']()}
       </span>
     </>
   );
@@ -84,8 +84,8 @@ export function AffinePageReference({
   const t = useI18n();
 
   const docsService = useService(DocsService);
-  const mode$ = LiveData.from(docsService.list.observeMode(pageId), null);
-  const docMode = useLiveData(mode$);
+  const mode$ = LiveData.from(docsService.list.observeMode(pageId), undefined);
+  const docMode = useLiveData(mode$) ?? null;
   const el = pageReferenceRenderer({
     docMode,
     pageId,
@@ -106,7 +106,6 @@ export function AffinePageReference({
         e.preventDefault();
         e.stopPropagation();
         peekView.open(ref.current).catch(console.error);
-        return false; // means this click is handled
       }
       if (isInPeekView) {
         peekView.close();

@@ -2,12 +2,12 @@ import { Button } from '@affine/component/ui/button';
 import { AffineShapeIcon } from '@affine/core/components/page-list'; // TODO(@eyhn): import from page-list temporarily, need to defined common svg icon/images management.
 import { useAsyncCallback } from '@affine/core/hooks/affine-async-hooks';
 import { useNavigateHelper } from '@affine/core/hooks/use-navigate-helper';
+import { track } from '@affine/core/mixpanel';
 import { WorkspaceSubPath } from '@affine/core/shared';
 import { useI18n } from '@affine/i18n';
 import { useLiveData, useService, WorkspaceService } from '@toeverything/infra';
 import { useState } from 'react';
 
-import { mixpanel } from '../../utils';
 import * as styles from './upgrade.css';
 import { ArrowCircleIcon, HeartBreakIcon } from './upgrade-icon';
 
@@ -26,9 +26,7 @@ export const WorkspaceUpgrade = function WorkspaceUpgrade() {
       return;
     }
 
-    mixpanel.track('Button', {
-      resolve: 'UpgradeWorkspace',
-    });
+    track.workspace.$.$.upgradeWorkspace();
 
     try {
       const newWorkspace = await currentWorkspace.upgrade.upgrade();
@@ -54,16 +52,9 @@ export const WorkspaceUpgrade = function WorkspaceUpgrade() {
           data-testid="upgrade-workspace-button"
           onClick={onButtonClick}
           size="extraLarge"
-          icon={
-            error ? (
-              <HeartBreakIcon />
-            ) : (
-              <ArrowCircleIcon
-                className={upgrading ? styles.loadingIcon : undefined}
-              />
-            )
-          }
-          type={error ? 'error' : 'default'}
+          loading={upgrading}
+          prefix={error ? <HeartBreakIcon /> : <ArrowCircleIcon />}
+          variant={error ? 'error' : 'secondary'}
         >
           {error
             ? t['com.affine.upgrade.button-text.error']()

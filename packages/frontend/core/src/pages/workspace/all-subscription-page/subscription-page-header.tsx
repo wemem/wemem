@@ -14,7 +14,7 @@ import {
 } from '@affine/core/components/page-list/subscription-page-list/subscription-hooks';
 import { PageOperationCell } from '@affine/core/components/page-list/subscription-page-list/subscription-operation-cell';
 import { useCurrentWorkspacePropertiesAdapter } from '@affine/core/hooks/use-affine-adapter';
-import { FavoriteItemsAdapter } from '@affine/core/modules/properties';
+import { CompatibleFavoriteItemsAdapter } from '@affine/core/modules/properties';
 import { RightSidebarService } from '@affine/core/modules/right-sidebar';
 import { getRefPageId } from '@affine/core/modules/tag/entities/internal-tag';
 import { ToggleButton } from '@affine/core/modules/workbench/view/route-container';
@@ -56,7 +56,7 @@ export function SubscriptionPageHeader({
   }, [rightSidebar]);
 
   const refPageId = getRefPageId(pageMeta.tags) as string;
-  const favAdapter = useService(FavoriteItemsAdapter);
+  const favAdapter = useService(CompatibleFavoriteItemsAdapter);
   const favorite = useLiveData(favAdapter.isFavorite$(refPageId, 'doc'));
 
   const deepReading = useDeepReading(pageMeta);

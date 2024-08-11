@@ -58,10 +58,10 @@ const ConfirmModalTemplate: StoryFn<ConfirmModalProps> = () => {
         onConfirm={handleConfirm}
         title="Modal Title"
         description="Modal description"
+        confirmText="Confirm"
         confirmButtonOptions={{
           loading: loading,
-          type: 'primary',
-          children: 'Confirm',
+          variant: 'primary',
         }}
       >
         <Input placeholder="input someting" status={inputStatus} />
@@ -82,7 +82,7 @@ const OverlayModalTemplate: StoryFn<OverlayModalProps> = () => {
         title="Modal Title"
         description="Modal description"
         confirmButtonOptions={{
-          type: 'primary',
+          variant: 'primary',
         }}
         topImage={
           <div

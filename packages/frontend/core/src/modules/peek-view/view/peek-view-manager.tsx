@@ -1,5 +1,6 @@
 import { toReactNode } from '@affine/component';
-import { BlockElement } from '@blocksuite/block-std';
+import { AIChatBlockPeekViewTemplate } from '@affine/core/blocksuite/presets/ai';
+import { BlockComponent } from '@blocksuite/block-std';
 import { useLiveData, useService } from '@toeverything/infra';
 import { useEffect, useMemo } from 'react';
 
@@ -33,6 +34,11 @@ function renderPeekView({ info }: ActivePeekView) {
 
   if (info.type === 'image') {
     return <ImagePreviewPeekView docId={info.docId} blockId={info.blockId} />;
+  }
+
+  if (info.type === 'ai-chat-block') {
+    const template = AIChatBlockPeekViewTemplate(info.model, info.host);
+    return toReactNode(template);
   }
 
   return null; // unreachable
@@ -72,8 +78,8 @@ const getRendererProps = (
       activePeekView?.target instanceof HTMLElement
         ? activePeekView.target
         : undefined,
-    padding: activePeekView.info.type === 'doc',
-    animation: activePeekView.info.type === 'image' ? 'fade' : 'zoom',
+    padding: activePeekView.info.type !== 'image',
+    dialogFrame: activePeekView.info.type !== 'image',
   };
 };
 
@@ -91,7 +97,7 @@ export const PeekViewManagerModal = () => {
 
   useEffect(() => {
     const subscription = peekViewEntity.show$.subscribe(() => {
-      if (activePeekView?.target instanceof BlockElement) {
+      if (activePeekView?.target instanceof BlockComponent) {
         activePeekView.target.requestUpdate();
       }
     });
@@ -104,7 +110,8 @@ export const PeekViewManagerModal = () => {
   return (
     <PeekViewModalContainer
       {...renderProps}
-      open={show && !!renderProps}
+      open={!!show?.value && !!renderProps}
+      animation={show?.animation || 'none'}
       onOpenChange={open => {
         if (!open) {
           peekViewEntity.close();

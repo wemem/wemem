@@ -4,9 +4,9 @@ import { Button } from '@affine/component/ui/button';
 import { Menu, MenuItem, MenuTrigger } from '@affine/component/ui/menu';
 import { useSharingUrl } from '@affine/core/hooks/affine/use-share-url';
 import { useAsyncCallback } from '@affine/core/hooks/affine-async-hooks';
+import { track } from '@affine/core/mixpanel';
 import { ServerConfigService } from '@affine/core/modules/cloud';
 import { ShareService } from '@affine/core/modules/share-doc';
-import { mixpanel } from '@affine/core/utils';
 import { WorkspaceFlavour } from '@affine/env/workspace';
 import { PublicPageMode } from '@affine/graphql';
 import { useI18n } from '@affine/i18n';
@@ -40,7 +40,7 @@ export const LocalSharePage = (props: ShareMenuProps) => {
         <div>
           <Button
             onClick={props.onEnableAffineCloud}
-            type="primary"
+            variant="primary"
             data-testid="share-menu-enable-affine-cloud-button"
           >
             {t['Enable AFFiNE Cloud']()}
@@ -106,11 +106,8 @@ export const AffineSharePage = (props: ShareMenuProps) => {
       await shareService.share.enableShare(
         mode === 'edgeless' ? PublicPageMode.Edgeless : PublicPageMode.Page
       );
-      mixpanel.track('ShareCreated', {
-        segment: 'sharing panel',
-        module: 'public share',
-        control: 'share panel',
-        type: mode,
+      track.$.sharePanel.$.createShareLink({
+        mode,
       });
       notify.success({
         title:
@@ -256,7 +253,7 @@ export const AffineSharePage = (props: ShareMenuProps) => {
         ) : (
           <Button
             onClick={onClickCreateLink}
-            type="primary"
+            variant="primary"
             data-testid="share-menu-create-link-button"
             style={{ padding: '4px 12px', whiteSpace: 'nowrap' }}
           >

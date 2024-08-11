@@ -4,13 +4,12 @@ import {
   AffineAIPanelWidget,
   type AffineAIPanelWidgetConfig,
   type AIItemConfig,
-  Bound,
   ImageBlockModel,
   isInsideEdgelessEditor,
   matchFlavours,
   NoteDisplayMode,
 } from '@blocksuite/blocks';
-import { assertExists } from '@blocksuite/global/utils';
+import { assertExists, Bound } from '@blocksuite/global/utils';
 import type { TemplateResult } from 'lit';
 
 import {
@@ -120,7 +119,7 @@ function createNewNote(host: EditorHost): AIItemConfig {
         );
 
         assertExists(panel.answer);
-        insertFromMarkdown(host, panel.answer, noteBlockId)
+        insertFromMarkdown(host, panel.answer, doc, noteBlockId)
           .then(() => {
             service.selection.set({
               elements: [noteBlockId],

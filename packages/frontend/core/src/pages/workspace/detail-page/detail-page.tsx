@@ -1,10 +1,13 @@
-import { Scrollable } from '@affine/component';
+import { Scrollable, useHasScrollTop } from '@affine/component';
 import { PageDetailSkeleton } from '@affine/component/page-detail-skeleton';
+import type { ChatPanel } from '@affine/core/blocksuite/presets/ai';
 import { AIProvider } from '@affine/core/blocksuite/presets/ai';
 import { PageAIOnboarding } from '@affine/core/components/affine/ai-onboarding';
-import { AIIsland } from '@affine/core/components/pure/ai-island';
+import { EditorOutlineViewer } from '@affine/core/components/blocksuite/outline-viewer';
 import { useAppSettingHelper } from '@affine/core/hooks/affine/use-app-setting-helper';
+import { useDocMetaHelper } from '@affine/core/hooks/use-block-suite-page-meta';
 import { RecentDocsService } from '@affine/core/modules/quicksearch';
+import { ViewService } from '@affine/core/modules/workbench/services/view';
 import type { PageRootService } from '@blocksuite/blocks';
 import {
   BookmarkBlockService,
@@ -15,6 +18,7 @@ import {
   ImageBlockService,
 } from '@blocksuite/blocks';
 import { DisposableGroup } from '@blocksuite/global/utils';
+import { AiIcon, FrameIcon, TocIcon, TodayIcon } from '@blocksuite/icons/rc';
 import { type AffineEditorContainer } from '@blocksuite/presets';
 import type { Doc as BlockSuiteDoc } from '@blocksuite/store';
 import type { Doc } from '@toeverything/infra';
@@ -30,7 +34,14 @@ import {
 } from '@toeverything/infra';
 import clsx from 'clsx';
 import type { ReactElement } from 'react';
-import { memo, useCallback, useEffect, useLayoutEffect, useState } from 'react';
+import {
+  memo,
+  useCallback,
+  useEffect,
+  useLayoutEffect,
+  useRef,
+  useState,
+} from 'react';
 import { useParams } from 'react-router-dom';
 import type { Map as YMap } from 'yjs';
 
@@ -44,48 +55,42 @@ import { useActiveBlocksuiteEditor } from '../../../hooks/use-block-suite-editor
 import { usePageDocumentTitle } from '../../../hooks/use-global-state';
 import { useNavigateHelper } from '../../../hooks/use-navigate-helper';
 import {
-  MultiTabSidebarBody,
-  MultiTabSidebarHeaderSwitcher,
-  sidebarTabs,
-  type TabOnLoadFn,
-} from '../../../modules/multi-tab-sidebar';
-import {
-  RightSidebarService,
-  RightSidebarViewIsland,
-} from '../../../modules/right-sidebar';
-import {
   useIsActiveView,
-  ViewBodyIsland,
-  ViewHeaderIsland,
+  ViewBody,
+  ViewHeader,
+  ViewSidebarTab,
+  WorkbenchService,
 } from '../../../modules/workbench';
 import { performanceRenderLogger } from '../../../shared';
 import { PageNotFound } from '../../404';
 import * as styles from './detail-page.css';
 import { DetailPageHeader } from './detail-page-header';
+import { EditorChatPanel } from './tabs/chat';
+import { EditorFramePanel } from './tabs/frame';
+import { EditorJournalPanel } from './tabs/journal';
+import { EditorOutlinePanel } from './tabs/outline';
 
 const DetailPageImpl = memo(function DetailPageImpl() {
-  const rightSidebar = useService(RightSidebarService).rightSidebar;
-  const activeTabName = useLiveData(rightSidebar.activeTabName$);
+  const workbench = useService(WorkbenchService).workbench;
+  const view = useService(ViewService).view;
+  const activeSidebarTab = useLiveData(view.activeSidebarTab$);
 
   const doc = useService(DocService).doc;
+  const isInTrash = useLiveData(doc.meta$.map(meta => meta.trash));
   const { openPage, jumpToPageBlock, jumpToTag } = useNavigateHelper();
   const [editor, setEditor] = useState<AffineEditorContainer | null>(null);
   const workspace = useService(WorkspaceService).workspace;
   const globalContext = useService(GlobalContextService).globalContext;
   const docCollection = workspace.docCollection;
   const mode = useLiveData(doc.mode$);
+  const isSideBarOpen = useLiveData(workbench.sidebarOpen$);
   const { appSettings } = useAppSettingHelper();
-  const [tabOnLoad, setTabOnLoad] = useState<TabOnLoadFn | null>(null);
+  const chatPanelRef = useRef<ChatPanel | null>(null);
+  const { setDocReadonly } = useDocMetaHelper(workspace.docCollection);
 
   const isActiveView = useIsActiveView();
   // TODO(@eyhn): remove jotai here
   const [_, setActiveBlockSuiteEditor] = useActiveBlocksuiteEditor();
-
-  const setActiveTabName = useCallback(
-    (...args: Parameters<typeof rightSidebar.setActiveTabName>) =>
-      rightSidebar.setActiveTabName(...args),
-    [rightSidebar]
-  );
 
   useEffect(() => {
     if (isActiveView) {
@@ -95,35 +100,25 @@ const DetailPageImpl = memo(function DetailPageImpl() {
 
   useEffect(() => {
     const disposable = AIProvider.slots.requestOpenWithChat.on(params => {
-      const opened = rightSidebar.isOpen$.value;
-      const actived = activeTabName === 'chat';
+      workbench.openSidebar();
+      view.activeSidebarTab('chat');
 
-      if (!opened) {
-        rightSidebar.open();
-      }
-      if (!actived) {
-        setActiveTabName('chat');
-      }
-
-      // Save chat parameters:
-      // * The right sidebar is not open
-      // * Chat panel is not activated
-      if (!opened || !actived) {
-        const callback = AIProvider.genRequestChatCardsFn(params);
-        setTabOnLoad(() => callback);
-      } else {
-        setTabOnLoad(null);
+      if (chatPanelRef.current) {
+        const chatCards = chatPanelRef.current.querySelector('chat-cards');
+        if (chatCards) chatCards.temporaryParams = params;
       }
     });
     return () => disposable.dispose();
-  }, [activeTabName, rightSidebar, setActiveTabName]);
+  }, [activeSidebarTab, view, workbench]);
 
   useEffect(() => {
     if (isActiveView) {
       globalContext.docId.set(doc.id);
+      globalContext.isDoc.set(true);
 
       return () => {
         globalContext.docId.set(null);
+        globalContext.isDoc.set(false);
       };
     }
     return;
@@ -140,7 +135,23 @@ const DetailPageImpl = memo(function DetailPageImpl() {
     return;
   }, [doc, globalContext, isActiveView, mode]);
 
-  const isInTrash = useLiveData(doc.meta$.map(meta => meta.trash));
+  useEffect(() => {
+    if ('isMobile' in environment && environment.isMobile) {
+      setDocReadonly(doc.id, true);
+    }
+  }, [doc.id, setDocReadonly]);
+
+  useEffect(() => {
+    if (isActiveView) {
+      globalContext.isTrashDoc.set(!!isInTrash);
+
+      return () => {
+        globalContext.isTrashDoc.set(null);
+      };
+    }
+    return;
+  }, [globalContext, isActiveView, isInTrash]);
+
   useRegisterBlocksuiteEditorCommands();
   const title = useLiveData(doc.title$);
   usePageDocumentTitle(title);
@@ -171,7 +182,7 @@ const DetailPageImpl = memo(function DetailPageImpl() {
       const editorHost = editor.host;
 
       // provide image proxy endpoint to blocksuite
-      editorHost.std.clipboard.use(
+      editorHost?.std.clipboard.use(
         customImageProxyMiddleware(runtimeConfig.imageProxyUrl)
       );
       ImageBlockService.setImageProxyURL(runtimeConfig.imageProxyUrl);
@@ -190,22 +201,22 @@ const DetailPageImpl = memo(function DetailPageImpl() {
 
       // provide page mode and updated date to blocksuite
       const pageService =
-        editorHost.std.spec.getService<PageRootService>('affine:page');
+        editorHost?.std.spec.getService<PageRootService>('affine:page');
       const disposable = new DisposableGroup();
-
-      doc.setMode(mode);
-      disposable.add(
-        pageService.slots.docLinkClicked.on(({ docId, blockId }) => {
-          return blockId
-            ? jumpToPageBlock(docCollection.id, docId, blockId)
-            : openPage(docCollection.id, docId);
-        })
-      );
-      disposable.add(
-        pageService.slots.tagClicked.on(({ tagId }) => {
-          jumpToTag(workspace.id, tagId);
-        })
-      );
+      if (pageService) {
+        disposable.add(
+          pageService.slots.docLinkClicked.on(({ docId, blockId }) => {
+            return blockId
+              ? jumpToPageBlock(docCollection.id, docId, blockId)
+              : openPage(docCollection.id, docId);
+          })
+        );
+        disposable.add(
+          pageService.slots.tagClicked.on(({ tagId }) => {
+            jumpToTag(workspace.id, tagId);
+          })
+        );
+      }
 
       setEditor(editor);
 
@@ -213,32 +224,34 @@ const DetailPageImpl = memo(function DetailPageImpl() {
         disposable.dispose();
       };
     },
-    [
-      doc,
-      mode,
-      jumpToPageBlock,
-      docCollection.id,
-      openPage,
-      jumpToTag,
-      workspace.id,
-    ]
+    [jumpToPageBlock, docCollection.id, openPage, jumpToTag, workspace.id]
   );
 
-  const isWindowsDesktop = environment.isDesktop && environment.isWindows;
+  const [refCallback, hasScrollTop] = useHasScrollTop();
+  const dynamicTopBorder = environment.isDesktop;
+
+  const openOutlinePanel = useCallback(() => {
+    workbench.openSidebar();
+    view.activeSidebarTab('outline');
+  }, [workbench, view]);
 
   return (
     <>
-      <ViewHeaderIsland>
+      <ViewHeader>
         <DetailPageHeader page={doc.blockSuiteDoc} workspace={workspace} />
-      </ViewHeaderIsland>
-      <ViewBodyIsland>
-        <div className={styles.mainContainer}>
-          <AIIsland />
+      </ViewHeader>
+      <ViewBody>
+        <div
+          className={styles.mainContainer}
+          data-dynamic-top-border={dynamicTopBorder}
+          data-has-scroll-top={hasScrollTop}
+        >
           {/* Add a key to force rerender when page changed, to avoid error boundary persisting. */}
           <AffineErrorBoundary key={doc.id}>
             <TopTip pageId={doc.id} workspace={workspace} />
             <Scrollable.Root>
               <Scrollable.Viewport
+                ref={refCallback}
                 className={clsx(
                   'affine-page-viewport',
                   styles.affineDocViewport,
@@ -257,42 +270,32 @@ const DetailPageImpl = memo(function DetailPageImpl() {
                 })}
               />
             </Scrollable.Root>
+            <EditorOutlineViewer
+              editor={editor}
+              show={mode === 'page' && !isSideBarOpen}
+              openOutlinePanel={openOutlinePanel}
+            />
           </AffineErrorBoundary>
           {isInTrash ? <TrashPageFooter /> : null}
         </div>
-      </ViewBodyIsland>
+      </ViewBody>
 
-      <RightSidebarViewIsland
-        active={isActiveView}
-        header={
-          !isWindowsDesktop ? (
-            <MultiTabSidebarHeaderSwitcher
-              activeTabName={activeTabName ?? sidebarTabs[0]?.name}
-              setActiveTabName={setActiveTabName}
-              tabs={sidebarTabs}
-            />
-          ) : null
-        }
-        body={
-          <MultiTabSidebarBody
-            editor={editor}
-            tab={
-              sidebarTabs.find(ext => ext.name === activeTabName) ??
-              sidebarTabs[0]
-            }
-            onLoad={tabOnLoad}
-          >
-            {/* Show switcher in body for windows desktop */}
-            {isWindowsDesktop && (
-              <MultiTabSidebarHeaderSwitcher
-                activeTabName={activeTabName ?? sidebarTabs[0]?.name}
-                setActiveTabName={setActiveTabName}
-                tabs={sidebarTabs}
-              />
-            )}
-          </MultiTabSidebarBody>
-        }
-      />
+      <ViewSidebarTab tabId="chat" icon={<AiIcon />} unmountOnInactive={false}>
+        <EditorChatPanel editor={editor} ref={chatPanelRef} />
+      </ViewSidebarTab>
+
+      <ViewSidebarTab tabId="journal" icon={<TodayIcon />}>
+        <EditorJournalPanel />
+      </ViewSidebarTab>
+
+      <ViewSidebarTab tabId="outline" icon={<TocIcon />}>
+        <EditorOutlinePanel editor={editor} />
+      </ViewSidebarTab>
+
+      <ViewSidebarTab tabId="frame" icon={<FrameIcon />}>
+        <EditorFramePanel editor={editor} />
+      </ViewSidebarTab>
+
       <GlobalPageHistoryModal />
       <PageAIOnboarding />
     </>
@@ -304,7 +307,7 @@ export const DetailPage = ({ pageId }: { pageId: string }): ReactElement => {
   const docsService = useService(DocsService);
   const docRecordList = docsService.list;
   const docListReady = useLiveData(docRecordList.isReady$);
-  const docRecord = docRecordList.doc$(pageId).value;
+  const docRecord = useLiveData(docRecordList.doc$(pageId));
 
   const [doc, setDoc] = useState<Doc | null>(null);
 

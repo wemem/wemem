@@ -6,9 +6,10 @@ import { useEffect, useMemo, useState } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { EMPTY, mergeMap, switchMap } from 'rxjs';
 
+import { generateSubscriptionCallbackLink } from '../hooks/affine/use-subscription-notify';
 import { RouteLogic, useNavigateHelper } from '../hooks/use-navigate-helper';
+import { mixpanel, track } from '../mixpanel';
 import { AuthService, SubscriptionService } from '../modules/cloud';
-import { mixpanel } from '../utils';
 import { container } from './subscribe.css';
 
 export const Component = () => {
@@ -27,6 +28,20 @@ export const Component = () => {
   const recurring = searchParams.get('recurring') as string | null;
 
   useEffect(() => {
+    const allowedPlan = ['ai', 'pro'];
+    const allowedRecurring = ['monthly', 'yearly', 'lifetime'];
+    const receivedPlan = plan?.toLowerCase() ?? '';
+    const receivedRecurring = recurring?.toLowerCase() ?? '';
+
+    const invalids = [];
+    if (!allowedPlan.includes(receivedPlan)) invalids.push('plan');
+    if (!allowedRecurring.includes(receivedRecurring))
+      invalids.push('recurring');
+    if (invalids.length) {
+      setError(`Invalid ${invalids.join(', ')}`);
+      return;
+    }
+
     const call = effect(
       switchMap(() => {
         return fromPromise(async signal => {
@@ -48,38 +63,44 @@ export const Component = () => {
           setMessage('Checking subscription status...');
           await subscriptionService.subscription.waitForRevalidation(signal);
           const subscribed =
-            plan?.toLowerCase() === 'ai'
+            receivedPlan === 'ai'
               ? !!subscriptionService.subscription.ai$.value
-              : !!subscriptionService.subscription.pro$.value;
+              : receivedRecurring === 'lifetime'
+                ? !!subscriptionService.subscription.isBeliever$.value
+                : !!subscriptionService.subscription.pro$.value;
           if (!subscribed) {
             setMessage('Creating checkout...');
-            mixpanel.track('PlanUpgradeStarted', {
-              type: plan,
-              category: recurring,
+            track.subscriptionLanding.$.$.checkout({
+              plan: receivedPlan,
+              recurring: receivedRecurring,
             });
             try {
+              const account = authService.session.account$.value;
+              // should never reach
+              if (!account) throw new Error('No account');
+              const targetPlan =
+                receivedPlan === 'ai'
+                  ? SubscriptionPlan.AI
+                  : SubscriptionPlan.Pro;
+              const targetRecurring =
+                receivedRecurring === 'monthly'
+                  ? SubscriptionRecurring.Monthly
+                  : receivedRecurring === 'yearly'
+                    ? SubscriptionRecurring.Yearly
+                    : SubscriptionRecurring.Lifetime;
               const checkout = await subscriptionService.createCheckoutSession({
                 idempotencyKey,
-                plan:
-                  plan?.toLowerCase() === 'ai'
-                    ? SubscriptionPlan.AI
-                    : SubscriptionPlan.Pro,
+                plan: targetPlan,
                 coupon: null,
-                recurring:
-                  recurring?.toLowerCase() === 'monthly'
-                    ? SubscriptionRecurring.Monthly
-                    : SubscriptionRecurring.Yearly,
-                successCallbackLink:
-                  plan?.toLowerCase() === 'ai'
-                    ? '/ai-upgrade-success'
-                    : '/upgrade-success',
+                recurring: targetRecurring,
+                successCallbackLink: generateSubscriptionCallbackLink(
+                  account,
+                  targetPlan,
+                  targetRecurring
+                ),
               });
               setMessage('Redirecting...');
               location.href = checkout;
-              mixpanel.track('PlanChangeSucceeded', {
-                type: plan,
-                category: recurring,
-              });
               if (plan) {
                 mixpanel.people.set({
                   [SubscriptionPlan.AI === plan ? 'ai plan' : plan]: plan,
@@ -133,7 +154,7 @@ export const Component = () => {
         <>
           {error}
           <br />
-          <Button type="primary" onClick={() => setRetryKey(i => i + 1)}>
+          <Button variant="primary" onClick={() => setRetryKey(i => i + 1)}>
             Retry
           </Button>
         </>

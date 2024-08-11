@@ -10,22 +10,19 @@ export const workspaceAndUserWrapper = style({
   gap: 8,
   marginBottom: 20,
 });
-
-export const workspaceWrapper = style({
+export const quickSearchAndNewPage = style({
+  display: 'flex',
+  alignItems: 'center',
+  gap: 8,
+});
+export const quickSearch = style({
   width: 0,
   flex: 1,
 });
 
-export const userInfoWrapper = style({
-  flexShrink: 0,
-  width: 'auto',
-  height: 'auto',
-  padding: '4px 0',
-});
-
-// TODO(@catsjuice):
-globalStyle(`button.${userInfoWrapper} > span`, {
-  lineHeight: 0,
+export const workspaceWrapper = style({
+  width: 0,
+  flex: 1,
 });
 
 export const operationMenu = style({
@@ -48,9 +45,6 @@ export const usageBlock = style({
 export const aiUsageBlock = style({
   padding: 12,
   cursor: 'pointer',
-  ':hover': {
-    background: cssVar('hoverColor'),
-  },
   selectors: {
     '&[data-pro]': {
       padding: '12px 12px 2px 12px',

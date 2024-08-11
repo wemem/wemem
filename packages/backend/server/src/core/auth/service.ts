@@ -1,18 +1,11 @@
 import { Injectable, OnApplicationBootstrap } from '@nestjs/common';
 import { Cron, CronExpression } from '@nestjs/schedule';
-import type { User } from '@prisma/client';
+import type { User, UserSession } from '@prisma/client';
 import { PrismaClient } from '@prisma/client';
 import type { CookieOptions, Request, Response } from 'express';
 import { assign, omit } from 'lodash-es';
 
-import {
-  Config,
-  CryptoHelper,
-  EmailAlreadyUsed,
-  MailService,
-  WrongSignInCredentials,
-  WrongSignInMethod,
-} from '../../fundamentals';
+import { Config, EmailAlreadyUsed, MailService } from '../../fundamentals';
 import { FeatureManagementService } from '../features/management';
 import { QuotaService } from '../quota/service';
 import { QuotaType } from '../quota/types';
@@ -74,20 +67,19 @@ export class AuthService implements OnApplicationBootstrap {
     private readonly mailer: MailService,
     private readonly feature: FeatureManagementService,
     private readonly quota: QuotaService,
-    private readonly user: UserService,
-    private readonly crypto: CryptoHelper
+    private readonly user: UserService
   ) {}
 
   async onApplicationBootstrap() {
     if (this.config.node.dev) {
       try {
-        const [email, name, pwd] = ['dev@affine.pro', 'Dev User', 'dev'];
+        const [email, name, password] = ['dev@affine.pro', 'Dev User', 'dev'];
         let devUser = await this.user.findUserByEmail(email);
         if (!devUser) {
-          devUser = await this.user.createUser({
+          devUser = await this.user.createUser_without_verification({
             email,
             name,
-            password: await this.crypto.encryptPassword(pwd),
+            password,
           });
         }
         await this.quota.switchUserQuota(devUser.id, QuotaType.ProPlanV1);
@@ -114,60 +106,41 @@ export class AuthService implements OnApplicationBootstrap {
       throw new EmailAlreadyUsed();
     }
 
-    const hashedPassword = await this.crypto.encryptPassword(password);
-
     return this.user
       .createUser({
         name,
         email,
-        password: hashedPassword,
+        password,
       })
       .then(sessionUser);
   }
 
   async signIn(email: string, password: string) {
-    const user = await this.user.findUserWithHashedPasswordByEmail(email);
-
-    if (!user) {
-      throw new WrongSignInCredentials();
-    }
-
-    if (!user.password) {
-      throw new WrongSignInMethod();
-    }
-
-    const passwordMatches = await this.crypto.verifyPassword(
-      password,
-      user.password
-    );
-
-    if (!passwordMatches) {
-      throw new WrongSignInCredentials();
-    }
+    const user = await this.user.signIn(email, password);
 
     return sessionUser(user);
   }
 
-  async getUser(
+  async getUserSession(
     token: string,
     seq = 0
-  ): Promise<{ user: CurrentUser | null; expiresAt: Date | null }> {
+  ): Promise<{ user: CurrentUser; session: UserSession } | null> {
     const session = await this.getSession(token);
     // no such session
     if (!session) {
-      return { user: null, expiresAt: null };
+      return null;
     }
 
     const userSession = session.userSessions.at(seq);
 
     // no such user session
     if (!userSession) {
-      return { user: null, expiresAt: null };
+      return null;
     }
 
     // user session expired
     if (userSession.expiresAt && userSession.expiresAt <= new Date()) {
-      return { user: null, expiresAt: null };
+      return null;
     }
 
     const user = await this.db.user.findUnique({
@@ -175,10 +148,10 @@ export class AuthService implements OnApplicationBootstrap {
     });
 
     if (!user) {
-      return { user: null, expiresAt: null };
+      return null;
     }
 
-    return { user: sessionUser(user), expiresAt: userSession.expiresAt };
+    return { user: sessionUser(user), session: userSession };
   }
 
   async getUserList(token: string) {
@@ -277,12 +250,13 @@ export class AuthService implements OnApplicationBootstrap {
   async refreshUserSessionIfNeeded(
     _req: Request,
     res: Response,
-    sessionId: string,
-    userId: string,
-    expiresAt: Date,
+    session: UserSession,
     ttr = this.config.auth.session.ttr
   ): Promise<boolean> {
-    if (expiresAt && expiresAt.getTime() - Date.now() > ttr * 1000) {
+    if (
+      session.expiresAt &&
+      session.expiresAt.getTime() - Date.now() > ttr * 1000
+    ) {
       // no need to refresh
       return false;
     }
@@ -293,17 +267,14 @@ export class AuthService implements OnApplicationBootstrap {
 
     await this.db.userSession.update({
       where: {
-        sessionId_userId: {
-          sessionId,
-          userId,
-        },
+        id: session.id,
       },
       data: {
         expiresAt: newExpiresAt,
       },
     });
 
-    res.cookie(AuthService.sessionCookieName, sessionId, {
+    res.cookie(AuthService.sessionCookieName, session.sessionId, {
       expires: newExpiresAt,
       ...this.cookieOptions,
     });
@@ -381,8 +352,7 @@ export class AuthService implements OnApplicationBootstrap {
     id: string,
     newPassword: string
   ): Promise<Omit<User, 'password'>> {
-    const hashedPassword = await this.crypto.encryptPassword(newPassword);
-    return this.user.updateUser(id, { password: hashedPassword });
+    return this.user.updateUser(id, { password: newPassword });
   }
 
   async changeEmail(

@@ -5,77 +5,56 @@ import type { BuildFlags } from '../config';
 
 export function getRuntimeConfig(buildFlags: BuildFlags): RuntimeConfig {
   const buildPreset: Record<BuildFlags['channel'], RuntimeConfig> = {
-    stable: {
-      enableTestProperties: false,
-      enableBroadcastChannelProvider: true,
-      enableDebugPage: true,
-      githubUrl: 'https://github.com/toeverything/AFFiNE',
-      changelogUrl: 'https://readease.ai/what-is-new',
-      downloadUrl: 'https://readease.ai/download',
-      imageProxyUrl: '/api/worker/image-proxy',
-      linkPreviewUrl: '/api/worker/link-preview',
-      enablePreloading: true,
-      enableNewSettingModal: true,
-      enableWorkspaceSelector: false,
-      enableLater: false,
-      enableArchive: false,
-      enableNewSettingUnstableApi: false,
-      enableCloud: true,
-      enableCaptcha: true,
-      enableEnhanceShareMode: false,
-      enablePayment: true,
-      enablePageHistory: true,
-      enableExperimentalFeature: false,
-      enableInfoModal: false,
-      allowLocalWorkspace: buildFlags.distribution === 'desktop' ? true : false,
-      serverUrlPrefix: 'https://app.readease.ai',
-      appVersion: packageJson.version,
-      editorVersion: packageJson.devDependencies['@blocksuite/presets'],
-      appBuildType: 'stable',
+    get stable() {
+      return {
+        appBuildType: 'stable' as const,
+        serverUrlPrefix: 'https://app.readease.ai',
+        appVersion: packageJson.version,
+        editorVersion: packageJson.devDependencies['@blocksuite/presets'],
+        githubUrl: 'https://github.com/toeverything/AFFiNE',
+        changelogUrl: 'https://readease.ai/what-is-new',
+        downloadUrl: 'https://readease.ai/download',
+        imageProxyUrl: '/api/worker/image-proxy',
+        linkPreviewUrl: '/api/worker/link-preview',
+        enablePreloading: true,
+        enableCaptcha: true,
+        enableExperimentalFeature: true,
+        allowLocalWorkspace:
+          buildFlags.distribution === 'desktop' ? true : false,
+        enableOrganize: true,
+        enableInfoModal: true,
+        enableWorkspaceSelector: false,
+        // CAUTION(@forehalo): product not ready, do not enable it
+        enableNewSettingUnstableApi: false,
+        enableEnhanceShareMode: false,
+      };
     },
     get beta() {
       return {
         ...this.stable,
-        enablePageHistory: true,
-        serverUrlPrefix: 'https://insider.readease.ai',
         appBuildType: 'beta' as const,
+        serverUrlPrefix: 'https://insider.readease.ai',
+        changelogUrl: 'https://github.com/toeverything/AFFiNE/releases',
       };
     },
     get internal() {
       return {
         ...this.stable,
-        serverUrlPrefix: 'https://insider.readease.ai',
         appBuildType: 'internal' as const,
+        serverUrlPrefix: 'https://insider.readease.ai',
+        changelogUrl: 'https://github.com/toeverything/AFFiNE/releases',
       };
     },
     // canary will be aggressive and enable all features
-    canary: {
-      enableTestProperties: true,
-      enableBroadcastChannelProvider: true,
-      enableDebugPage: true,
-      githubUrl: 'https://github.com/toeverything/AFFiNE',
-      changelogUrl: 'https://github.com/toeverything/AFFiNE/releases',
-      downloadUrl: 'https://readease.ai/download',
-      imageProxyUrl: '/api/worker/image-proxy',
-      linkPreviewUrl: '/api/worker/link-preview',
-      enablePreloading: true,
-      enableNewSettingModal: true,
-      enableWorkspaceSelector: true,
-      enableLater: false,
-      enableArchive: false,
-      enableNewSettingUnstableApi: false,
-      enableCloud: true,
-      enableCaptcha: true,
-      enableEnhanceShareMode: false,
-      enablePayment: true,
-      enablePageHistory: true,
-      enableExperimentalFeature: true,
-      enableInfoModal: true,
-      allowLocalWorkspace: buildFlags.distribution === 'desktop' ? true : false,
-      serverUrlPrefix: 'https://affine.fail',
-      appVersion: packageJson.version,
-      editorVersion: packageJson.devDependencies['@blocksuite/presets'],
-      appBuildType: 'canary',
+    get canary() {
+      return {
+        ...this.stable,
+        appBuildType: 'canary' as const,
+        serverUrlPrefix: 'https://affine.fail',
+        changelogUrl: 'https://github.com/toeverything/AFFiNE/releases',
+        enableInfoModal: true,
+        enableOrganize: true,
+      };
     },
   };
 
@@ -88,28 +67,13 @@ export function getRuntimeConfig(buildFlags: BuildFlags): RuntimeConfig {
   const currentBuildPreset = buildPreset[currentBuild];
 
   const environmentPreset = {
-    enableTestProperties: process.env.ENABLE_TEST_PROPERTIES
-      ? process.env.ENABLE_TEST_PROPERTIES === 'true'
-      : currentBuildPreset.enableTestProperties,
-    enableBroadcastChannelProvider: process.env.ENABLE_BC_PROVIDER
-      ? process.env.ENABLE_BC_PROVIDER !== 'false'
-      : currentBuildPreset.enableBroadcastChannelProvider,
     changelogUrl: process.env.CHANGELOG_URL ?? currentBuildPreset.changelogUrl,
     enablePreloading: process.env.ENABLE_PRELOADING
       ? process.env.ENABLE_PRELOADING === 'true'
       : currentBuildPreset.enablePreloading,
-    enableNewSettingModal: process.env.ENABLE_NEW_SETTING_MODAL
-      ? process.env.ENABLE_NEW_SETTING_MODAL === 'true'
-      : currentBuildPreset.enableNewSettingModal,
-    enableWorkspaceSelector: process.env.ENABLE_WORKSPACE_SELECTOR
-      ? process.env.ENABLE_WORKSPACE_SELECTOR === 'true'
-      : currentBuildPreset.enableWorkspaceSelector,
     enableNewSettingUnstableApi: process.env.ENABLE_NEW_SETTING_UNSTABLE_API
       ? process.env.ENABLE_NEW_SETTING_UNSTABLE_API === 'true'
       : currentBuildPreset.enableNewSettingUnstableApi,
-    enableCloud: process.env.ENABLE_CLOUD
-      ? process.env.ENABLE_CLOUD === 'true'
-      : currentBuildPreset.enableCloud,
     enableCaptcha: process.env.ENABLE_CAPTCHA
       ? process.env.ENABLE_CAPTCHA === 'true'
       : buildFlags.mode === 'development'
@@ -118,22 +82,6 @@ export function getRuntimeConfig(buildFlags: BuildFlags): RuntimeConfig {
     enableEnhanceShareMode: process.env.ENABLE_ENHANCE_SHARE_MODE
       ? process.env.ENABLE_ENHANCE_SHARE_MODE === 'true'
       : currentBuildPreset.enableEnhanceShareMode,
-    enablePayment: process.env.ENABLE_PAYMENT
-      ? process.env.ENABLE_PAYMENT !== 'false'
-      : buildFlags.mode === 'development'
-        ? true
-        : currentBuildPreset.enablePayment,
-    enablePageHistory: process.env.ENABLE_PAGE_HISTORY
-      ? process.env.ENABLE_PAGE_HISTORY === 'true'
-      : buildFlags.mode === 'development'
-        ? true
-        : currentBuildPreset.enablePageHistory,
-    // allowLocalWorkspace: process.env.ALLOW_LOCAL_WORKSPACE
-    //   ? process.env.ALLOW_LOCAL_WORKSPACE === 'true'
-    //   : buildFlags.mode === 'development'
-    //     ? true
-    //     : currentBuildPreset.allowLocalWorkspace,
-
     allowLocalWorkspace: process.env.ALLOW_LOCAL_WORKSPACE
       ? process.env.ALLOW_LOCAL_WORKSPACE === 'true'
       : currentBuildPreset.allowLocalWorkspace,

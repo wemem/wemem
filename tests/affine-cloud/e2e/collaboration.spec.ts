@@ -5,10 +5,8 @@ import {
   addUserToWorkspace,
   createRandomUser,
   enableCloudWorkspace,
-  enableCloudWorkspaceFromShareButton,
   loginUser,
 } from '@affine-test/kit/utils/cloud';
-import { clickEdgelessModeButton } from '@affine-test/kit/utils/editor';
 import {
   clickNewPageButton,
   getBlockSuiteEditorTitle,
@@ -35,89 +33,6 @@ test.beforeEach(async () => {
 
 test.beforeEach(async ({ page }) => {
   await loginUser(page, user.email);
-});
-
-test('can enable share page', async ({ page, browser }) => {
-  await page.reload();
-  await waitForEditorLoad(page);
-  await createLocalWorkspace(
-    {
-      name: 'test',
-    },
-    page
-  );
-  await enableCloudWorkspaceFromShareButton(page);
-  const title = getBlockSuiteEditorTitle(page);
-  await title.pressSequentially('TEST TITLE', {
-    delay: 50,
-  });
-  await page.keyboard.press('Enter', { delay: 50 });
-  await page.keyboard.type('TEST CONTENT', { delay: 50 });
-  await page.getByTestId('cloud-share-menu-button').click();
-  await page.getByTestId('share-menu-create-link-button').click();
-  await page.getByTestId('share-menu-copy-link-button').click();
-
-  // check share page is accessible
-  {
-    const context = await browser.newContext();
-    await skipOnboarding(context);
-    const url: string = await page.evaluate(() =>
-      navigator.clipboard.readText()
-    );
-    const page2 = await context.newPage();
-    await page2.goto(url);
-    await waitForEditorLoad(page2);
-    const title = getBlockSuiteEditorTitle(page2);
-    await expect(title).toContainText('TEST TITLE');
-    expect(page2.locator('affine-paragraph').first()).toContainText(
-      'TEST CONTENT'
-    );
-  }
-});
-
-test('share page with default edgeless', async ({ page, browser }) => {
-  await page.reload();
-  await waitForEditorLoad(page);
-  await createLocalWorkspace(
-    {
-      name: 'test',
-    },
-    page
-  );
-  await enableCloudWorkspaceFromShareButton(page);
-  const title = getBlockSuiteEditorTitle(page);
-  await title.pressSequentially('TEST TITLE', {
-    delay: 50,
-  });
-  await page.keyboard.press('Enter', { delay: 50 });
-  await page.keyboard.type('TEST CONTENT', { delay: 50 });
-  await clickEdgelessModeButton(page);
-  await expect(page.locator('affine-edgeless-root')).toBeVisible({
-    timeout: 1000,
-  });
-  await page.getByTestId('cloud-share-menu-button').click();
-  await page.getByTestId('share-menu-create-link-button').click();
-  await page.getByTestId('share-menu-copy-link-button').click();
-
-  // check share page is accessible
-  {
-    const context = await browser.newContext();
-    await skipOnboarding(context);
-    const url: string = await page.evaluate(() =>
-      navigator.clipboard.readText()
-    );
-    const page2 = await context.newPage();
-    await page2.goto(url);
-    await waitForEditorLoad(page2);
-    await expect(page.locator('affine-edgeless-root')).toBeVisible({
-      timeout: 1000,
-    });
-    expect(page2.locator('affine-paragraph').first()).toContainText(
-      'TEST CONTENT'
-    );
-    const editButton = page2.getByTestId('share-page-edit-button');
-    await expect(editButton).not.toBeVisible();
-  }
 });
 
 // SKIP until BS-671 fix
@@ -203,7 +118,7 @@ test('can sync collections between different browser', async ({
     page
   );
   await enableCloudWorkspace(page);
-  await page.getByTestId('slider-bar-add-collection-button').click();
+  await page.getByTestId('explorer-bar-add-collection-button').click();
   const title = page.getByTestId('input-collection-title');
   await title.isVisible();
   await title.fill('test collection');
@@ -215,7 +130,8 @@ test('can sync collections between different browser', async ({
     const page2 = await context.newPage();
     await loginUser(page2, user.email);
     await page2.goto(page.url());
-    const collections = page2.getByTestId('collections');
+    const collections = page2.getByTestId('explorer-collections');
+    await collections.getByTestId('category-divider-collapse-button').click();
     await expect(collections.getByText('test collection')).toBeVisible();
   }
 });

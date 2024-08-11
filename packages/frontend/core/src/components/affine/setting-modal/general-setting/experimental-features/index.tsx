@@ -63,7 +63,7 @@ const ExperimentalFeaturesPrompt = ({
         <Button
           disabled={!checked}
           onClick={onConfirm}
-          type="primary"
+          variant="primary"
           data-testid="experimental-confirm-button"
         >
           {t[
@@ -80,11 +80,13 @@ const ExperimentalFeaturesItem = ({
   isMutating,
   checked,
   onChange,
+  testId,
 }: {
   title: React.ReactNode;
   isMutating?: boolean;
   checked: boolean;
   onChange: (checked: boolean) => void;
+  testId?: string;
 }) => {
   return (
     <div className={styles.switchRow}>
@@ -93,6 +95,7 @@ const ExperimentalFeaturesItem = ({
         checked={checked}
         onChange={onChange}
         className={isMutating ? styles.switchDisabled : ''}
+        data-testid={testId}
       />
     </div>
   );
@@ -127,7 +130,6 @@ const blocksuiteFeatureFlags: Partial<Record<keyof BlockSuiteFlags, string>> = {
   enable_database_attachment_note: 'Enable Database Attachment Note',
   enable_database_statistics: 'Enable Database Block Statistics',
   enable_block_query: 'Enable Todo Block Query',
-  enable_ai_onboarding: 'Enable AI Onboarding',
 };
 
 const BlocksuiteFeatureFlagSettings = () => {

@@ -1,4 +1,4 @@
-import { Bound } from '@blocksuite/blocks';
+import { Bound } from '@blocksuite/global/utils';
 import { nanoid } from '@blocksuite/store';
 
 import { AIProvider } from '../provider';
@@ -150,7 +150,9 @@ const createBasicCover = async (
 };
 
 function getRandomElement<T>(arr: T[]): T {
-  return arr[Math.floor(Math.random() * arr.length)];
+  return JSON.parse(
+    JSON.stringify(arr[Math.floor(Math.random() * arr.length)])
+  );
 }
 
 const basic1section = async (

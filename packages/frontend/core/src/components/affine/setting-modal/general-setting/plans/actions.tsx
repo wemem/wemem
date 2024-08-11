@@ -1,11 +1,14 @@
+import { getDowngradeQuestionnaireLink } from '@affine/core/hooks/affine/use-subscription-notify';
 import { useAsyncCallback } from '@affine/core/hooks/affine-async-hooks';
-import { mixpanel } from '@affine/core/utils';
-import { useService } from '@toeverything/infra';
+import { track } from '@affine/core/mixpanel';
+import { SubscriptionPlan } from '@affine/graphql';
+import { useLiveData, useService } from '@toeverything/infra';
 import { nanoid } from 'nanoid';
 import type { PropsWithChildren } from 'react';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 
-import { SubscriptionService } from '../../../../../modules/cloud';
+import { AuthService, SubscriptionService } from '../../../../../modules/cloud';
+import { useDowngradeNotify } from '../../../subscription-landing/notify';
 import { ConfirmLoadingModal, DowngradeModal } from './modals';
 
 /**
@@ -24,9 +27,22 @@ export const CancelAction = ({
   const [idempotencyKey, setIdempotencyKey] = useState(nanoid());
   const [isMutating, setIsMutating] = useState(false);
   const subscription = useService(SubscriptionService).subscription;
+  const proSubscription = useLiveData(subscription.pro$);
+  const authService = useService(AuthService);
+  const downgradeNotify = useDowngradeNotify();
+
+  useEffect(() => {
+    if (!open || !proSubscription) return;
+    track.$.settingsPanel.plans.cancelSubscription({
+      plan: proSubscription.plan,
+      recurring: proSubscription.recurring,
+    });
+  }, [open, proSubscription]);
 
   const downgrade = useAsyncCallback(async () => {
     try {
+      const account = authService.session.account$.value;
+      const prevRecurring = subscription.pro$.value?.recurring;
       setIsMutating(true);
       await subscription.cancelSubscription(idempotencyKey);
       subscription.revalidate();
@@ -34,17 +50,34 @@ export const CancelAction = ({
       // refresh idempotency key
       setIdempotencyKey(nanoid());
       onOpenChange(false);
-      mixpanel.track('ChangePlanSucceeded', {
-        segment: 'settings panel',
-        module: 'pricing plan list',
-        control: 'plan cancel action',
-        type: subscription.pro$.value?.plan,
-        category: subscription.pro$.value?.recurring,
-      });
+      const proSubscription = subscription.pro$.value;
+      if (proSubscription) {
+        track.$.settingsPanel.plans.confirmCancelingSubscription({
+          plan: proSubscription.plan,
+          recurring: proSubscription.recurring,
+        });
+      }
+      if (account && prevRecurring) {
+        downgradeNotify(
+          getDowngradeQuestionnaireLink({
+            email: account.email ?? '',
+            id: account.id,
+            name: account.info?.name ?? '',
+            plan: SubscriptionPlan.Pro,
+            recurring: prevRecurring,
+          })
+        );
+      }
     } finally {
       setIsMutating(false);
     }
-  }, [subscription, idempotencyKey, onOpenChange]);
+  }, [
+    authService.session.account$.value,
+    subscription,
+    idempotencyKey,
+    onOpenChange,
+    downgradeNotify,
+  ]);
 
   return (
     <>
@@ -86,13 +119,13 @@ export const ResumeAction = ({
       // refresh idempotency key
       setIdempotencyKey(nanoid());
       onOpenChange(false);
-      mixpanel.track('ChangePlanSucceeded', {
-        segment: 'settings panel',
-        module: 'pricing plan list',
-        control: 'plan resume action',
-        type: subscription.pro$.value?.plan,
-        category: subscription.pro$.value?.recurring,
-      });
+      const proSubscription = subscription.pro$.value;
+      if (proSubscription) {
+        track.$.settingsPanel.plans.confirmResumingSubscription({
+          plan: proSubscription.plan,
+          recurring: proSubscription.recurring,
+        });
+      }
     } finally {
       setIsMutating(false);
     }

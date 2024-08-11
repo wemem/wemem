@@ -28,7 +28,8 @@ export class ChatPanel extends WithDisposable(ShadowlessElement) {
     .chat-panel-container {
       display: flex;
       flex-direction: column;
-      padding: 0 12px;
+      padding: 0 16px;
+      padding-top: 8px;
       height: 100%;
     }
 
@@ -90,13 +91,12 @@ export class ChatPanel extends WithDisposable(ShadowlessElement) {
       align-items: center;
       color: var(--affine-text-secondary-color);
       font-size: 12px;
+      user-select: none;
     }
   `;
 
   private readonly _chatMessages: Ref<ChatPanelMessages> =
     createRef<ChatPanelMessages>();
-
-  private _chatSessionId = '';
 
   private _resettingCounter = 0;
 
@@ -107,7 +107,7 @@ export class ChatPanel extends WithDisposable(ShadowlessElement) {
       const { doc } = this;
 
       const [histories, actions] = await Promise.all([
-        AIProvider.histories?.chats(doc.collection.id, doc.id),
+        AIProvider.histories?.chats(doc.collection.id, doc.id, { fork: false }),
         AIProvider.histories?.actions(doc.collection.id, doc.id),
       ]);
 
@@ -115,9 +115,12 @@ export class ChatPanel extends WithDisposable(ShadowlessElement) {
 
       const items: ChatItem[] = actions ? [...actions] : [];
 
-      if (histories?.[0]) {
-        this._chatSessionId = histories[0].sessionId;
-        items.push(...histories[0].messages);
+      if (histories?.at(-1)) {
+        const history = histories.at(-1);
+        if (!history) return;
+        this.chatContextValue.chatSessionId = history.sessionId;
+        items.push(...history.messages);
+        AIProvider.LAST_ROOT_SESSION_ID = history.sessionId;
       }
 
       this.chatContextValue = {
@@ -152,6 +155,7 @@ export class ChatPanel extends WithDisposable(ShadowlessElement) {
     status: 'idle',
     error: null,
     markdown: '',
+    chatSessionId: null,
   };
 
   private readonly _cleanupHistories = async () => {
@@ -169,13 +173,14 @@ export class ChatPanel extends WithDisposable(ShadowlessElement) {
       })
     ) {
       await AIProvider.histories?.cleanup(this.doc.collection.id, this.doc.id, [
-        this._chatSessionId,
+        this.chatContextValue.chatSessionId ?? '',
         ...(
           this.chatContextValue.items.filter(
             item => 'sessionId' in item
           ) as ChatAction[]
         ).map(item => item.sessionId),
       ]);
+      this.chatContextValue.chatSessionId = null;
       notification.toast('History cleared');
       this._resetItems();
     }
@@ -183,6 +188,7 @@ export class ChatPanel extends WithDisposable(ShadowlessElement) {
 
   protected override updated(_changedProperties: PropertyValues) {
     if (_changedProperties.has('doc')) {
+      this.chatContextValue.chatSessionId = null;
       this._resetItems();
     }
   }

@@ -1,16 +1,19 @@
 import { notify } from '@affine/component';
 import { AuthInput, ModalHeader } from '@affine/component/auth-components';
 import { Button } from '@affine/component/ui/button';
+import { authAtom } from '@affine/core/atoms';
 import { useAsyncCallback } from '@affine/core/hooks/affine-async-hooks';
+import { track } from '@affine/core/mixpanel';
 import { Trans, useI18n } from '@affine/i18n';
-import { ArrowDownBigIcon } from '@blocksuite/icons/rc';
+import { ArrowRightBigIcon } from '@blocksuite/icons/rc';
 import { useLiveData, useService } from '@toeverything/infra';
+import { cssVar } from '@toeverything/theme';
+import { useAtomValue } from 'jotai';
 import type { FC } from 'react';
 import { useCallback, useEffect, useState } from 'react';
 import { useSearchParams } from 'react-router-dom';
 
 import { AuthService } from '../../../modules/cloud';
-import { mixpanel } from '../../../utils';
 import { emailRegex } from '../../../utils/email-regex';
 import type { AuthPanelProps } from './index';
 import { OAuth } from './oauth';
@@ -34,6 +37,7 @@ export const SignIn: FC<AuthPanelProps> = ({
   const [verifyToken, challenge] = useCaptcha();
 
   const [isValidEmail, setIsValidEmail] = useState(true);
+  const { openModal } = useAtomValue(authAtom);
 
   useEffect(() => {
     const timeout = setInterval(() => {
@@ -45,7 +49,7 @@ export const SignIn: FC<AuthPanelProps> = ({
     };
   }, [authService]);
   const loginStatus = useLiveData(authService.session.status$);
-  if (loginStatus === 'authenticated') {
+  if (loginStatus === 'authenticated' && openModal) {
     onSignedIn?.();
   }
 
@@ -71,9 +75,7 @@ export const SignIn: FC<AuthPanelProps> = ({
           if (hasPassword) {
             setAuthState('signInWithPassword');
           } else {
-            mixpanel.track_forms('SignIn', 'Email', {
-              email,
-            });
+            track.$.$.auth.signIn();
             await authService.sendEmailMagicLink(
               email,
               verifyToken,
@@ -89,9 +91,7 @@ export const SignIn: FC<AuthPanelProps> = ({
             challenge,
             searchParams.get('redirect_uri')
           );
-          mixpanel.track_forms('SignUp', 'Email', {
-            email,
-          });
+          track.$.$.auth.signUp();
           setAuthState('afterSignUpSendEmail');
         }
       }
@@ -146,21 +146,13 @@ export const SignIn: FC<AuthPanelProps> = ({
 
         {verifyToken ? (
           <Button
+            style={{ width: '100%' }}
             size="extraLarge"
             data-testid="continue-login-button"
             block
             loading={isMutating}
-            icon={
-              <ArrowDownBigIcon
-                width={20}
-                height={20}
-                style={{
-                  transform: 'rotate(-90deg)',
-                  color: 'var(--affine-blue)',
-                }}
-              />
-            }
-            iconPosition="end"
+            suffix={<ArrowRightBigIcon />}
+            suffixStyle={{ width: 20, height: 20, color: cssVar('blue') }}
             onClick={onContinue}
           >
             {t['com.affine.auth.sign.email.continue']()}

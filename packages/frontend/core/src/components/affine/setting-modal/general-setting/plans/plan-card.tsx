@@ -1,6 +1,8 @@
-import { Button } from '@affine/component/ui/button';
+import { Button, type ButtonProps } from '@affine/component/ui/button';
 import { Tooltip } from '@affine/component/ui/tooltip';
+import { generateSubscriptionCallbackLink } from '@affine/core/hooks/affine/use-subscription-notify';
 import { useAsyncCallback } from '@affine/core/hooks/affine-async-hooks';
+import { track } from '@affine/core/mixpanel';
 import { AuthService, SubscriptionService } from '@affine/core/modules/cloud';
 import { popupWindow } from '@affine/core/utils';
 import type { SubscriptionRecurring } from '@affine/graphql';
@@ -9,14 +11,12 @@ import { Trans, useI18n } from '@affine/i18n';
 import { DoneIcon } from '@blocksuite/icons/rc';
 import { useLiveData, useService } from '@toeverything/infra';
 import clsx from 'clsx';
-import { useAtom, useSetAtom } from 'jotai';
+import { useSetAtom } from 'jotai';
 import { nanoid } from 'nanoid';
-import type { HTMLAttributes, PropsWithChildren } from 'react';
+import type { PropsWithChildren } from 'react';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 
-import { openPaymentDisableAtom } from '../../../../../atoms';
 import { authAtom } from '../../../../../atoms/index';
-import { mixpanel } from '../../../../../utils';
 import { CancelAction, ResumeAction } from './actions';
 import type { DynamicPrice, FixedPrice } from './cloud-plans';
 import { ConfirmLoadingModal } from './modals';
@@ -179,7 +179,6 @@ const CurrentPlan = () => {
 const Downgrade = ({ disabled }: { disabled?: boolean }) => {
   const t = useI18n();
   const [open, setOpen] = useState(false);
-  const subscription = useService(SubscriptionService).subscription;
 
   const tooltipContent = disabled
     ? t['com.affine.payment.downgraded-tooltip']()
@@ -187,14 +186,7 @@ const Downgrade = ({ disabled }: { disabled?: boolean }) => {
 
   const handleClick = useCallback(() => {
     setOpen(true);
-    mixpanel.track('PlanChangeStarted', {
-      segment: 'settings panel',
-      module: 'pricing plan list',
-      control: 'billing cancel action',
-      type: subscription.pro$.value?.plan,
-      category: subscription.pro$.value?.recurring,
-    });
-  }, [subscription.pro$.value?.plan, subscription.pro$.value?.recurring]);
+  }, []);
 
   return (
     <CancelAction open={open} onOpenChange={setOpen}>
@@ -202,7 +194,7 @@ const Downgrade = ({ disabled }: { disabled?: boolean }) => {
         <div className={styles.planAction}>
           <Button
             className={styles.planAction}
-            type="primary"
+            variant="primary"
             onClick={handleClick}
             disabled={disabled}
           >
@@ -233,14 +225,13 @@ const BookDemo = ({ plan }: { plan: SubscriptionPlan }) => {
       href={url}
       target="_blank"
       rel="noreferrer"
-      onClick={() => {
-        mixpanel.track('Button', {
-          resolve: 'BookDemo',
-          url,
-        });
-      }}
     >
-      <Button className={styles.planAction} type="primary">
+      <Button
+        className={styles.planAction}
+        variant="primary"
+        data-event-props="$.settingsPanel.billing.bookDemo"
+        data-event-args-url={url}
+      >
         {t['com.affine.payment.tell-us-use-case']()}
       </Button>
     </a>
@@ -251,8 +242,8 @@ export const Upgrade = ({
   className,
   recurring,
   children,
-  ...attrs
-}: HTMLAttributes<HTMLButtonElement> & {
+  ...btnProps
+}: ButtonProps & {
   recurring: SubscriptionRecurring;
 }) => {
   const [isMutating, setMutating] = useState(false);
@@ -260,6 +251,7 @@ export const Upgrade = ({
   const t = useI18n();
 
   const subscriptionService = useService(SubscriptionService);
+  const authService = useService(AuthService);
 
   const [idempotencyKey, setIdempotencyKey] = useState(nanoid());
 
@@ -280,42 +272,42 @@ export const Upgrade = ({
     return;
   }, [isOpenedExternalWindow, subscriptionService]);
 
-  const [, openPaymentDisableModal] = useAtom(openPaymentDisableAtom);
   const upgrade = useAsyncCallback(async () => {
-    if (!runtimeConfig.enablePayment) {
-      openPaymentDisableModal(true);
-      return;
-    }
-
     setMutating(true);
-    mixpanel.track('PlanUpgradeStarted', {
-      segment: 'settings panel',
-      module: 'pricing plan list',
-      control: 'pricing plan action',
-      type: 'cloud pro subscription',
-      category: recurring,
+    track.$.settingsPanel.plans.checkout({
+      plan: SubscriptionPlan.Pro,
+      recurring: recurring,
     });
     const link = await subscriptionService.createCheckoutSession({
       recurring,
       idempotencyKey,
       plan: SubscriptionPlan.Pro, // Only support prod plan now.
       coupon: null,
-      successCallbackLink: '/upgrade-success',
+      successCallbackLink: generateSubscriptionCallbackLink(
+        authService.session.account$.value,
+        SubscriptionPlan.Pro,
+        recurring
+      ),
     });
     setMutating(false);
     setIdempotencyKey(nanoid());
     popupWindow(link);
     setOpenedExternalWindow(true);
-  }, [openPaymentDisableModal, subscriptionService, recurring, idempotencyKey]);
+  }, [
+    recurring,
+    authService.session.account$.value,
+    subscriptionService,
+    idempotencyKey,
+  ]);
 
   return (
     <Button
       className={clsx(styles.planAction, className)}
-      type="primary"
+      variant="primary"
       onClick={upgrade}
       disabled={isMutating}
       loading={isMutating}
-      {...attrs}
+      {...btnProps}
     >
       {children ?? t['com.affine.payment.upgrade']()}
     </Button>
@@ -341,12 +333,9 @@ const ChangeRecurring = ({
   const subscription = useService(SubscriptionService).subscription;
 
   const onStartChange = useCallback(() => {
-    mixpanel.track('PlanChangeStarted', {
-      segment: 'settings panel',
-      module: 'pricing plan list',
-      control: 'plan resume action',
-      type: 'cloud pro subscription',
-      category: to,
+    track.$.settingsPanel.plans.changeSubscriptionRecurring({
+      plan: SubscriptionPlan.Pro,
+      recurring: to,
     });
     setOpen(true);
   }, [to]);
@@ -375,7 +364,7 @@ const ChangeRecurring = ({
     <>
       <Button
         className={styles.planAction}
-        type="primary"
+        variant="primary"
         onClick={onStartChange}
         disabled={disabled || isMutating}
         loading={isMutating}
@@ -409,7 +398,7 @@ const SignUpAction = ({ children }: PropsWithChildren) => {
     <Button
       onClick={onClickSignIn}
       className={styles.planAction}
-      type="primary"
+      variant="primary"
     >
       {children}
     </Button>
@@ -419,31 +408,28 @@ const SignUpAction = ({ children }: PropsWithChildren) => {
 const ResumeButton = () => {
   const t = useI18n();
   const [open, setOpen] = useState(false);
-  const [hovered, setHovered] = useState(false);
   const subscription = useService(SubscriptionService).subscription;
 
   const handleClick = useCallback(() => {
     setOpen(true);
-    mixpanel.track('PlanChangeStarted', {
-      segment: 'settings panel',
-      module: 'pricing plan list',
-      control: 'pricing plan action',
-      type: 'cloud pro subscription',
-      category: subscription.pro$.value?.recurring,
-    });
-  }, [subscription.pro$.value?.recurring]);
+    const pro = subscription.pro$.value;
+    if (pro) {
+      track.$.settingsPanel.plans.resumeSubscription({
+        plan: SubscriptionPlan.Pro,
+        recurring: pro.recurring,
+      });
+    }
+  }, [subscription.pro$.value]);
 
   return (
     <ResumeAction open={open} onOpenChange={setOpen}>
-      <Button
-        className={styles.planAction}
-        onMouseEnter={() => setHovered(true)}
-        onMouseLeave={() => setHovered(false)}
-        onClick={handleClick}
-      >
-        {hovered
-          ? t['com.affine.payment.resume-renewal']()
-          : t['com.affine.payment.current-plan']()}
+      <Button className={styles.resumeAction} onClick={handleClick}>
+        <span data-show-hover="true" className={clsx(styles.resumeContent)}>
+          {t['com.affine.payment.resume-renewal']()}
+        </span>
+        <span data-show-hover="false" className={clsx(styles.resumeContent)}>
+          {t['com.affine.payment.current-plan']()}
+        </span>
       </Button>
     </ResumeAction>
   );

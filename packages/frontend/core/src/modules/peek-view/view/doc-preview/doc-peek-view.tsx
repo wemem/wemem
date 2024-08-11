@@ -3,16 +3,17 @@ import { PageDetailSkeleton } from '@affine/component/page-detail-skeleton';
 import { AIProvider } from '@affine/core/blocksuite/presets/ai';
 import { AffineErrorBoundary } from '@affine/core/components/affine/affine-error-boundary';
 import { BlockSuiteEditor } from '@affine/core/components/blocksuite/block-suite-editor';
+import { EditorOutlineViewer } from '@affine/core/components/blocksuite/outline-viewer';
 import { useNavigateHelper } from '@affine/core/hooks/use-navigate-helper';
 import { PageNotFound } from '@affine/core/pages/404';
 import { DebugLogger } from '@affine/debug';
-import { Bound, type EdgelessRootService } from '@blocksuite/blocks';
-import { DisposableGroup } from '@blocksuite/global/utils';
+import { type EdgelessRootService } from '@blocksuite/blocks';
+import { Bound, DisposableGroup } from '@blocksuite/global/utils';
 import type { AffineEditorContainer } from '@blocksuite/presets';
 import type { DocMode } from '@toeverything/infra';
 import { DocsService, FrameworkScope, useService } from '@toeverything/infra';
 import clsx from 'clsx';
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 
 import { WorkbenchService } from '../../../workbench';
 import { PeekViewService } from '../../services/peek-view';
@@ -26,6 +27,10 @@ function fitViewport(
   xywh?: `[${number},${number},${number},${number}]`
 ) {
   try {
+    if (!editor.host) {
+      throw new Error('editor host is not ready');
+    }
+
     const rootService =
       editor.host.std.spec.getService<EdgelessRootService>('affine:page');
     rootService.viewport.onResize();
@@ -113,6 +118,10 @@ export function DocPeekPreview({
     if (editor) {
       editor.updateComplete
         .then(() => {
+          if (!editor.host) {
+            return;
+          }
+
           const rootService = editor.host.std.spec.getService('affine:page');
           // doc change event inside peek view should be handled by peek view
           disposableGroup.add(
@@ -134,6 +143,13 @@ export function DocPeekPreview({
       disposableGroup.dispose();
     };
   }, [editor, jumpToTag, peekView, workspace.id]);
+
+  const openOutlinePanel = useCallback(() => {
+    workbench.openDoc(docId);
+    workbench.openSidebar();
+    workbench.activeView$.value.activeSidebarTab('outline');
+    peekView.close();
+  }, [docId, peekView, workbench]);
 
   // if sync engine has been synced and the page is null, show 404 page.
   if (!doc || !resolvedMode) {
@@ -159,7 +175,13 @@ export function DocPeekPreview({
               page={doc.blockSuiteDoc}
             />
           </FrameworkScope>
+          <EditorOutlineViewer
+            editor={editor}
+            show={resolvedMode === 'page'}
+            openOutlinePanel={openOutlinePanel}
+          />
         </Scrollable.Viewport>
+
         <Scrollable.Scrollbar />
       </Scrollable.Root>
     </AffineErrorBoundary>

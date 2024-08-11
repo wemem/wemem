@@ -1,12 +1,8 @@
-import { mixpanel } from '@affine/core/utils';
+import { mixpanel } from '@affine/core/mixpanel';
+import type { EventProps } from '@affine/core/mixpanel/types';
 import type { QuotaQuery } from '@affine/graphql';
-import type { WorkspaceScope } from '@toeverything/infra';
-import {
-  ApplicationStarted,
-  DocsService,
-  OnEvent,
-  Service,
-} from '@toeverything/infra';
+import type { GlobalContextService } from '@toeverything/infra';
+import { ApplicationStarted, OnEvent, Service } from '@toeverything/infra';
 
 import {
   AccountChanged,
@@ -15,8 +11,6 @@ import {
 } from '../../cloud';
 import { AccountLoggedOut } from '../../cloud/services/auth';
 import { UserQuotaChanged } from '../../cloud/services/user-quota';
-import { resolveRouteLinkMeta } from '../../navigation';
-import { WorkbenchService } from '../../workbench';
 
 @OnEvent(ApplicationStarted, e => e.onApplicationStart)
 @OnEvent(AccountChanged, e => e.updateIdentity)
@@ -25,27 +19,19 @@ import { WorkbenchService } from '../../workbench';
 export class TelemetryService extends Service {
   private prevQuota: NonNullable<QuotaQuery['currentUser']>['quota'] | null =
     null;
+  private readonly disposables: (() => void)[] = [];
 
-  constructor(private readonly auth: AuthService) {
+  constructor(
+    private readonly auth: AuthService,
+    private readonly globalContextService: GlobalContextService
+  ) {
     super();
   }
 
   onApplicationStart() {
-    if (process.env.MIXPANEL_TOKEN) {
-      mixpanel.init(process.env.MIXPANEL_TOKEN || '', {
-        track_pageview: true,
-        persistence: 'localStorage',
-      });
-      mixpanel.register({
-        appVersion: runtimeConfig.appVersion,
-        environment: runtimeConfig.appBuildType,
-        editorVersion: runtimeConfig.editorVersion,
-        isSelfHosted: Boolean(runtimeConfig.isSelfHosted),
-        isDesktop: environment.isDesktop,
-      });
-    }
     const account = this.auth.session.account$.value;
     this.updateIdentity(account);
+    this.registerMiddlewares();
   }
 
   updateIdentity(account: AuthAccountInfo | null) {
@@ -74,39 +60,41 @@ export class TelemetryService extends Service {
     }
     this.prevQuota = quota;
   }
-}
 
-// get telemetry related context in Workspace scope
-export class TelemetryWorkspaceContextService extends Service {
-  constructor(private readonly provider: WorkspaceScope) {
-    super();
+  registerMiddlewares() {
+    this.disposables.push(
+      mixpanel.middleware((_event, parameters) => {
+        const extraContext = this.extractGlobalContext();
+        return {
+          ...extraContext,
+          ...parameters,
+        };
+      })
+    );
   }
 
-  getPageContext() {
-    const workbench = this.provider?.getOptional(WorkbenchService)?.workbench;
-    const docs = this.provider?.getOptional(DocsService);
+  extractGlobalContext(): EventProps {
+    const globalContext = this.globalContextService.globalContext;
+    const page = globalContext.isDoc.get()
+      ? globalContext.isTrashDoc.get()
+        ? 'trash'
+        : globalContext.docMode.get() === 'page'
+          ? 'doc'
+          : 'edgeless'
+      : globalContext.isAllDocs.get()
+        ? 'allDocs'
+        : globalContext.isTrash.get()
+          ? 'trash'
+          : globalContext.isCollection.get()
+            ? 'collection'
+            : globalContext.isTag.get()
+              ? 'tag'
+              : undefined;
+    return { page };
+  }
 
-    if (!workbench || !docs) return '';
-
-    const basename = workbench.basename$.value;
-    const path = workbench.location$.value;
-    const fullPath = basename + path.pathname + path.search + path.hash;
-    const linkMeta = resolveRouteLinkMeta(fullPath);
-    return (() => {
-      const moduleName =
-        linkMeta?.moduleName === 'doc'
-          ? docs.list.getMode(linkMeta.docId)
-          : linkMeta?.moduleName;
-      switch (moduleName) {
-        case 'page':
-          return 'page editor';
-        case 'edgeless':
-          return 'whiteboard editor';
-        case 'trash':
-          return 'trash';
-        default:
-          return 'doc library';
-      }
-    })();
+  override dispose(): void {
+    this.disposables.forEach(dispose => dispose());
+    super.dispose();
   }
 }

@@ -1,8 +1,8 @@
 import { Button, IconButton, Modal } from '@affine/component';
 import { openSettingModalAtom } from '@affine/core/atoms';
 import { useBlurRoot } from '@affine/core/hooks/use-blur-root';
+import { track } from '@affine/core/mixpanel';
 import { AuthService, SubscriptionService } from '@affine/core/modules/cloud';
-import { mixpanel } from '@affine/core/utils';
 import { Trans, useI18n } from '@affine/i18n';
 import { ArrowLeftSmallIcon } from '@blocksuite/icons/rc';
 import { useLiveData, useServices } from '@toeverything/infra';
@@ -116,11 +116,7 @@ export const AIOnboardingGeneral = () => {
       activeTab: 'plans',
       scrollAnchor: 'aiPricingPlan',
     });
-    mixpanel.track('PlansViewed', {
-      page: 'whiteboard-editor',
-      segment: 'ai onboarding',
-      module: 'general',
-    });
+    track.$.aiOnboarding.dialog.viewPlans();
     closeAndDismiss();
   }, [closeAndDismiss, setSettingModal]);
   const onPrev = useCallback(() => {
@@ -243,36 +239,26 @@ export const AIOnboardingGeneral = () => {
         >
           {isLast ? (
             <>
-              <IconButton
-                size="default"
-                icon={<ArrowLeftSmallIcon width={20} height={20} />}
-                onClick={onPrev}
-                type="plain"
-                className={styles.baseActionButton}
-              />
+              <IconButton size="20" onClick={onPrev}>
+                <ArrowLeftSmallIcon />
+              </IconButton>
               {aiSubscription ? (
                 <Button
-                  className={styles.baseActionButton}
                   size="large"
                   onClick={closeAndDismiss}
-                  type="primary"
+                  variant="primary"
                 >
                   {t['com.affine.ai-onboarding.general.get-started']()}
                 </Button>
               ) : (
                 <div className={styles.subscribeActions}>
-                  <Button
-                    className={styles.baseActionButton}
-                    size="large"
-                    onClick={goToPricingPlans}
-                  >
+                  <Button size="large" onClick={goToPricingPlans}>
                     {t['com.affine.ai-onboarding.general.purchase']()}
                   </Button>
                   <Button
-                    className={styles.baseActionButton}
                     size="large"
                     onClick={closeAndDismiss}
-                    type="primary"
+                    variant="primary"
                   >
                     {t['com.affine.ai-onboarding.general.try-for-free']()}
                   </Button>
@@ -282,21 +268,15 @@ export const AIOnboardingGeneral = () => {
           ) : (
             <>
               {isFirst ? (
-                <Button
-                  className={styles.transparentActionButton}
-                  onClick={remindLater}
-                  size="large"
-                  type="default"
-                >
+                <Button onClick={remindLater} size="large">
                   {t['com.affine.ai-onboarding.general.skip']()}
                 </Button>
               ) : (
                 <Button
-                  icon={<ArrowLeftSmallIcon />}
-                  className={styles.baseActionButton}
+                  prefix={<ArrowLeftSmallIcon />}
                   onClick={onPrev}
-                  type="plain"
                   size="large"
+                  variant="plain"
                 >
                   {t['com.affine.ai-onboarding.general.prev']()}
                 </Button>
@@ -305,12 +285,7 @@ export const AIOnboardingGeneral = () => {
                 <div>
                   {index + 1} / {list.length}
                 </div>
-                <Button
-                  className={styles.baseActionButton}
-                  size="large"
-                  type="primary"
-                  onClick={onNext}
-                >
+                <Button size="large" variant="primary" onClick={onNext}>
                   {t['com.affine.ai-onboarding.general.next']()}
                 </Button>
               </div>

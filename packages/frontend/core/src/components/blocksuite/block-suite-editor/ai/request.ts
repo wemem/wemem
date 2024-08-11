@@ -1,4 +1,5 @@
 import { AIProvider } from '@affine/core/blocksuite/presets/ai';
+import type { ForkChatSessionInput } from '@affine/graphql';
 import { assertExists } from '@blocksuite/global/utils';
 import { partition } from 'lodash-es';
 
@@ -22,6 +23,9 @@ export type TextToTextOptions = {
   stream?: boolean;
   signal?: AbortSignal;
   retry?: boolean;
+  workflow?: boolean;
+  isRootSession?: boolean;
+  postfix?: (text: string) => string;
 };
 
 export type ToImageOptions = TextToTextOptions & {
@@ -40,6 +44,42 @@ export function createChatSession({
     docId,
     promptName: 'chat:gpt4',
   });
+}
+
+export function forkCopilotSession(forkChatSessionInput: ForkChatSessionInput) {
+  return client.forkSession(forkChatSessionInput);
+}
+
+async function resizeImage(blob: Blob | File): Promise<Blob | null> {
+  let src = '';
+  try {
+    src = URL.createObjectURL(blob);
+    const img = new Image();
+    img.src = src;
+    await new Promise(resolve => {
+      img.onload = resolve;
+    });
+
+    const canvas = document.createElement('canvas');
+    // keep aspect ratio
+    const scale = Math.min(1024 / img.width, 1024 / img.height);
+    canvas.width = Math.floor(img.width * scale);
+    canvas.height = Math.floor(img.height * scale);
+
+    const ctx = canvas.getContext('2d');
+    if (ctx) {
+      ctx.imageSmoothingQuality = 'high';
+      ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+      return new Promise(resolve =>
+        canvas.toBlob(blob => resolve(blob), 'image/jpeg', 0.8)
+      );
+    }
+  } catch (e) {
+    console.error(e);
+  } finally {
+    if (src) URL.revokeObjectURL(src);
+  }
+  return null;
 }
 
 async function createSessionMessage({
@@ -75,17 +115,17 @@ async function createSessionMessage({
       attachment => typeof attachment === 'string'
     ) as [string[], (Blob | File)[]];
     options.attachments = stringAttachments;
-    options.blobs = await Promise.all(
-      blobs.map(async blob => {
-        if (blob instanceof File) {
-          return blob;
-        } else {
-          return new File([blob], sessionId, {
-            type: blob.type,
+    options.blobs = (
+      await Promise.all(
+        blobs.map(resizeImage).map(async blob => {
+          const file = await blob;
+          if (!file) return null;
+          return new File([file], sessionId, {
+            type: file.type,
           });
-        }
-      })
-    );
+        })
+      )
+    ).filter(Boolean) as File[];
   }
   if (retry)
     return {
@@ -111,6 +151,9 @@ export function textToText({
   signal,
   timeout = TIMEOUT,
   retry = false,
+  workflow = false,
+  isRootSession = false,
+  postfix,
 }: TextToTextOptions) {
   let _sessionId: string;
   let _messageId: string | undefined;
@@ -139,11 +182,17 @@ export function textToText({
           _messageId = message.messageId;
         }
 
-        const eventSource = client.chatTextStream({
-          sessionId: _sessionId,
-          messageId: _messageId,
-        });
+        const eventSource = client.chatTextStream(
+          {
+            sessionId: _sessionId,
+            messageId: _messageId,
+          },
+          workflow ? 'workflow' : undefined
+        );
         AIProvider.LAST_ACTION_SESSIONID = _sessionId;
+        if (isRootSession) {
+          AIProvider.LAST_ROOT_SESSION_ID = _sessionId;
+        }
 
         if (signal) {
           if (signal.aborted) {
@@ -154,12 +203,25 @@ export function textToText({
             eventSource.close();
           };
         }
-        for await (const event of toTextStream(eventSource, {
-          timeout,
-          signal,
-        })) {
-          if (event.type === 'message') {
-            yield event.data;
+        if (postfix) {
+          const messages: string[] = [];
+          for await (const event of toTextStream(eventSource, {
+            timeout,
+            signal,
+          })) {
+            if (event.type === 'message') {
+              messages.push(event.data);
+            }
+          }
+          yield postfix(messages.join(''));
+        } else {
+          for await (const event of toTextStream(eventSource, {
+            timeout,
+            signal,
+          })) {
+            if (event.type === 'message') {
+              yield event.data;
+            }
           }
         }
       },
@@ -193,6 +255,10 @@ export function textToText({
         }
 
         AIProvider.LAST_ACTION_SESSIONID = _sessionId;
+        if (isRootSession) {
+          AIProvider.LAST_ROOT_SESSION_ID = _sessionId;
+        }
+
         return client.chatText({
           sessionId: _sessionId,
           messageId: _messageId,
@@ -203,6 +269,8 @@ export function textToText({
 }
 
 export const listHistories = client.getHistories;
+
+export const listHistoryIds = client.getHistoryIds;
 
 // Only one image is currently being processed
 export function toImage({
@@ -217,6 +285,7 @@ export function toImage({
   signal,
   timeout = TIMEOUT,
   retry = false,
+  workflow = false,
 }: ToImageOptions) {
   let _sessionId: string;
   let _messageId: string | undefined;
@@ -241,7 +310,12 @@ export function toImage({
         _messageId = messageId;
       }
 
-      const eventSource = client.imagesStream(_sessionId, _messageId, seed);
+      const eventSource = client.imagesStream(
+        _sessionId,
+        _messageId,
+        seed,
+        workflow ? 'workflow' : undefined
+      );
       AIProvider.LAST_ACTION_SESSIONID = _sessionId;
 
       for await (const event of toTextStream(eventSource, {

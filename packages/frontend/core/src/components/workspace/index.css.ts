@@ -3,10 +3,9 @@ import { globalStyle, style } from '@vanilla-extract/css';
 export const appStyle = style({
   width: '100%',
   position: 'relative',
-  height: '100vh',
-  display: 'flex',
+  height: '100dvh',
   flexGrow: '1',
-  flexDirection: 'row',
+  display: 'flex',
   backgroundColor: cssVar('backgroundPrimaryColor'),
   selectors: {
     '&[data-is-resizing="true"]': {
@@ -42,11 +41,11 @@ globalStyle(`html[data-theme="dark"] ${appStyle}`, {
     },
   },
 });
+
 export const mainContainerStyle = style({
   position: 'relative',
   zIndex: 0,
-  // it will create stacking context to limit layer of child elements and be lower than after auto zIndex
-  width: 0,
+  width: '100%',
   display: 'flex',
   flex: 1,
   overflow: 'clip',
@@ -56,10 +55,7 @@ export const mainContainerStyle = style({
     '&[data-client-border="true"]': {
       borderRadius: 6,
       margin: '8px',
-      overflow: 'hidden',
-      // TODO(@Peng): is this performance intensive?
-      // TODO(@catsjuice): not match with design's shadow, theme missing
-      filter: 'drop-shadow(0px 0px 4px rgba(66,65,73,.14))',
+      overflow: 'clip',
       '@media': {
         print: {
           overflow: 'visible',
@@ -71,14 +67,16 @@ export const mainContainerStyle = style({
     '&[data-client-border="true"][data-side-bar-open="true"]': {
       marginLeft: 0,
     },
-    '&[data-client-border="true"]:before': {
-      content: '""',
-      position: 'absolute',
-      height: '8px',
-      width: '100%',
-      top: '-8px',
-      left: 0,
-      ['WebkitAppRegion' as string]: 'drag',
+    '&[data-client-border="true"][data-is-desktop="true"]': {
+      marginTop: 0,
+    },
+    '&[data-client-border="false"][data-is-desktop="true"][data-side-bar-open="true"]':
+      {
+        borderTopLeftRadius: 6,
+      },
+    '&[data-client-border="false"][data-is-desktop="true"]': {
+      borderTop: `0.5px solid ${cssVar('borderColor')}`,
+      borderLeft: `0.5px solid ${cssVar('borderColor')}`,
     },
     '&[data-transparent=true]': {
       backgroundColor: 'transparent',

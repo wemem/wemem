@@ -18,28 +18,42 @@ export const resolveRouteLinkMeta = (href: string) => {
       return null;
     }
 
-    // http://xxx/workspace/all/yyy
-    // to { workspaceId: '48__RTCSwASvWZxyAk3Jw', docId: '-Uge-K6SYcAbcNYfQ5U-j', blockId: 'xxxx' }
-
+    // http://---/workspace/{workspaceid}/xxx/yyy
+    // http://---/workspace/{workspaceid}/xxx
     const [_, workspaceId, moduleName, subModuleName] =
-      url.toString().match(/\/workspace\/([^/]+)\/([^#]+)(?:#(.+))?/) || [];
+      url.pathname.match(/\/workspace\/([^/]+)\/([^/]+)(?:\/([^/]+))?/) || [];
 
-    if (isRouteModulePath(moduleName)) {
-      return {
-        workspaceId,
-        moduleName,
-        subModuleName,
+    if (workspaceId) {
+      const basename = `/workspace/${workspaceId}`;
+      const pathname = url.pathname.replace(basename, '');
+      const search = url.search;
+      const hash = url.hash;
+      const location = {
+        pathname,
+        search,
+        hash,
       };
-    } else if (moduleName) {
-      // for now we assume all other cases are doc links
-      return {
-        workspaceId,
-        moduleName: 'doc' as const,
-        docId: moduleName,
-        blockId: subModuleName,
-      };
+      if (isRouteModulePath(moduleName)) {
+        return {
+          location,
+          basename,
+          workspaceId,
+          moduleName,
+          subModuleName,
+        };
+      } else if (moduleName) {
+        // for now we assume all other cases are doc links
+        return {
+          location,
+          basename,
+          workspaceId,
+          moduleName: 'doc' as const,
+          docId: moduleName,
+          blockId: hash.slice(1),
+        };
+      }
     }
-    return;
+    return null;
   } catch {
     return null;
   }
@@ -48,7 +62,8 @@ export const resolveRouteLinkMeta = (href: string) => {
 /**
  * @see /packages/frontend/core/src/router.tsx
  */
-const routeModulePaths = ['all', 'collection', 'tag', 'trash'] as const;
+export const routeModulePaths = ['all', 'collection', 'tag', 'trash'] as const;
+export type RouteModulePath = (typeof routeModulePaths)[number];
 
 const isRouteModulePath = (
   path: string

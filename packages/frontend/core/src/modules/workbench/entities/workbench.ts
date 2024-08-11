@@ -1,74 +1,123 @@
 import { Unreachable } from '@affine/env/constant';
 import { Entity, LiveData } from '@toeverything/infra';
-import type { To } from 'history';
+import { type To } from 'history';
 import { nanoid } from 'nanoid';
-import { combineLatest, map, switchMap } from 'rxjs';
 
-import { ViewScope } from '../scopes/view';
-import { ViewService } from '../services/view';
-import type { View } from './view';
+import type { WorkbenchNewTabHandler } from '../services/workbench-new-tab-handler';
+import type { WorkbenchDefaultState } from '../services/workbench-view-state';
+import { View } from './view';
 
 export type WorkbenchPosition = 'beside' | 'active' | 'head' | 'tail' | number;
 
-interface WorkbenchOpenOptions {
-  at?: WorkbenchPosition;
+type WorkbenchOpenOptions = {
+  at?: WorkbenchPosition | 'new-tab';
   replaceHistory?: boolean;
-}
+  show?: boolean; // only for new tab
+};
 
 export class Workbench extends Entity {
-  readonly views$ = new LiveData([
-    this.framework.createScope(ViewScope, { id: nanoid() }).get(ViewService)
-      .view,
-  ]);
+  constructor(
+    private readonly defaultState: WorkbenchDefaultState,
+    private readonly newTabHandler: WorkbenchNewTabHandler
+  ) {
+    super();
+  }
 
-  activeViewIndex$ = new LiveData(0);
-  activeView$ = LiveData.from(
-    combineLatest([this.views$, this.activeViewIndex$]).pipe(
-      map(([views, index]) => views[index])
-    ),
-    this.views$.value[this.activeViewIndex$.value]
+  readonly activeViewIndex$ = new LiveData(this.defaultState.activeViewIndex);
+  readonly basename$ = new LiveData(this.defaultState.basename);
+
+  readonly views$: LiveData<View[]> = new LiveData(
+    this.defaultState.views.map(meta => {
+      return this.framework.createEntity(View, {
+        id: meta.id,
+        defaultLocation: meta.path,
+        icon: meta.icon,
+        title: meta.title,
+      });
+    })
   );
 
-  basename$ = new LiveData('/');
-
-  location$ = LiveData.from(
-    this.activeView$.pipe(switchMap(view => view.location$)),
-    this.views$.value[this.activeViewIndex$.value].history.location
-  );
+  activeView$ = LiveData.computed(get => {
+    const activeIndex = get(this.activeViewIndex$);
+    const views = get(this.views$);
+    return views[activeIndex]; // todo: this could be null
+  });
+  location$ = LiveData.computed(get => {
+    return get(get(this.activeView$).location$);
+  });
+  sidebarOpen$ = new LiveData(false);
 
   active(index: number) {
     index = Math.max(0, Math.min(index, this.views$.value.length - 1));
     this.activeViewIndex$.next(index);
   }
 
+  updateBasename(basename: string) {
+    this.basename$.next(basename);
+  }
+
   createView(at: WorkbenchPosition = 'beside', defaultLocation: To) {
-    const view = this.framework
-      .createScope(ViewScope, { id: nanoid(), defaultLocation })
-      .get(ViewService).view;
+    const view = this.framework.createEntity(View, {
+      id: nanoid(),
+      defaultLocation,
+    });
     const newViews = [...this.views$.value];
     newViews.splice(this.indexAt(at), 0, view);
     this.views$.next(newViews);
-    return newViews.indexOf(view);
+    const index = newViews.indexOf(view);
+    this.active(index);
+    return index;
   }
 
-  open(
-    to: To,
-    { at = 'active', replaceHistory = false }: WorkbenchOpenOptions = {}
-  ) {
-    let view = this.viewAt(at);
-    if (!view) {
-      const newIndex = this.createView(at, to);
-      view = this.viewAt(newIndex);
-      if (!view) {
-        throw new Unreachable();
-      }
+  openSidebar() {
+    this.sidebarOpen$.next(true);
+  }
+
+  closeSidebar() {
+    this.sidebarOpen$.next(false);
+  }
+
+  toggleSidebar() {
+    this.sidebarOpen$.next(!this.sidebarOpen$.value);
+  }
+
+  open(to: To, option: WorkbenchOpenOptions = {}) {
+    if (option.at === 'new-tab') {
+      this.newTab(to, {
+        show: option.show,
+      });
     } else {
-      if (replaceHistory) {
-        view.history.replace(to);
+      const { at = 'active', replaceHistory = false } = option;
+      let view = this.viewAt(at);
+      if (!view) {
+        const newIndex = this.createView(at, to);
+        view = this.viewAt(newIndex);
+        if (!view) {
+          throw new Unreachable();
+        }
       } else {
-        view.history.push(to);
+        if (replaceHistory) {
+          view.history.replace(to);
+        } else {
+          view.history.push(to);
+        }
       }
     }
+  }
+
+  newTab(
+    to: To,
+    {
+      show,
+    }: {
+      show?: boolean;
+    } = {}
+  ) {
+    this.newTabHandler({
+      basename: this.basename$.value,
+      to,
+      show: show ?? true,
+    });
   }
 
   openDoc(

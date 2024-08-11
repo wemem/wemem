@@ -42,16 +42,7 @@ export class OpenAIProvider
   readonly availableModels = [
     // text to text
     'gpt-4o',
-    'gpt-4-vision-preview',
-    'gpt-4-turbo-preview',
-    'gpt-3.5-turbo',
-    // 千问
-    'qwen-turbo',
-    'qwen-plus',
-    'qwen-plus-0624',
-    'qwen-max',
-    // 豆包
-    'ep-20240704082349-bsvgs',
+    'gpt-4o-mini',
     // embeddings
     'text-embedding-3-large',
     'text-embedding-3-small',
@@ -61,6 +52,13 @@ export class OpenAIProvider
     'text-moderation-stable',
     // text to image
     'dall-e-3',
+    // 千问
+    'qwen-turbo',
+    'qwen-plus',
+    'qwen-plus-0624',
+    'qwen-max',
+    // 豆包
+    'ep-20240704082349-bsvgs',
   ];
 
   private readonly logger = new Logger(OpenAIProvider.type);
@@ -215,7 +213,7 @@ export class OpenAIProvider
   // ====== text to text ======
   async generateText(
     messages: PromptMessage[],
-    model: string = 'gpt-3.5-turbo',
+    model: string = 'gpt-4o-mini',
     options: CopilotChatOptions = {}
   ): Promise<string> {
     this.checkParams({ messages, model, options });
@@ -244,10 +242,11 @@ export class OpenAIProvider
 
   async *generateTextStream(
     messages: PromptMessage[],
-    model: string = 'gpt-3.5-turbo',
+    model: string = 'gpt-4o-mini',
     options: CopilotChatOptions = {}
   ): AsyncIterable<string> {
     this.checkParams({ messages, model, options });
+
     try {
       const result = await this.instance.chat.completions.create(
         {

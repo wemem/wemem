@@ -153,7 +153,7 @@ export const SubscriptionPageListDisplayMenu = () => {
     >
       <Button
         iconPosition="end"
-        icon={<ArrowDownSmallIcon className={styles.arrowDownSmallIcon} />}
+        icon={<ArrowDownSmallIcon />}
         className={styles.headerDisplayButton}
         data-testid="page-display-menu-button"
       >

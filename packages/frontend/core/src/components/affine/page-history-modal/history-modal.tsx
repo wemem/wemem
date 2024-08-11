@@ -4,6 +4,7 @@ import { Button, IconButton } from '@affine/component/ui/button';
 import { Modal, useConfirmModal } from '@affine/component/ui/modal';
 import { openSettingModalAtom } from '@affine/core/atoms';
 import { useDocCollectionPageTitle } from '@affine/core/hooks/use-block-suite-workspace-page-title';
+import { track } from '@affine/core/mixpanel';
 import { WorkspacePermissionService } from '@affine/core/modules/permissions';
 import { WorkspaceQuotaService } from '@affine/core/modules/quota';
 import { i18nTime, Trans, useI18n } from '@affine/i18n';
@@ -32,7 +33,6 @@ import {
 import { encodeStateAsUpdate } from 'yjs';
 
 import { pageHistoryModalAtom } from '../../../atoms/page-history';
-import { mixpanel } from '../../../utils';
 import { BlockSuiteEditor } from '../../blocksuite/block-suite-editor';
 import { StyledEditorModeSwitch } from '../../blocksuite/block-suite-mode-switch/style';
 import {
@@ -108,18 +108,17 @@ const HistoryEditorPreview = ({
   mode,
   title,
 }: HistoryEditorPreviewProps) => {
-  const onSwitchToPageMode = useCallback(() => {
-    mixpanel.track('Button', {
-      resolve: 'HistorySwitchToPageMode',
-    });
-    onModeChange('page');
-  }, [onModeChange]);
-  const onSwitchToEdgelessMode = useCallback(() => {
-    mixpanel.track('Button', {
-      resolve: 'HistorySwitchToEdgelessMode',
-    });
-    onModeChange('edgeless');
-  }, [onModeChange]);
+  const { onSwitchToPageMode, onSwitchToEdgelessMode } = useMemo(
+    () => ({
+      onSwitchToPageMode: () => {
+        onModeChange('page');
+      },
+      onSwitchToEdgelessMode: () => {
+        onModeChange('edgeless');
+      },
+    }),
+    [onModeChange]
+  );
 
   const content = useMemo(() => {
     return (
@@ -129,11 +128,15 @@ const HistoryEditorPreview = ({
             <PageSwitchItem
               data-testid="switch-page-mode-button"
               active={mode === 'page'}
+              data-event-props="$.docHistory.$.switchPageMode"
+              data-event-args-type="page"
               onClick={onSwitchToPageMode}
             />
             <EdgelessSwitchItem
               data-testid="switch-edgeless-mode-button"
               active={mode === 'edgeless'}
+              data-event-props="$.docHistory.$.switchPageMode"
+              data-event-args-type="edgeless"
               onClick={onSwitchToEdgelessMode}
             />
           </StyledEditorModeSwitch>
@@ -229,9 +232,7 @@ const PlanPrompt = () => {
       activeTab: 'plans',
       scrollAnchor: 'cloudPricingPlan',
     });
-    mixpanel.track('PlansViewed', {
-      segment: 'doc history',
-    });
+    track.$.docHistory.$.viewPlans();
   }, [setSettingModalAtom]);
 
   const t = useI18n();
@@ -251,11 +252,9 @@ const PlanPrompt = () => {
             : '' /* TODO(@catsjuice): loading UI */
         }
 
-        <IconButton
-          size="small"
-          icon={<CloseIcon />}
-          onClick={closeFreePlanPrompt}
-        />
+        <IconButton onClick={closeFreePlanPrompt}>
+          <CloseIcon />
+        </IconButton>
       </div>
     );
   }, [closeFreePlanPrompt, isProWorkspace, t]);
@@ -393,7 +392,7 @@ const PageHistoryList = ({
           })}
           {onLoadMore ? (
             <Button
-              type="plain"
+              variant="plain"
               loading={loadingMore}
               disabled={loadingMore}
               className={styles.historyItemLoadMore}
@@ -478,10 +477,10 @@ const PageHistoryManager = ({
         ['data-testid' as string]: 'confirm-restore-history-modal',
         style: { padding: '20px 26px' },
       },
+      confirmText: t['com.affine.history.confirm-restore-modal.restore'](),
       confirmButtonOptions: {
-        type: 'primary',
+        variant: 'primary',
         ['data-testid' as string]: 'confirm-restore-history-button',
-        children: t['com.affine.history.confirm-restore-modal.restore'](),
       },
       onConfirm: handleRestore,
     });
@@ -520,12 +519,12 @@ const PageHistoryManager = ({
       ) : null}
 
       <div className={styles.historyFooter}>
-        <Button type="plain" onClick={onClose}>
+        <Button onClick={onClose}>
           {t['com.affine.history.back-to-page']()}
         </Button>
         <div className={styles.spacer} />
         <Button
-          type="primary"
+          variant="primary"
           onClick={onConfirmRestore}
           disabled={isMutating || !activeVersion}
         >
@@ -564,9 +563,7 @@ export const GlobalPageHistoryModal = () => {
   const workspace = useService(WorkspaceService).workspace;
   const handleOpenChange = useCallback(
     (open: boolean) => {
-      mixpanel.track('Button', {
-        resolve: open ? 'OpenPageHistoryModal' : 'ClosePageHistoryModal',
-      });
+      track.$.docHistory.$[open ? 'open' : 'close']();
       setState(prev => ({
         ...prev,
         open,

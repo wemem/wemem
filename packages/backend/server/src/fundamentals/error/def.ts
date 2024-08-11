@@ -254,6 +254,10 @@ export const USER_FRIENDLY_ERRORS = {
     message: ({ min, max }) =>
       `Password must be between ${min} and ${max} characters`,
   },
+  password_required: {
+    type: 'invalid_input',
+    message: 'Password is required.',
+  },
   wrong_sign_in_method: {
     type: 'invalid_input',
     message:
@@ -460,7 +464,7 @@ export const USER_FRIENDLY_ERRORS = {
     type: 'internal_server_error',
     args: { provider: 'string', kind: 'string', message: 'string' },
     message: ({ provider, kind, message }) =>
-      `Provider ${provider} failed with ${kind} error: ${message || 'unknown'}.`,
+      `Provider ${provider} failed with ${kind} error: ${message || 'unknown'}`,
   },
 
   // Quota & Limit errors

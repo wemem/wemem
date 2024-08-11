@@ -10,7 +10,7 @@ import * as VisuallyHidden from '@radix-ui/react-visually-hidden';
 import { assignInlineVars } from '@vanilla-extract/dynamic';
 import clsx from 'clsx';
 import type { CSSProperties } from 'react';
-import { forwardRef, useCallback } from 'react';
+import { forwardRef, useCallback, useEffect, useState } from 'react';
 
 import type { IconButtonProps } from '../button';
 import { IconButton } from '../button';
@@ -28,7 +28,6 @@ export interface ModalProps extends DialogProps {
    * @default false
    */
   persistent?: boolean;
-
   portalOptions?: DialogPortalProps;
   contentOptions?: DialogContentProps;
   overlayOptions?: DialogOverlayProps;
@@ -46,19 +45,79 @@ const getVar = (style: number | string = '', defaultValue = '') => {
     : defaultValue;
 };
 
-export const Modal = forwardRef<HTMLDivElement, ModalProps>(
-  (
-    {
+/**
+ * This component is a hack to support `startViewTransition` in the modal.
+ */
+class ModalTransitionContainer extends HTMLElement {
+  pendingTransitionNodes: Node[] = [];
+  animationFrame: number | null = null;
+
+  /**
+   * This method will be called when the modal is removed from the DOM
+   * https://github.com/facebook/react/blob/e4b4aac2a01b53f8151ca85148873096368a7de2/packages/react-dom-bindings/src/client/ReactFiberConfigDOM.js#L833
+   */
+  override removeChild<T extends Node>(child: T): T {
+    if (typeof document.startViewTransition === 'function') {
+      this.pendingTransitionNodes.push(child);
+      this.requestTransition();
+      return child;
+    } else {
+      // eslint-disable-next-line unicorn/prefer-dom-node-remove
+      return super.removeChild(child);
+    }
+  }
+
+  /**
+   * We collect all the nodes that are removed in the single frame and then trigger the transition.
+   */
+  private requestTransition() {
+    if (this.animationFrame) {
+      cancelAnimationFrame(this.animationFrame);
+    }
+
+    this.animationFrame = requestAnimationFrame(() => {
+      if (typeof document.startViewTransition === 'function') {
+        const nodes = this.pendingTransitionNodes;
+        document.startViewTransition(() => {
+          nodes.forEach(child => {
+            // eslint-disable-next-line unicorn/prefer-dom-node-remove
+            super.removeChild(child);
+          });
+        });
+        this.pendingTransitionNodes = [];
+      }
+    });
+  }
+}
+
+let defined = false;
+function createContainer() {
+  if (!defined) {
+    customElements.define(
+      'modal-transition-container',
+      ModalTransitionContainer
+    );
+    defined = true;
+  }
+  const container = new ModalTransitionContainer();
+  document.body.append(container);
+  return container;
+}
+
+export const ModalInner = forwardRef<HTMLDivElement, ModalProps>(
+  (props, ref) => {
+    const {
+      modal,
+      portalOptions,
+      open,
+      onOpenChange,
       width,
       height,
       minHeight = 194,
       title,
       description,
       withoutCloseButton = false,
-      modal,
       persistent,
-
-      portalOptions,
       contentOptions: {
         style: contentStyle,
         className: contentClassName,
@@ -68,37 +127,69 @@ export const Modal = forwardRef<HTMLDivElement, ModalProps>(
       } = {},
       overlayOptions: {
         className: overlayClassName,
+        style: overlayStyle,
         ...otherOverlayOptions
       } = {},
-      closeButtonOptions = {},
+      closeButtonOptions,
       children,
-      ...props
-    },
-    ref
-  ) => {
+      ...otherProps
+    } = props;
+    const { className: closeButtonClassName, ...otherCloseButtonProps } =
+      closeButtonOptions || {};
+
+    const [container, setContainer] = useState<ModalTransitionContainer | null>(
+      null
+    );
+
+    useEffect(() => {
+      const container = createContainer();
+      setContainer(container);
+      return () => {
+        setTimeout(() => {
+          container.remove();
+        }, 1000) as unknown as number;
+      };
+    }, []);
+
+    const handlePointerDownOutSide = useCallback(
+      (e: PointerDownOutsideEvent) => {
+        onPointerDownOutside?.(e);
+        persistent && e.preventDefault();
+      },
+      [onPointerDownOutside, persistent]
+    );
+
+    const handleEscapeKeyDown = useCallback(
+      (e: KeyboardEvent) => {
+        onEscapeKeyDown?.(e);
+        persistent && e.preventDefault();
+      },
+      [onEscapeKeyDown, persistent]
+    );
+
+    if (!container) {
+      return;
+    }
+
     return (
-      <Dialog.Root modal={modal} {...props}>
-        <Dialog.Portal {...portalOptions}>
+      <Dialog.Root
+        modal={modal}
+        open={open}
+        onOpenChange={onOpenChange}
+        {...otherProps}
+      >
+        <Dialog.Portal container={container} {...portalOptions}>
           <Dialog.Overlay
             className={clsx(styles.modalOverlay, overlayClassName)}
+            style={{
+              ...overlayStyle,
+            }}
             {...otherOverlayOptions}
           />
           <div data-modal={modal} className={clsx(styles.modalContentWrapper)}>
             <Dialog.Content
-              onPointerDownOutside={useCallback(
-                (e: PointerDownOutsideEvent) => {
-                  onPointerDownOutside?.(e);
-                  persistent && e.preventDefault();
-                },
-                [onPointerDownOutside, persistent]
-              )}
-              onEscapeKeyDown={useCallback(
-                (e: KeyboardEvent) => {
-                  onEscapeKeyDown?.(e);
-                  persistent && e.preventDefault();
-                },
-                [onEscapeKeyDown, persistent]
-              )}
+              onPointerDownOutside={handlePointerDownOutSide}
+              onEscapeKeyDown={handleEscapeKeyDown}
               className={clsx(styles.modalContent, contentClassName)}
               style={{
                 ...assignInlineVars({
@@ -108,17 +199,18 @@ export const Modal = forwardRef<HTMLDivElement, ModalProps>(
                 }),
                 ...contentStyle,
               }}
+              {...(description ? {} : { 'aria-describedby': undefined })}
               {...otherContentOptions}
               ref={ref}
             >
               {withoutCloseButton ? null : (
                 <Dialog.Close asChild>
                   <IconButton
-                    className={styles.closeButton}
+                    size="20"
+                    className={clsx(styles.closeButton, closeButtonClassName)}
                     aria-label="Close"
-                    type="plain"
                     data-testid="modal-close-button"
-                    {...closeButtonOptions}
+                    {...otherCloseButtonProps}
                   >
                     <CloseIcon />
                   </IconButton>
@@ -149,5 +241,14 @@ export const Modal = forwardRef<HTMLDivElement, ModalProps>(
     );
   }
 );
+
+ModalInner.displayName = 'ModalInner';
+
+export const Modal = forwardRef<HTMLDivElement, ModalProps>((props, ref) => {
+  if (!props.open) {
+    return;
+  }
+  return <ModalInner {...props} ref={ref} />;
+});
 
 Modal.displayName = 'Modal';

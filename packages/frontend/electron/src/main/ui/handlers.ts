@@ -1,18 +1,32 @@
 import { app, nativeTheme, shell } from 'electron';
 import { getLinkPreview } from 'link-preview-js';
 
-import { isMacOS } from '../../shared/utils';
 import { persistentConfig } from '../config-storage/persist';
 import { logger } from '../logger';
+import type { NamespaceHandlers } from '../type';
 import {
+  activateView,
+  addTab,
+  closeTab,
   getMainWindow,
+  getOnboardingWindow,
+  getTabsStatus,
+  getTabViewsMeta,
+  getWorkbenchMeta,
   handleWebContentsResize,
   initAndShowMainWindow,
-} from '../main-window';
-import { getOnboardingWindow } from '../onboarding';
-import type { NamespaceHandlers } from '../type';
-import { launchStage } from '../windows-manager/stage';
+  isActiveTab,
+  launchStage,
+  moveTab,
+  pingAppLayoutReady,
+  showDevTools,
+  showTab,
+  updateWorkbenchMeta,
+  updateWorkbenchViewMeta,
+} from '../windows-manager';
+import { showTabContextMenu } from '../windows-manager/context-menu';
 import { getChallengeResponse } from './challenge';
+import { uiSubjects } from './subject';
 
 export let isOnline = true;
 
@@ -27,12 +41,6 @@ export const uiHandlers = {
   },
   handleThemeChange: async (_, theme: (typeof nativeTheme)['themeSource']) => {
     nativeTheme.themeSource = theme;
-  },
-  handleSidebarVisibilityChange: async (_, visible: boolean) => {
-    if (isMacOS()) {
-      const window = await getMainWindow();
-      window?.setWindowButtonVisibility(visible);
-    }
   },
   handleMinimizeApp: async () => {
     const window = await getMainWindow();
@@ -53,8 +61,8 @@ export const uiHandlers = {
       window.maximize();
     }
   },
-  handleWindowResize: async () => {
-    await handleWebContentsResize();
+  handleWindowResize: async e => {
+    await handleWebContentsResize(e.sender);
   },
   handleCloseApp: async () => {
     app.quit();
@@ -140,5 +148,61 @@ export const uiHandlers = {
   },
   openExternal(_, url: string) {
     return shell.openExternal(url);
+  },
+
+  // tab handlers
+  isActiveTab: async e => {
+    return isActiveTab(e.sender);
+  },
+  getWorkbenchMeta: async (_, ...args: Parameters<typeof getWorkbenchMeta>) => {
+    return getWorkbenchMeta(...args);
+  },
+  updateWorkbenchMeta: async (
+    _,
+    ...args: Parameters<typeof updateWorkbenchMeta>
+  ) => {
+    return updateWorkbenchMeta(...args);
+  },
+  updateWorkbenchViewMeta: async (
+    _,
+    ...args: Parameters<typeof updateWorkbenchViewMeta>
+  ) => {
+    return updateWorkbenchViewMeta(...args);
+  },
+  getTabViewsMeta: async () => {
+    return getTabViewsMeta();
+  },
+  getTabsStatus: async () => {
+    return getTabsStatus();
+  },
+  addTab: async (_, ...args: Parameters<typeof addTab>) => {
+    await addTab(...args);
+  },
+  showTab: async (_, ...args: Parameters<typeof showTab>) => {
+    await showTab(...args);
+  },
+  closeTab: async (_, ...args: Parameters<typeof closeTab>) => {
+    await closeTab(...args);
+  },
+  activateView: async (_, ...args: Parameters<typeof activateView>) => {
+    await activateView(...args);
+  },
+  moveTab: async (_, ...args: Parameters<typeof moveTab>) => {
+    moveTab(...args);
+  },
+  toggleRightSidebar: async (_, tabId?: string) => {
+    tabId ??= getTabViewsMeta().activeWorkbenchId;
+    if (tabId) {
+      uiSubjects.onToggleRightSidebar$.next(tabId);
+    }
+  },
+  pingAppLayoutReady: async e => {
+    pingAppLayoutReady(e.sender);
+  },
+  showDevTools: async (_, ...args: Parameters<typeof showDevTools>) => {
+    return showDevTools(...args);
+  },
+  showTabContextMenu: async (_, tabKey: string, viewIndex: number) => {
+    return showTabContextMenu(tabKey, viewIndex);
   },
 } satisfies NamespaceHandlers;

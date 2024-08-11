@@ -5,17 +5,14 @@ import {
   Scrollable,
   useConfirmModal,
 } from '@affine/component';
-import {
-  AllPageListOperationsMenu,
-  PageDisplayMenu,
-} from '@affine/core/components/page-list';
 import { useAsyncCallback } from '@affine/core/hooks/affine-async-hooks';
 import { useNavigateHelper } from '@affine/core/hooks/use-navigate-helper';
+import { track } from '@affine/core/mixpanel';
 import type { Tag } from '@affine/core/modules/tag';
 import { TagService } from '@affine/core/modules/tag';
+import { isNewTabTrigger } from '@affine/core/utils';
+import type { Collection } from '@affine/env/filter';
 import { useTagI18N } from '@affine/core/modules/tag/entities/internal-tag';
-import { mixpanel } from '@affine/core/utils';
-import type { Collection, Filter } from '@affine/env/filter';
 import { useI18n } from '@affine/i18n';
 import {
   ArrowDownSmallIcon,
@@ -38,16 +35,9 @@ import {
   useEditCollectionName,
 } from '../view/use-edit-collection';
 import * as styles from './page-list-header.css';
-import * as feedStyles from './page-list-header-feed.css';
 import { PageListNewPageButton } from './page-list-new-page-button';
 
-export const PageListHeader = ({
-  currentFilters,
-  onChangeCurrentFilters,
-}: {
-  currentFilters: Filter[];
-  onChangeCurrentFilters: (filters: Filter[]) => void;
-}) => {
+export const PageListHeader = () => {
   const t = useI18n();
   const workspace = useService(WorkspaceService).workspace;
   const { importFile, createEdgeless, createPage } = usePageHelper(
@@ -61,49 +51,30 @@ export const PageListHeader = ({
   const onImportFile = useAsyncCallback(async () => {
     const options = await importFile();
     if (options.isWorkspaceFile) {
-      mixpanel.track('WorkspaceCreated', {
-        page: 'doc library',
-        segment: 'all doc',
-        module: 'doc list header',
-        control: 'import button',
-        type: 'imported workspace',
+      track.allDocs.header.actions.createWorkspace({
+        control: 'import',
       });
     } else {
-      mixpanel.track('DocCreated', {
-        page: 'doc library',
-        segment: 'all doc',
-        module: 'doc list header',
-        control: 'import button',
-        type: 'imported doc',
-        // category
+      track.allDocs.header.actions.createDoc({
+        control: 'import',
       });
     }
   }, [importFile]);
 
   return (
     <div className={styles.docListHeader}>
-      <div className={styles.docListHeaderTitle}>
-        <div>{title}</div>
-        <div className={feedStyles.listRightButton}>
-          <AllPageListOperationsMenu
-            filterList={currentFilters}
-            onChangeFilterList={onChangeCurrentFilters}
-            propertiesMeta={workspace.docCollection.meta.properties}
-          />
-        </div>
-      </div>
-      <div className={styles.rightButtonGroup}>
-        <PageListNewPageButton
-          size="small"
-          testId="new-page-button-trigger"
-          onCreateEdgeless={createEdgeless}
-          onCreatePage={createPage}
-          onImportFile={onImportFile}
-        >
-          <div className={styles.buttonText}>{t['New Page']()}</div>
-        </PageListNewPageButton>
-        <PageDisplayMenu />
-      </div>
+      <div className={styles.docListHeaderTitle}>{title}</div>
+      <PageListNewPageButton
+        size="small"
+        testId="new-page-button-trigger"
+        onCreateEdgeless={e =>
+          createEdgeless(isNewTabTrigger(e) ? 'new-tab' : true)
+        }
+        onCreatePage={e => createPage(isNewTabTrigger(e) ? 'new-tab' : true)}
+        onImportFile={onImportFile}
+      >
+        <div className={styles.buttonText}>{t['New Page']()}</div>
+      </PageListNewPageButton>
     </div>
   );
 };
@@ -147,9 +118,9 @@ export const CollectionPageListHeader = ({
         title: t['com.affine.collection.add-doc.confirm.title'](),
         description: t['com.affine.collection.add-doc.confirm.description'](),
         cancelText: t['Cancel'](),
+        confirmText: t['Confirm'](),
         confirmButtonOptions: {
-          type: 'primary',
-          children: t['Confirm'](),
+          variant: 'primary',
         },
         onConfirm: () => createAndAddDocument(createDocumentFn),
       });
@@ -180,9 +151,7 @@ export const CollectionPageListHeader = ({
           <div className={styles.titleCollectionName}>{collection.name}</div>
         </div>
         <div className={styles.rightButtonGroup}>
-          <Button className={styles.addPageButton} onClick={handleEdit}>
-            {t['Edit']()}
-          </Button>
+          <Button onClick={handleEdit}>{t['Edit']()}</Button>
           <PageListNewPageButton
             size="small"
             testId="new-page-button-trigger"
@@ -278,12 +247,9 @@ export const TagPageListHeader = ({
             </div>
           </Menu>
         </div>
-        <div className={feedStyles.listRightButton}>
-          <Button className={styles.addPageButton} onClick={handleClick}>
-            {t['com.affine.editCollection.saveCollection']()}
-          </Button>
-          <PageDisplayMenu />
-        </div>
+        <Button onClick={handleClick}>
+          {t['com.affine.editCollection.saveCollection']()}
+        </Button>
       </div>
     </>
   );

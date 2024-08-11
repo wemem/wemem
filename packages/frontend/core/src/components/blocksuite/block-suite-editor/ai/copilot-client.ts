@@ -4,8 +4,10 @@ import {
   createCopilotMessageMutation,
   createCopilotSessionMutation,
   fetcher as defaultFetcher,
+  forkCopilotSessionMutation,
   getBaseUrl,
   getCopilotHistoriesQuery,
+  getCopilotHistoryIdsQuery,
   getCopilotSessionsQuery,
   GraphQLError,
   type GraphQLQuery,
@@ -23,14 +25,18 @@ import { getCurrentStore } from '@toeverything/infra';
 type OptionsField<T extends GraphQLQuery> =
   RequestOptions<T>['variables'] extends { options: infer U } ? U : never;
 
-function codeToError(code: number) {
-  switch (code) {
+function codeToError(error: UserFriendlyError) {
+  switch (error.status) {
     case 401:
       return new UnauthorizedError();
     case 402:
       return new PaymentRequiredError();
     default:
-      return new GeneralNetworkError();
+      return new GeneralNetworkError(
+        error.code
+          ? `${error.code}: ${error.message}\nIdentify: ${error.name}`
+          : undefined
+      );
   }
 }
 
@@ -40,7 +46,7 @@ export function resolveError(err: any) {
       ? new UserFriendlyError(err.extensions)
       : UserFriendlyError.fromAnyError(err);
 
-  return codeToError(standardError.status);
+  return codeToError(standardError);
 }
 
 export function handleError(src: any) {
@@ -74,6 +80,16 @@ export class CopilotClient {
       },
     });
     return res.createCopilotSession;
+  }
+
+  async forkSession(options: OptionsField<typeof forkCopilotSessionMutation>) {
+    const res = await fetcher({
+      query: forkCopilotSessionMutation,
+      variables: {
+        options,
+      },
+    });
+    return res.forkCopilotSession;
   }
 
   async createMessage(
@@ -117,6 +133,25 @@ export class CopilotClient {
     return res.currentUser?.copilot?.histories;
   }
 
+  async getHistoryIds(
+    workspaceId: string,
+    docId?: string,
+    options?: RequestOptions<
+      typeof getCopilotHistoriesQuery
+    >['variables']['options']
+  ) {
+    const res = await fetcher({
+      query: getCopilotHistoryIdsQuery,
+      variables: {
+        workspaceId,
+        docId,
+        options,
+      },
+    });
+
+    return res.currentUser?.copilot?.histories;
+  }
+
   async cleanupSessions(input: {
     workspaceId: string;
     docId: string;
@@ -149,24 +184,32 @@ export class CopilotClient {
   }
 
   // Text or image to text
-  chatTextStream({
-    sessionId,
-    messageId,
-  }: {
-    sessionId: string;
-    messageId?: string;
-  }) {
+  chatTextStream(
+    {
+      sessionId,
+      messageId,
+    }: {
+      sessionId: string;
+      messageId?: string;
+    },
+    endpoint = 'stream'
+  ) {
     const url = new URL(
-      `${this.backendUrl}/api/copilot/chat/${sessionId}/stream`
+      `${this.backendUrl}/api/copilot/chat/${sessionId}/${endpoint}`
     );
     if (messageId) url.searchParams.set('messageId', messageId);
     return new EventSource(url.toString());
   }
 
   // Text or image to images
-  imagesStream(sessionId: string, messageId?: string, seed?: string) {
+  imagesStream(
+    sessionId: string,
+    messageId?: string,
+    seed?: string,
+    endpoint = 'images'
+  ) {
     const url = new URL(
-      `${this.backendUrl}/api/copilot/chat/${sessionId}/images`
+      `${this.backendUrl}/api/copilot/chat/${sessionId}/${endpoint}`
     );
     if (messageId) {
       url.searchParams.set('messageId', messageId);

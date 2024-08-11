@@ -10,20 +10,18 @@ import type {
   SurfaceBlockModel,
 } from '@blocksuite/blocks';
 import {
-  Bound,
   DeleteIcon,
   EDGELESS_ELEMENT_TOOLBAR_WIDGET,
   EDGELESS_TEXT_BLOCK_MIN_HEIGHT,
   EDGELESS_TEXT_BLOCK_MIN_WIDTH,
   EdgelessTextBlockModel,
-  EmbedHtmlBlockSpec,
   fitContent,
   ImageBlockModel,
   InsertBelowIcon,
   NoteDisplayMode,
   ResetIcon,
 } from '@blocksuite/blocks';
-import { assertExists } from '@blocksuite/global/utils';
+import { assertExists, Bound } from '@blocksuite/global/utils';
 import type { TemplateResult } from 'lit';
 
 import { AIPenIcon, ChatWithAIIcon } from '../_common/icons';
@@ -319,7 +317,7 @@ export const responses: {
 
     const elements = ctx.get()[
       'selectedElements'
-    ] as BlockSuite.EdgelessModelType[];
+    ] as BlockSuite.EdgelessModel[];
     const data = ctx.get() as {
       node: MindMapNode;
     };
@@ -373,7 +371,7 @@ export const responses: {
     ) as SurfaceBlockModel[];
     const elements = ctx.get()[
       'selectedElements'
-    ] as BlockSuite.EdgelessModelType[];
+    ] as BlockSuite.EdgelessModel[];
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const data = ctx.get() as any;
     let newGenerated = true;
@@ -464,7 +462,7 @@ export const responses: {
 
     host.doc.transact(() => {
       edgelessRoot.doc.addBlock(
-        EmbedHtmlBlockSpec.schema.model.flavour as 'affine:embed-html',
+        'affine:embed-html',
         {
           html,
           design: 'ai:makeItReal', // as tag

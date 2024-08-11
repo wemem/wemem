@@ -1,17 +1,16 @@
 /* eslint-disable @typescript-eslint/no-non-null-assertion */
 // the adapter is to bridge the workspace rootdoc & native js bindings
-import { createFractionalIndexingSortableHelper } from '@affine/core/utils';
 import { createYProxy, type Y } from '@blocksuite/store';
 import type { WorkspaceService } from '@toeverything/infra';
 import { LiveData, Service } from '@toeverything/infra';
 import { defaultsDeep } from 'lodash-es';
 import { Observable } from 'rxjs';
 
+import type { FavoriteService, FavoriteSupportType } from '../../favorite';
 import {
   PagePropertyType,
   PageSystemPropertyId,
   type WorkspaceAffineProperties,
-  type WorkspaceFavoriteItem,
 } from './schema';
 
 const AFFINE_PROPERTIES_ID = 'affine:workspace-properties';
@@ -92,7 +91,6 @@ export class WorkspacePropertiesAdapter extends Service {
           },
         },
       },
-      favorites: {},
       pageProperties: {},
     });
   }
@@ -130,6 +128,9 @@ export class WorkspacePropertiesAdapter extends Service {
     return this.proxy.schema;
   }
 
+  /**
+   * @deprecated
+   */
   get favorites() {
     return this.proxy.favorites;
   }
@@ -154,38 +155,27 @@ export class WorkspacePropertiesAdapter extends Service {
     const pageProperties = this.pageProperties?.[id];
     pageProperties!.system[PageSystemPropertyId.Journal].value = date;
   }
+
+  /**
+   * After the user completes the migration, call this function to clear the favorite data
+   */
+  markFavoritesMigrated() {
+    this.proxy.favoritesMigrated = true;
+  }
 }
 
-export class FavoriteItemsAdapter extends Service {
+export class MigrationFavoriteItemsAdapter extends Service {
   constructor(private readonly adapter: WorkspacePropertiesAdapter) {
     super();
-    this.migrateFavorites();
-  }
-
-  readonly sorter = createFractionalIndexingSortableHelper<
-    WorkspaceFavoriteItem,
-    string
-  >(this);
-
-  static getFavItemKey(id: string, type: WorkspaceFavoriteItem['type']) {
-    return `${type}:${id}`;
   }
 
   favorites$ = this.adapter.properties$.map(() =>
     this.getItems().filter(i => i.value)
   );
 
-  orderedFavorites$ = this.adapter.properties$.map(() => {
-    const seen = new Set<string>();
-    return this.sorter.getOrderedItems().filter(item => {
-      const key = FavoriteItemsAdapter.getFavItemKey(item.id, item.type);
-      if (seen.has(key) || !item.value) {
-        return null;
-      }
-      seen.add(key);
-      return item;
-    });
-  });
+  migrated$ = this.adapter.properties$.map(
+    props => props.favoritesMigrated ?? false
+  );
 
   getItems() {
     return Object.entries(this.adapter.favorites ?? {})
@@ -193,96 +183,50 @@ export class FavoriteItemsAdapter extends Service {
       .map(([, v]) => v);
   }
 
-  get favorites() {
-    return this.adapter.favorites;
+  markFavoritesMigrated() {
+    this.adapter.markFavoritesMigrated();
+  }
+}
+
+type CompatibleFavoriteSupportType = FavoriteSupportType;
+
+/**
+ * A service written for compatibility,with the same API as old FavoriteItemsAdapter.
+ */
+export class CompatibleFavoriteItemsAdapter extends Service {
+  constructor(private readonly favoriteService: FavoriteService) {
+    super();
   }
 
-  get workspace() {
-    return this.adapter.workspaceService.workspace;
+  toggle(id: string, type: CompatibleFavoriteSupportType) {
+    this.favoriteService.favoriteList.toggle(type, id);
   }
 
-  getItemId(item: WorkspaceFavoriteItem) {
-    return FavoriteItemsAdapter.getFavItemKey(item.id, item.type);
+  isFavorite$(id: string, type: CompatibleFavoriteSupportType) {
+    return this.favoriteService.favoriteList.isFavorite$(type, id);
   }
 
-  getItemOrder(item: WorkspaceFavoriteItem) {
-    return item.order;
+  isFavorite(id: string, type: CompatibleFavoriteSupportType) {
+    return this.favoriteService.favoriteList.isFavorite$(type, id).value;
   }
 
-  setItemOrder(item: WorkspaceFavoriteItem, order: string) {
-    item.order = order;
-  }
-
-  // read from the workspace meta and migrate to the properties
-  private migrateFavorites() {
-    // only migrate if favorites is empty
-    if (Object.keys(this.favorites ?? {}).length > 0) {
-      return;
-    }
-
-    // old favorited pages
-    const oldFavorites = this.workspace.docCollection.meta.docMetas
-      .filter(meta => meta.favorite)
-      .map(meta => meta.id);
-
-    this.adapter.transact(() => {
-      for (const id of oldFavorites) {
-        this.set(id, 'doc', true);
-      }
-    });
-  }
-
-  isFavorite(id: string, type: WorkspaceFavoriteItem['type']) {
-    const existing = this.getFavoriteItem(id, type);
-    return existing?.value ?? false;
-  }
-
-  isFavorite$(id: string, type: WorkspaceFavoriteItem['type']) {
-    return this.favorites$.map(() => {
-      return this.isFavorite(id, type);
-    });
-  }
-
-  private getFavoriteItem(id: string, type: WorkspaceFavoriteItem['type']) {
-    return this.favorites?.[FavoriteItemsAdapter.getFavItemKey(id, type)];
-  }
-
-  // add or set a new fav item to the list. note the id added with prefix
-  set(
-    id: string,
-    type: WorkspaceFavoriteItem['type'],
-    value: boolean,
-    order?: string
-  ) {
-    this.adapter.ensureRootProperties();
-    if (!this.favorites) {
-      throw new Error('Favorites is not initialized');
-    }
-    const existing = this.getFavoriteItem(id, type);
-    if (!existing) {
-      this.favorites[FavoriteItemsAdapter.getFavItemKey(id, type)] = {
-        id,
-        type,
-        value: true,
-        order: order ?? this.sorter.getNewItemOrder(),
-      };
-    } else {
-      Object.assign(existing, {
-        value,
-        order: order ?? existing.order,
-      });
-    }
-  }
-
-  toggle(id: string, type: WorkspaceFavoriteItem['type']) {
-    this.set(id, type, !this.isFavorite(id, type));
-  }
-
-  remove(id: string, type: WorkspaceFavoriteItem['type']) {
-    this.adapter.ensureRootProperties();
-    const existing = this.getFavoriteItem(id, type);
-    if (existing) {
-      existing.value = false;
-    }
+  get favorites$() {
+    return this.favoriteService.favoriteList.list$.map<
+      {
+        id: string;
+        order: string;
+        type: 'doc' | 'collection';
+        value: boolean;
+      }[]
+    >(v =>
+      v
+        .filter(i => i.type === 'doc' || i.type === 'collection') // only support doc and collection
+        .map(i => ({
+          id: i.id,
+          order: '',
+          type: i.type as 'doc' | 'collection',
+          value: true,
+        }))
+    );
   }
 }

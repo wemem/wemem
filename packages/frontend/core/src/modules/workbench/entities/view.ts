@@ -2,19 +2,46 @@ import { Entity, LiveData } from '@toeverything/infra';
 import type { Location, To } from 'history';
 import { Observable } from 'rxjs';
 
-import { createIsland } from '../../../utils/island';
 import { createNavigableHistory } from '../../../utils/navigable-history';
-import type { ViewScope } from '../scopes/view';
+import type { ViewIconName } from '../constants';
+import { ViewScope } from '../scopes/view';
+import { SidebarTab } from './sidebar-tab';
 
-export class View extends Entity {
-  id = this.scope.props.id;
+export class View extends Entity<{
+  id: string;
+  defaultLocation?: To | undefined;
+  title?: string;
+  icon?: ViewIconName;
+}> {
+  scope = this.framework.createScope(ViewScope, {
+    view: this as View,
+  });
 
-  constructor(public readonly scope: ViewScope) {
+  get id() {
+    return this.props.id;
+  }
+
+  set id(id: string) {
+    this.props.id = id;
+  }
+
+  sidebarTabs$ = new LiveData<SidebarTab[]>([]);
+
+  // _activeTabId may point to a non-existent tab.
+  // In this case, we still retain the activeTabId data and wait for the non-existent tab to be mounted.
+  _activeSidebarTabId$ = new LiveData<string | null>(null);
+  activeSidebarTab$ = LiveData.computed(get => {
+    const activeTabId = get(this._activeSidebarTabId$);
+    const tabs = get(this.sidebarTabs$);
+    return tabs.length > 0
+      ? tabs.find(tab => tab.id === activeTabId) ?? tabs[0]
+      : null;
+  });
+
+  constructor() {
     super();
     this.history = createNavigableHistory({
-      initialEntries: [
-        this.scope.props.defaultLocation ?? { pathname: '/all' },
-      ],
+      initialEntries: [this.props.defaultLocation ?? { pathname: '/all' }],
       initialIndex: 0,
     });
   }
@@ -45,11 +72,10 @@ export class View extends Entity {
   );
 
   size$ = new LiveData(100);
-  /** Width of header content in px (excludes sidebar-toggle/windows button/...) */
-  headerContentWidth$ = new LiveData(1920);
 
-  header = createIsland();
-  body = createIsland();
+  title$ = new LiveData(this.props.title ?? '');
+
+  icon$ = new LiveData(this.props.icon ?? 'allDocs');
 
   push(path: To) {
     this.history.push(path);
@@ -65,5 +91,33 @@ export class View extends Entity {
 
   setSize(size?: number) {
     this.size$.next(size ?? 100);
+  }
+
+  addSidebarTab(id: string) {
+    this.sidebarTabs$.next([
+      ...this.sidebarTabs$.value,
+      this.scope.createEntity(SidebarTab, {
+        id,
+      }),
+    ]);
+    return id;
+  }
+
+  removeSidebarTab(id: string) {
+    this.sidebarTabs$.next(
+      this.sidebarTabs$.value.filter(tab => tab.id !== id)
+    );
+  }
+
+  activeSidebarTab(id: string | null) {
+    this._activeSidebarTabId$.next(id);
+  }
+
+  setTitle(title: string) {
+    this.title$.next(title);
+  }
+
+  setIcon(icon: ViewIconName) {
+    this.icon$.next(icon);
   }
 }

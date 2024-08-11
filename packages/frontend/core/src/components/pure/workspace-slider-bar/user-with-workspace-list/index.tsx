@@ -1,6 +1,7 @@
 import { Loading } from '@affine/component';
 import { Divider } from '@affine/component/ui/divider';
 import { MenuItem } from '@affine/component/ui/menu';
+import { track } from '@affine/core/mixpanel';
 import { AuthService } from '@affine/core/modules/cloud';
 import { useI18n } from '@affine/i18n';
 import { Logo1Icon } from '@blocksuite/icons/rc';
@@ -12,37 +13,24 @@ import {
 import { useSetAtom } from 'jotai';
 import { Suspense, useCallback } from 'react';
 
-import {
-  authAtom,
-  openCreateWorkspaceModalAtom,
-  openDisableCloudAlertModalAtom,
-} from '../../../../atoms';
-import { mixpanel } from '../../../../utils';
+import { authAtom, openCreateWorkspaceModalAtom } from '../../../../atoms';
 import { AddWorkspace } from './add-workspace';
 import * as styles from './index.css';
 import { UserAccountItem } from './user-account';
 import { AFFiNEWorkspaceList } from './workspace-list';
 
 export const SignInItem = () => {
-  const setDisableCloudOpen = useSetAtom(openDisableCloudAlertModalAtom);
-
   const setOpen = useSetAtom(authAtom);
 
   const t = useI18n();
 
   const onClickSignIn = useCallback(() => {
-    mixpanel.track('Button', {
-      resolve: 'SignIn',
-    });
-    if (!runtimeConfig.enableCloud) {
-      setDisableCloudOpen(true);
-    } else {
-      setOpen(state => ({
-        ...state,
-        openModal: true,
-      }));
-    }
-  }, [setOpen, setDisableCloudOpen]);
+    track.$.navigationPanel.workspaceList.signIn();
+    setOpen(state => ({
+      ...state,
+      openModal: true,
+    }));
+  }, [setOpen]);
 
   return (
     <MenuItem
@@ -88,28 +76,21 @@ const UserWithWorkspaceListInner = ({
   const isAuthenticated = session.status === 'authenticated';
 
   const setOpenCreateWorkspaceModal = useSetAtom(openCreateWorkspaceModalAtom);
-  const setDisableCloudOpen = useSetAtom(openDisableCloudAlertModalAtom);
 
   const setOpenSignIn = useSetAtom(authAtom);
 
   const openSignInModal = useCallback(() => {
-    if (!runtimeConfig.enableCloud) {
-      setDisableCloudOpen(true);
-    } else {
-      setOpenSignIn(state => ({
-        ...state,
-        openModal: true,
-      }));
-    }
-  }, [setDisableCloudOpen, setOpenSignIn]);
+    setOpenSignIn(state => ({
+      ...state,
+      openModal: true,
+    }));
+  }, [setOpenSignIn]);
 
   const onNewWorkspace = useCallback(() => {
     if (!isAuthenticated && !runtimeConfig.allowLocalWorkspace) {
       return openSignInModal();
     }
-    mixpanel.track('Button', {
-      resolve: 'NewWorkspace',
-    });
+    track.$.navigationPanel.workspaceList.createWorkspace();
     setOpenCreateWorkspaceModal('new');
     onEventEnd?.();
   }, [
@@ -119,9 +100,10 @@ const UserWithWorkspaceListInner = ({
     setOpenCreateWorkspaceModal,
   ]);
 
+  track.$.navigationPanel.workspaceList.createWorkspace();
   const onAddWorkspace = useCallback(() => {
-    mixpanel.track('Button', {
-      resolve: 'AddWorkspace',
+    track.$.navigationPanel.workspaceList.createWorkspace({
+      control: 'import',
     });
     setOpenCreateWorkspaceModal('add');
     onEventEnd?.();

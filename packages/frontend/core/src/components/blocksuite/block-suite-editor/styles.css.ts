@@ -4,12 +4,17 @@ import { style, type StyleRule } from '@vanilla-extract/css';
 export const docEditorRoot = style({
   display: 'block',
   background: cssVar('backgroundPrimaryColor'),
+  overflowX: 'clip',
 });
 
 export const affineDocViewport = style({
   display: 'flex',
   flexDirection: 'column',
   paddingBottom: '100px',
+});
+
+export const docContainer = style({
+  display: 'block',
   selectors: ['generating', 'finished', 'error'].reduce<
     NonNullable<StyleRule['selectors']>
   >((rules, state) => {
@@ -18,10 +23,6 @@ export const affineDocViewport = style({
     };
     return rules;
   }, {}),
-});
-
-export const docContainer = style({
-  display: 'block',
 });
 
 export const docEditorGap = style({

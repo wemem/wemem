@@ -6,6 +6,7 @@ import { Avatar } from '@affine/component/ui/avatar';
 import { Tooltip } from '@affine/component/ui/tooltip';
 import { WorkspaceAvatar } from '@affine/component/workspace-avatar';
 import { useWorkspaceInfo } from '@affine/core/hooks/use-workspace-info';
+import { track } from '@affine/core/mixpanel';
 import { AuthService } from '@affine/core/modules/cloud';
 import { UserFeatureService } from '@affine/core/modules/cloud/services/user-feature';
 import { UNTITLED_WORKSPACE_NAME } from '@affine/env/constant';
@@ -21,10 +22,15 @@ import {
 } from '@toeverything/infra';
 import clsx from 'clsx';
 import { useAtom } from 'jotai/react';
-import { Suspense, useCallback, useEffect, useMemo } from 'react';
+import {
+  type MouseEvent,
+  Suspense,
+  useCallback,
+  useEffect,
+  useMemo,
+} from 'react';
 
 import { authAtom } from '../../../../atoms';
-import { mixpanel } from '../../../../utils';
 import { UserPlanButton } from '../../auth/user-plan-button';
 import { useGeneralSettingList } from '../general-setting';
 import type { ActiveTab, WorkspaceSubTab } from '../types';
@@ -115,29 +121,30 @@ export const SettingSidebar = ({
   const t = useI18n();
   const loginStatus = useLiveData(useService(AuthService).session.status$);
   const generalList = useGeneralSettingList();
+  const gotoTab = useCallback(
+    (e: MouseEvent<HTMLDivElement>) => {
+      const tab = e.currentTarget.dataset.eventArg;
+      if (!tab) return;
+      track.$.settingsPanel.menu.openSettings({ to: tab });
+      onTabChange(tab as ActiveTab, null);
+    },
+    [onTabChange]
+  );
   const onAccountSettingClick = useCallback(() => {
-    mixpanel.track('AccountSettingsViewed', {
-      // page:
-      segment: 'settings panel',
-      module: 'settings menu',
-      control: 'menu item',
-    });
+    track.$.settingsPanel.menu.openSettings({ to: 'account' });
     onTabChange('account', null);
   }, [onTabChange]);
   const onWorkspaceSettingClick = useCallback(
     (subTab: WorkspaceSubTab, workspaceMetadata: WorkspaceMetadata) => {
-      mixpanel.track(`view workspace setting`, {
-        // page:
-        segment: 'settings panel',
-        module: 'settings menu',
-        control: 'menu item',
-        type: subTab,
-        workspaceId: workspaceMetadata.id,
+      track.$.settingsPanel.menu.openSettings({
+        to: 'workspace',
+        control: subTab,
       });
       onTabChange(`workspace:${subTab}`, workspaceMetadata);
     },
     [onTabChange]
   );
+
   return (
     <div className={style.settingSlideBar} data-testid="settings-sidebar">
       <div className={style.sidebarTitle}>
@@ -155,24 +162,8 @@ export const SettingSidebar = ({
               })}
               key={key}
               title={title}
-              onClick={() => {
-                if (key === 'billing') {
-                  mixpanel.track('BillingViewed', {
-                    // page:
-                    segment: 'settings panel',
-                    module: 'settings menu',
-                    control: 'menu item',
-                  });
-                } else if (key === 'plans') {
-                  mixpanel.track('PlansViewed', {
-                    // page:
-                    segment: 'settings panel',
-                    module: 'settings menu',
-                    control: 'menu item',
-                  });
-                }
-                onTabChange(key, null);
-              }}
+              data-event-arg={key}
+              onClick={gotoTab}
               data-testid={testId}
             >
               {icon({ className: 'icon' })}
@@ -196,11 +187,8 @@ export const SettingSidebar = ({
       </div>
 
       <div className={style.sidebarFooter}>
-        {runtimeConfig.enableCloud && loginStatus === 'unauthenticated' ? (
-          <SignInButton />
-        ) : null}
-
-        {runtimeConfig.enableCloud && loginStatus === 'authenticated' ? (
+        {loginStatus === 'unauthenticated' ? <SignInButton /> : null}
+        {loginStatus === 'authenticated' ? (
           <Suspense>
             <UserInfo
               onAccountSettingClick={onAccountSettingClick}

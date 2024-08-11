@@ -78,7 +78,9 @@ export const getPublicPath = (buildFlags: BuildFlags) => {
 
   if (BUILD_TYPE === 'canary') {
     return `https://dev.affineassets.com/`;
-  } else if (BUILD_TYPE === 'beta' || BUILD_TYPE === 'stable') {
+  } else if (BUILD_TYPE === 'beta') {
+    return `https://beta.affineassets.com/`;
+  } else if (BUILD_TYPE === 'stable') {
     return `https://prod.affineassets.com/`;
   }
   return publicPath;
@@ -106,19 +108,19 @@ export const createConfiguration: (
       },
       filename:
         buildFlags.mode === 'production'
-          ? 'js/[name]-[contenthash:8].js'
+          ? 'js/[name].[contenthash:8].js'
           : 'js/[name].js',
       // In some cases webpack will emit files starts with "_" which is reserved in web extension.
       chunkFilename: pathData =>
         pathData.chunk?.name === 'worker'
           ? 'js/worker.[contenthash:8].js'
           : buildFlags.mode === 'production'
-            ? 'js/chunk.[name]-[contenthash:8].js'
+            ? 'js/chunk.[name].[contenthash:8].js'
             : 'js/chunk.[name].js',
       assetModuleFilename:
         buildFlags.mode === 'production'
-          ? 'assets/[name]-[contenthash:8][ext][query]'
-          : '[name]-[contenthash:8][ext]',
+          ? 'assets/[name].[contenthash:8][ext][query]'
+          : '[name].[contenthash:8][ext]',
       devtoolModuleFilenameTemplate: 'webpack://[namespace]/[resource-path]',
       hotUpdateChunkFilename: 'hot/[id].[fullhash].js',
       hotUpdateMainFilename: 'hot/[runtime].[fullhash].json',
@@ -372,21 +374,14 @@ export const createConfiguration: (
       IN_CI ? null : new webpack.ProgressPlugin({ percentBy: 'entries' }),
       buildFlags.mode === 'development'
         ? new ReactRefreshWebpackPlugin({ overlay: false, esModule: true })
-        : new MiniCssExtractPlugin({
+        : // todo: support multiple entry points
+          new MiniCssExtractPlugin({
             filename: `[name].[contenthash:8].css`,
             ignoreOrder: true,
           }),
       new VanillaExtractPlugin(),
       new webpack.DefinePlugin({
-        'process.env': JSON.stringify({}),
-        'process.env.COVERAGE': JSON.stringify(!!buildFlags.coverage),
         'process.env.NODE_ENV': JSON.stringify(buildFlags.mode),
-        'process.env.SHOULD_REPORT_TRACE': JSON.stringify(
-          Boolean(process.env.SHOULD_REPORT_TRACE === 'true')
-        ),
-        'process.env.TRACE_REPORT_ENDPOINT': JSON.stringify(
-          process.env.TRACE_REPORT_ENDPOINT
-        ),
         'process.env.CAPTCHA_SITE_KEY': JSON.stringify(
           process.env.CAPTCHA_SITE_KEY
         ),
@@ -395,6 +390,7 @@ export const createConfiguration: (
         'process.env.MIXPANEL_TOKEN': JSON.stringify(
           process.env.MIXPANEL_TOKEN
         ),
+        'process.env.DEBUG_JOTAI': JSON.stringify(process.env.DEBUG_JOTAI),
         runtimeConfig: JSON.stringify(runtimeConfig),
       }),
       buildFlags.distribution === 'admin'
@@ -418,6 +414,9 @@ export const createConfiguration: (
         ? new WebpackS3Plugin()
         : null,
     ]),
+    stats: {
+      errorDetails: true,
+    },
 
     optimization: OptimizeOptionOptions(buildFlags),
 

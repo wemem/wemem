@@ -8,16 +8,25 @@ import {
   type DocProvider,
   type Entity,
   f,
-  type ORMClient,
   Table,
   YjsDBAdapter,
 } from '../';
+
+function incremental() {
+  let i = 0;
+  return () => i++;
+}
 
 const TEST_SCHEMA = {
   tags: {
     id: f.string().primaryKey().default(nanoid),
     name: f.string(),
     color: f.string(),
+  },
+  users: {
+    id: f.number().primaryKey().default(incremental()),
+    name: f.string(),
+    email: f.string().optional(),
   },
 } satisfies DBSchemaBuilder;
 
@@ -27,12 +36,13 @@ const docProvider: DocProvider = {
   },
 };
 
+const Client = createORMClient(TEST_SCHEMA);
 type Context = {
-  client: ORMClient<typeof TEST_SCHEMA>;
+  client: InstanceType<typeof Client>;
 };
 
 beforeEach<Context>(async t => {
-  t.client = createORMClient(TEST_SCHEMA, YjsDBAdapter, docProvider);
+  t.client = new Client(new YjsDBAdapter(TEST_SCHEMA, docProvider));
 });
 
 const test = t as TestAPI<Context>;
@@ -55,6 +65,13 @@ describe('ORM entity CRUD', () => {
     expect(tag.id).toBeDefined();
     expect(tag.name).toBe('test');
     expect(tag.color).toBe('red');
+
+    const user = client.users.create({
+      name: 'user1',
+    });
+
+    expect(typeof user.id).toBe('number');
+    expect(user.name).toBe('user1');
   });
 
   test('should be able to read entity', t => {
@@ -67,6 +84,12 @@ describe('ORM entity CRUD', () => {
 
     const tag2 = client.tags.get(tag.id);
     expect(tag2).toEqual(tag);
+
+    const user = client.users.create({
+      name: 'user1',
+    });
+    const user2 = client.users.get(user.id);
+    expect(user2).toEqual(user);
   });
 
   test('should be able to update entity', t => {
@@ -89,7 +112,7 @@ describe('ORM entity CRUD', () => {
     });
 
     // old tag should not be updated
-    expect(tag.name).not.toBe(tag2.name);
+    expect(tag.name).not.toBe(tag2!.name);
   });
 
   test('should be able to delete entity', t => {
@@ -149,6 +172,7 @@ describe('ORM entity CRUD', () => {
     const { client } = t;
 
     let tag: Entity<(typeof TEST_SCHEMA)['tags']> | null = null;
+
     const subscription1 = client.tags.get$('test').subscribe(data => {
       tag = data;
     });
@@ -188,9 +212,11 @@ describe('ORM entity CRUD', () => {
   test('should be able to subscribe to entity key list', t => {
     const { client } = t;
 
+    let callbackCount = 0;
     let keys: string[] = [];
     const subscription = client.tags.keys$().subscribe(data => {
       keys = data;
+      callbackCount++;
     });
 
     client.tags.create({
@@ -206,19 +232,176 @@ describe('ORM entity CRUD', () => {
 
     client.tags.delete('test');
     expect(keys).toStrictEqual([]);
+    expect(callbackCount).toStrictEqual(3); // init, create, delete
+
+    subscription.unsubscribe();
+  });
+
+  test('should be able to subscribe to filtered entity changes', t => {
+    const { client } = t;
+
+    let callbackCount = 0;
+    let entities: any[] = [];
+    const subscription = client.tags.find$({ name: 'test' }).subscribe(data => {
+      entities = data;
+      callbackCount++;
+    });
+
+    const tag1 = client.tags.create({
+      id: '1',
+      name: 'test',
+      color: 'red',
+    });
+
+    expect(entities).toStrictEqual([tag1]);
+
+    const tag2 = client.tags.create({
+      id: '2',
+      name: 'test',
+      color: 'blue',
+    });
+
+    expect(entities).toStrictEqual([tag1, tag2]);
+
+    client.tags.create({
+      id: '3',
+      name: 'not-test',
+      color: 'yellow',
+    });
+
+    expect(entities).toStrictEqual([tag1, tag2]);
+    expect(callbackCount).toStrictEqual(3);
+
+    client.tags.update('1', { color: 'green' });
+    expect(entities).toStrictEqual([{ ...tag1, color: 'green' }, tag2]);
+
+    client.tags.delete('1');
+    expect(entities).toStrictEqual([tag2]);
+
+    client.tags.delete('2');
+    expect(entities).toStrictEqual([]);
+
+    subscription.unsubscribe();
+  });
+
+  test('should be able to subscription to any entity changes', t => {
+    const { client } = t;
+
+    let entities: any[] = [];
+    const subscription = client.tags.find$().subscribe(data => {
+      entities = data;
+    });
+
+    const tag1 = client.tags.create({
+      id: '1',
+      name: 'tag1',
+      color: 'red',
+    });
+
+    expect(entities).toStrictEqual([tag1]);
+
+    const tag2 = client.tags.create({
+      id: '2',
+      name: 'tag2',
+      color: 'blue',
+    });
+
+    expect(entities).toStrictEqual([tag1, tag2]);
 
     subscription.unsubscribe();
   });
 
   test('can not use reserved keyword as field name', () => {
-    const schema = {
-      tags: {
-        $$KEY: f.string().primaryKey().default(nanoid),
-      },
-    };
-
-    expect(() => createORMClient(schema, YjsDBAdapter, docProvider)).toThrow(
-      "[Table(tags)]: Field '$$KEY' is reserved keyword and can't be used"
+    expect(
+      () =>
+        new YjsDBAdapter(
+          {
+            tags: {
+              $$DELETED: f.string().primaryKey().default(nanoid),
+            },
+          },
+          docProvider
+        )
+    ).toThrow(
+      "[Table(tags)]: Field '$$DELETED' is reserved keyword and can't be used"
     );
+  });
+
+  test('should be able to validate entity data', t => {
+    const { client } = t;
+
+    expect(() => {
+      client.users.create({
+        // @ts-expect-error
+        name: null,
+      });
+    }).toThrowError("Field 'name' is required but not set.");
+
+    expect(() => {
+      // @ts-expect-error
+      client.users.create({});
+    }).toThrowError("Field 'name' is required but not set.");
+
+    expect(() => {
+      client.users.update(1, {
+        // @ts-expect-error
+        name: null,
+      });
+    }).toThrowError("Field 'name' is required but not set.");
+  });
+
+  test('should be able to set optional field to null', t => {
+    const { client } = t;
+
+    {
+      const user = client.users.create({
+        name: 'test',
+      });
+
+      expect(user.email).toBe(null);
+    }
+
+    {
+      const user = client.users.create({
+        name: 'test',
+        email: null,
+      });
+
+      expect(user.email).toBe(null);
+    }
+
+    {
+      const user = client.users.create({
+        name: 'test',
+        email: 'test@example.com',
+      });
+
+      client.users.update(user.id, {
+        email: null,
+      });
+
+      expect(client.users.get(user.id)!.email).toBe(null);
+    }
+  });
+
+  test('should be able to find entity by optional field', t => {
+    const { client } = t;
+
+    const user = client.users.create({
+      name: 'test',
+      email: null,
+    });
+
+    {
+      const found = client.users.find({ email: null });
+
+      expect(found).toEqual([user]);
+    }
+
+    {
+      const found = client.users.find({ email: undefined });
+
+      expect(found).toEqual([]);
+    }
   });
 });

@@ -15,6 +15,7 @@ import {
   TextElementModel,
 } from '@blocksuite/blocks';
 import { assertExists } from '@blocksuite/global/utils';
+import { AIChatBlockModel } from '@blocksuite/presets';
 import { Slice } from '@blocksuite/store';
 import type { TemplateResult } from 'lit';
 
@@ -63,7 +64,7 @@ function actionToRenderer<T extends keyof BlockSuitePresets.AIActions>(
   if (id === 'brainstormMindmap') {
     const selectedElements = ctx.get()[
       'selectedElements'
-    ] as BlockSuite.EdgelessModelType[];
+    ] as BlockSuite.EdgelessModel[];
 
     if (
       isMindMapRoot(selectedElements[0] || isMindmapChild(selectedElements[0]))
@@ -123,7 +124,7 @@ async function getContentFromHubBlockModel(
 
 export async function getContentFromSelected(
   host: EditorHost,
-  selected: BlockSuite.EdgelessModelType[]
+  selected: BlockSuite.EdgelessModel[]
 ) {
   type RemoveUndefinedKey<T, K extends keyof T> = T & {
     [P in K]-?: Exclude<T[P], undefined>;
@@ -438,7 +439,6 @@ export function actionToHandler<T extends keyof BlockSuitePresets.AIActions>(
     edgelessCopilot.hideCopilotPanel();
     edgelessCopilot.lockToolbar(true);
 
-    aiPanel.host = host;
     updateEdgelessAIPanelConfig(
       aiPanel,
       edgelessCopilot,
@@ -553,4 +553,19 @@ export function mindmapRootShowWhen(_: unknown, __: unknown, host: EditorHost) {
   const selected = getCopilotSelectedElems(host);
 
   return selected.length === 1 && isMindMapRoot(selected[0]);
+}
+
+// TODO(@chen): remove this function after the new AI chat block related function is fully implemented
+export function notAllAIChatBlockShowWhen(
+  _: unknown,
+  __: unknown,
+  host: EditorHost
+) {
+  const selected = getCopilotSelectedElems(host);
+  if (selected.length === 0) return true;
+
+  const allAIChatBlocks = selected.every(
+    model => model instanceof AIChatBlockModel
+  );
+  return !allAIChatBlocks;
 }

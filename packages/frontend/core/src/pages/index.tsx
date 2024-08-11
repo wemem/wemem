@@ -1,4 +1,5 @@
 import { Menu } from '@affine/component/ui/menu';
+import { apis } from '@affine/electron-api';
 import { WorkspaceFlavour } from '@affine/env/workspace';
 import {
   useLiveData,
@@ -110,6 +111,10 @@ export const Component = () => {
   ]);
 
   useEffect(() => {
+    apis?.ui.pingAppLayoutReady().catch(console.error);
+  }, []);
+
+  useEffect(() => {
     if (!runtimeConfig.allowLocalWorkspace) {
       return;
     }
@@ -154,6 +159,7 @@ export const Component = () => {
             open: true,
           }}
           items={<UserWithWorkspaceList />}
+          noPortal
           contentOptions={{
             style: {
               width: 300,

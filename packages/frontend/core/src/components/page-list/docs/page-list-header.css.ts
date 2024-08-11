@@ -1,9 +1,9 @@
 import { cssVar } from '@toeverything/theme';
 import { style } from '@vanilla-extract/css';
 export const docListHeader = style({
-  height: 49,
+  height: 100,
   alignItems: 'center',
-  padding: '0px 16px 11px 24px',
+  padding: '48px 16px 20px 24px',
   overflow: 'hidden',
   display: 'flex',
   justifyContent: 'space-between',
@@ -26,14 +26,6 @@ export const titleIcon = style({
 });
 export const titleCollectionName = style({
   color: cssVar('textPrimaryColor'),
-});
-export const addPageButton = style({
-  padding: '6px 10px',
-  borderRadius: '4px',
-  background: cssVar('backgroundPrimaryColor'),
-  fontSize: cssVar('fontXs'),
-  fontWeight: 500,
-  height: '28px',
 });
 export const tagSticky = style({
   display: 'flex',
@@ -165,7 +157,7 @@ export const tagSelectorItemText = style({
 
 export const rightButtonGroup = style({
   display: 'flex',
-  gap: '8px',
+  gap: '12px',
   alignItems: 'center',
   justifyContent: 'center',
 });

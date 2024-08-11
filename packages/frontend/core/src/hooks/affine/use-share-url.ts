@@ -1,6 +1,6 @@
 import { notify } from '@affine/component';
+import { track } from '@affine/core/mixpanel';
 import { getAffineCloudBaseUrl } from '@affine/core/modules/cloud/services/fetch';
-import { mixpanel } from '@affine/core/utils';
 import { useI18n } from '@affine/i18n';
 import type { Disposable } from '@blocksuite/global/utils';
 import { useCallback, useEffect, useMemo, useState } from 'react';
@@ -68,9 +68,8 @@ export const useSharingUrl = ({
         .catch(err => {
           console.error(err);
         });
-      mixpanel.track('ShareLinkCopied', {
-        module: urlType === 'share' ? 'public share' : 'private share',
-        type: 'link',
+      track.$.sharePanel.$.copyShareLink({
+        type: urlType === 'share' ? 'public' : 'private',
       });
     } else {
       notify.error({

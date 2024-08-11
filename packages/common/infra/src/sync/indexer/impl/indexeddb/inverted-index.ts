@@ -178,10 +178,13 @@ export class FullTextInvertedIndex implements InvertedIndex {
     const queryTokens = new GeneralTokenizer().tokenize(term);
     const matched = new Map<
       number,
-      {
-        score: number[];
-        positions: Map<number, [number, number][]>;
-      }
+      Map<
+        number, // index
+        {
+          score: number;
+          ranges: [number, number][];
+        }
+      >
     >();
     for (const token of queryTokens) {
       const key = InvertedIndexKey.forString(this.fieldKey, token.term);
@@ -244,30 +247,48 @@ export class FullTextInvertedIndex implements InvertedIndex {
 
       // normalize score
       const maxScore = submatched.reduce((acc, s) => Math.max(acc, s.score), 0);
-      const minScore = submatched.reduce((acc, s) => Math.min(acc, s.score), 1);
+      const minScore = submatched.reduce((acc, s) => Math.min(acc, s.score), 0);
       for (const { nid, score, position } of submatched) {
-        const normalizedScore = (score - minScore) / (maxScore - minScore);
-        const match = matched.get(nid) || {
-          score: [] as number[],
-          positions: new Map(),
+        const normalizedScore =
+          maxScore === minScore
+            ? score
+            : (score - minScore) / (maxScore - minScore);
+        const match =
+          matched.get(nid) ??
+          new Map<
+            number, // index
+            {
+              score: number;
+              ranges: [number, number][];
+            }
+          >();
+        const item = match.get(position.index) || {
+          score: 0,
+          ranges: [],
         };
-        match.score.push(normalizedScore);
-        const ranges = match.positions.get(position.index) || [];
-        ranges.push(...position.ranges);
-        match.positions.set(position.index, ranges);
+        item.score += normalizedScore;
+        item.ranges.push(...position.ranges);
+        match.set(position.index, item);
         matched.set(nid, match);
       }
     }
     const match = new Match();
-    for (const [nid, { score, positions }] of matched) {
-      match.addScore(
-        nid,
-        score.reduce((acc, s) => acc + s, 0)
-      );
-
-      for (const [index, ranges] of positions) {
-        match.addHighlighter(nid, this.fieldKey, index, ranges);
+    for (const [nid, items] of matched) {
+      if (items.size === 0) {
+        break;
       }
+      let highestScore = -1;
+      let highestIndex = -1;
+      let highestRanges: [number, number][] = [];
+      for (const [index, { score, ranges }] of items) {
+        if (score > highestScore) {
+          highestScore = score;
+          highestIndex = index;
+          highestRanges = ranges;
+        }
+      }
+      match.addScore(nid, highestScore);
+      match.addHighlighter(nid, this.fieldKey, highestIndex, highestRanges);
     }
     return match;
   }

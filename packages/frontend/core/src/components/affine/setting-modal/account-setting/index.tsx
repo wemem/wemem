@@ -6,6 +6,9 @@ import {
 import { Avatar } from '@affine/component/ui/avatar';
 import { Button } from '@affine/component/ui/button';
 import { useAsyncCallback } from '@affine/core/hooks/affine-async-hooks';
+import { useCatchEventCallback } from '@affine/core/hooks/use-catch-event-hook';
+import { track } from '@affine/core/mixpanel';
+import { SubscriptionPlan } from '@affine/graphql';
 import { useI18n } from '@affine/i18n';
 import { ArrowRightSmallIcon, CameraIcon } from '@blocksuite/icons/rc';
 import {
@@ -15,7 +18,7 @@ import {
   useServices,
 } from '@toeverything/infra';
 import { useSetAtom } from 'jotai';
-import type { FC, MouseEvent } from 'react';
+import type { FC } from 'react';
 import { useCallback, useEffect, useState } from 'react';
 
 import {
@@ -24,7 +27,6 @@ import {
   openSignOutModalAtom,
 } from '../../../../atoms';
 import { AuthService, ServerConfigService } from '../../../../modules/cloud';
-import { mixpanel } from '../../../../utils';
 import { Upload } from '../../../pure/file-upload';
 import { AIUsagePanel } from './ai-usage-panel';
 import { StorageProgress } from './storage-progress';
@@ -38,9 +40,7 @@ export const UserAvatar = () => {
   const handleUpdateUserAvatar = useAsyncCallback(
     async (file: File) => {
       try {
-        mixpanel.track_forms('UpdateProfile', 'UploadAvatar', {
-          userId: account.id,
-        });
+        track.$.settingsPanel.accountSettings.uploadAvatar();
         await session.uploadAvatar(file);
         notify.success({ title: 'Update user avatar success' });
       } catch (e) {
@@ -51,19 +51,13 @@ export const UserAvatar = () => {
         });
       }
     },
-    [account, session]
+    [session]
   );
 
-  const handleRemoveUserAvatar = useAsyncCallback(
-    async (e: MouseEvent<HTMLButtonElement>) => {
-      mixpanel.track('RemoveAvatar', {
-        userId: account.id,
-      });
-      e.stopPropagation();
-      await session.removeAvatar();
-    },
-    [account, session]
-  );
+  const handleRemoveUserAvatar = useCatchEventCallback(async () => {
+    track.$.settingsPanel.accountSettings.removeAvatar();
+    await session.removeAvatar();
+  }, [session]);
 
   return (
     <Upload
@@ -104,9 +98,7 @@ export const AvatarAndName = () => {
     }
 
     try {
-      mixpanel.track_forms('UpdateProfile', 'UpdateUsername', {
-        userId: account.id,
-      });
+      track.$.settingsPanel.accountSettings.updateUserName();
       await session.updateLabel(input);
     } catch (e) {
       notify.error({
@@ -142,7 +134,6 @@ export const AvatarAndName = () => {
               <Button
                 data-testid="save-user-name"
                 onClick={handleUpdateUserName}
-                className={styles.button}
                 style={{
                   marginLeft: '12px',
                 }}
@@ -162,11 +153,8 @@ const StoragePanel = () => {
 
   const setSettingModalAtom = useSetAtom(openSettingModalAtom);
   const onUpgrade = useCallback(() => {
-    mixpanel.track('PlansViewed', {
-      segment: 'settings panel',
-      module: 'account usage list',
-      control: 'cloud storage upgrade button',
-      type: 'cloud subscription',
+    track.$.settingsPanel.accountUsage.viewPlans({
+      plan: SubscriptionPlan.Pro,
     });
     setSettingModalAtom({
       open: true,
@@ -234,7 +222,7 @@ export const AccountSetting: FC = () => {
       />
       <AvatarAndName />
       <SettingRow name={t['com.affine.settings.email']()} desc={account.email}>
-        <Button onClick={onChangeEmail} className={styles.button}>
+        <Button onClick={onChangeEmail}>
           {account.info?.emailVerified
             ? t['com.affine.settings.email.action.change']()
             : t['com.affine.settings.email.action.verify']()}
@@ -244,7 +232,7 @@ export const AccountSetting: FC = () => {
         name={t['com.affine.settings.password']()}
         desc={t['com.affine.settings.password.message']()}
       >
-        <Button onClick={onPasswordButtonClick} className={styles.button}>
+        <Button onClick={onPasswordButtonClick}>
           {account.info?.hasPassword
             ? t['com.affine.settings.password.action.change']()
             : t['com.affine.settings.password.action.set']()}

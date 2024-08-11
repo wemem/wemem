@@ -21,9 +21,9 @@ import { useMemberCount } from '@affine/core/hooks/affine/use-member-count';
 import type { Member } from '@affine/core/hooks/affine/use-members';
 import { useMembers } from '@affine/core/hooks/affine/use-members';
 import { useRevokeMemberPermission } from '@affine/core/hooks/affine/use-revoke-member-permission';
+import { track } from '@affine/core/mixpanel';
 import { WorkspacePermissionService } from '@affine/core/modules/permissions';
 import { WorkspaceQuotaService } from '@affine/core/modules/quota';
-import { mixpanel } from '@affine/core/utils';
 import { WorkspaceFlavour } from '@affine/env/workspace';
 import { Permission } from '@affine/graphql';
 import { useI18n } from '@affine/i18n';
@@ -63,7 +63,7 @@ const MembersPanelLocal = () => {
     <Tooltip content={t['com.affine.settings.member-tooltip']()}>
       <div className={style.fakeWrapper}>
         <SettingRow name={`${t['Members']()} (0)`} desc={t['Members hint']()}>
-          <Button size="large">{t['Invite Members']()}</Button>
+          <Button>{t['Invite Members']()}</Button>
         </SettingRow>
       </div>
     </Tooltip>
@@ -146,11 +146,8 @@ export const CloudWorkspaceMembersPanel = () => {
       activeTab: 'plans',
       scrollAnchor: 'cloudPricingPlan',
     });
-    mixpanel.track('PlansViewed', {
-      // page:
-      segment: 'settings panel',
-      module: 'workspace setting',
-      control: 'invite member',
+    track.$.settingsPanel.workspace.viewPlans({
+      control: 'inviteMember',
     });
   }, [setSettingModalAtom]);
 
@@ -393,7 +390,6 @@ const MemberItem = ({
       >
         <IconButton
           disabled={!operationButtonInfo.show}
-          type="plain"
           style={{
             visibility: operationButtonInfo.show ? 'visible' : 'hidden',
             flexShrink: 0,

@@ -7,10 +7,9 @@ import Sinon from 'sinon';
 
 import { AuthService } from '../src/core/auth';
 import { QuotaModule } from '../src/core/quota';
-import { prompts } from '../src/data/migrations/utils/prompts';
 import { ConfigModule } from '../src/fundamentals/config';
 import { CopilotModule } from '../src/plugins/copilot';
-import { PromptService } from '../src/plugins/copilot/prompt';
+import { prompts, PromptService } from '../src/plugins/copilot/prompt';
 import {
   CopilotProviderService,
   OpenAIProvider,
@@ -115,13 +114,18 @@ test.beforeEach(async t => {
 test('should be able to manage prompt', async t => {
   const { prompt } = t.context;
 
-  t.is((await prompt.listNames()).length, 0, 'should have no prompt');
+  const internalPromptCount = (await prompt.listNames()).length;
+  t.is(internalPromptCount, prompts.length, 'should list names');
 
   await prompt.set('test', 'test', [
     { role: 'system', content: 'hello' },
     { role: 'user', content: 'hello' },
   ]);
-  t.is((await prompt.listNames()).length, 1, 'should have one prompt');
+  t.is(
+    (await prompt.listNames()).length,
+    internalPromptCount + 1,
+    'should have one prompt'
+  );
   t.is(
     (await prompt.get('test'))!.finish({}).length,
     2,
@@ -136,7 +140,11 @@ test('should be able to manage prompt', async t => {
   );
 
   await prompt.delete('test');
-  t.is((await prompt.listNames()).length, 0, 'should have no prompt');
+  t.is(
+    (await prompt.listNames()).length,
+    internalPromptCount,
+    'should be delete prompt'
+  );
   t.is(await prompt.get('test'), null, 'should not have the prompt');
 });
 
@@ -238,14 +246,16 @@ test('should be able to manage chat session', async t => {
 
   const s1 = (await session.get(sessionId))!;
   t.deepEqual(
-    // @ts-expect-error
-    s1.finish(params).map(({ id: _, createdAt: __, ...m }) => m),
+    s1
+      .finish(params)
+      // @ts-expect-error
+      .map(({ id: _, attachments: __, createdAt: ___, ...m }) => m),
     finalMessages,
     'should same as before message'
   );
   t.deepEqual(
     // @ts-expect-error
-    s1.finish({}).map(({ id: _, createdAt: __, ...m }) => m),
+    s1.finish({}).map(({ id: _, attachments: __, createdAt: ___, ...m }) => m),
     [
       { content: 'hello ', params: {}, role: 'system' },
       { content: 'hello', role: 'user' },
@@ -265,7 +275,7 @@ test('should be able to manage chat session', async t => {
 });
 
 test('should be able to fork chat session', async t => {
-  const { prompt, session } = t.context;
+  const { auth, prompt, session } = t.context;
 
   await prompt.set('prompt', 'model', [
     { role: 'system', content: 'hello {{word}}' },
@@ -290,21 +300,55 @@ test('should be able to fork chat session', async t => {
   const s1 = (await session.get(sessionId))!;
   // @ts-expect-error
   const latestMessageId = s1.finish({}).find(m => m.role === 'assistant')!.id;
-  const forkedSessionId = await session.fork({
+  const forkedSessionId1 = await session.fork({
     userId,
     sessionId,
     latestMessageId,
     ...commonParams,
   });
-  t.not(sessionId, forkedSessionId, 'should fork a new session');
+  t.not(sessionId, forkedSessionId1, 'should fork a new session');
+
+  const newUser = await auth.signUp('test', 'darksky.1@affine.pro', '123456');
+  const forkedSessionId2 = await session.fork({
+    userId: newUser.id,
+    sessionId,
+    latestMessageId,
+    ...commonParams,
+  });
+  t.not(
+    forkedSessionId1,
+    forkedSessionId2,
+    'should fork new session with same params'
+  );
 
   // check forked session messages
   {
-    const s2 = (await session.get(forkedSessionId))!;
+    const s2 = (await session.get(forkedSessionId1))!;
 
     const finalMessages = s2
       .finish(params) // @ts-expect-error
-      .map(({ id: _, createdAt: __, ...m }) => m);
+      .map(({ id: _, attachments: __, createdAt: ___, ...m }) => m);
+    t.deepEqual(
+      finalMessages,
+      [
+        { role: 'system', content: 'hello world', params },
+        { role: 'user', content: 'hello' },
+        { role: 'assistant', content: 'world' },
+      ],
+      'should generate the final message'
+    );
+  }
+
+  // check second times forked session
+  {
+    const s2 = (await session.get(forkedSessionId2))!;
+
+    // should overwrite user id
+    t.is(s2.config.userId, newUser.id, 'should have same user id');
+
+    const finalMessages = s2
+      .finish(params) // @ts-expect-error
+      .map(({ id: _, attachments: __, createdAt: ___, ...m }) => m);
     t.deepEqual(
       finalMessages,
       [
@@ -322,7 +366,7 @@ test('should be able to fork chat session', async t => {
 
     const finalMessages = s3
       .finish(params) // @ts-expect-error
-      .map(({ id: _, createdAt: __, ...m }) => m);
+      .map(({ id: _, attachments: __, createdAt: ___, ...m }) => m);
     t.deepEqual(
       finalMessages,
       [
@@ -688,6 +732,8 @@ test.skip('should be able to preview workflow', async t => {
       console.log('enter node:', ret.node.name);
     } else if (ret.status === GraphExecutorState.ExitNode) {
       console.log('exit node:', ret.node.name);
+    } else if (ret.status === GraphExecutorState.EmitAttachment) {
+      console.log('stream attachment:', ret);
     } else {
       result += ret.content;
       // console.log('stream result:', ret);
@@ -764,17 +810,13 @@ test('should be able to run pre defined workflow', async t => {
 });
 
 test('should be able to run workflow', async t => {
-  const { prompt, workflow, executors } = t.context;
+  const { workflow, executors } = t.context;
 
   executors.text.register();
   unregisterCopilotProvider(OpenAIProvider.type);
   registerCopilotProvider(MockCopilotTestProvider);
 
   const executor = Sinon.spy(executors.text, 'next');
-
-  for (const p of prompts) {
-    await prompt.set(p.name, p.model, p.messages, p.config);
-  }
 
   const graphName = 'presentation';
   const graph = WorkflowGraphList.find(g => g.name === graphName);
@@ -792,7 +834,9 @@ test('should be able to run workflow', async t => {
   }
   t.assert(result, 'generate text to text stream');
 
-  const callCount = graph!.graph.length;
+  // presentation workflow has condition node, it will always false
+  // so the latest 2 nodes will not be executed
+  const callCount = graph!.graph.length - 2;
   t.is(
     executor.callCount,
     callCount,
@@ -808,7 +852,7 @@ test('should be able to run workflow', async t => {
 
     t.is(
       params.args[1].content,
-      'apple company',
+      'generate text to text stream',
       'graph params should correct'
     );
     t.is(
@@ -989,9 +1033,9 @@ test('should be able to run image executor', async t => {
       ret,
       Array.from(['https://example.com/test.jpg', 'tag1, tag2, tag3, ']).map(
         t => ({
-          content: t,
+          attachment: t,
           nodeId: 'basic',
-          type: NodeExecuteState.Content,
+          type: NodeExecuteState.Attachment,
         })
       )
     );

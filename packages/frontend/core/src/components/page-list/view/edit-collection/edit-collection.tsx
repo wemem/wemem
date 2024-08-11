@@ -8,8 +8,8 @@ import type { ReactNode } from 'react';
 import { useCallback, useMemo, useState } from 'react';
 
 import * as styles from './edit-collection.css';
-import { PagesMode } from './pages-mode';
 import { RulesMode } from './rules-mode';
+import { SelectPage } from './select-page';
 
 export type EditCollectionMode = 'page' | 'rule';
 
@@ -23,9 +23,6 @@ export interface EditCollectionModalProps {
 }
 
 const contentOptions: DialogContentProps = {
-  onPointerDownOutside: e => {
-    e.preventDefault();
-  },
   style: {
     padding: 0,
     maxWidth: 944,
@@ -52,6 +49,10 @@ export const EditCollectionModal = ({
     onOpenChange(false);
   }, [onOpenChange]);
 
+  if (!(open && init)) {
+    return null;
+  }
+
   return (
     <Modal
       open={open}
@@ -60,17 +61,16 @@ export const EditCollectionModal = ({
       width="calc(100% - 64px)"
       height="80%"
       contentOptions={contentOptions}
+      persistent
     >
-      {open && init ? (
-        <EditCollection
-          title={title}
-          onConfirmText={t['com.affine.editCollection.save']()}
-          init={init}
-          mode={mode}
-          onCancel={onCancel}
-          onConfirm={onConfirmOnCollection}
-        />
-      ) : null}
+      <EditCollection
+        title={title}
+        onConfirmText={t['com.affine.editCollection.save']()}
+        init={init}
+        mode={mode}
+        onCancel={onCancel}
+        onConfirm={onConfirmOnCollection}
+      />
     </Modal>
   );
 };
@@ -110,17 +110,22 @@ export const EditCollection = ({
       allowList: init.allowList,
     });
   }, [init.allowList, init.filterList, value]);
+  const onIdsChange = useCallback(
+    (ids: string[]) => {
+      onChange({ ...value, allowList: ids });
+    },
+    [value]
+  );
   const buttons = useMemo(
     () => (
       <>
-        <Button size="large" onClick={onCancel}>
+        <Button onClick={onCancel} className={styles.actionButton}>
           {t['com.affine.editCollection.button.cancel']()}
         </Button>
         <Button
-          className={styles.confirmButton}
-          size="large"
+          className={styles.actionButton}
           data-testid="save-collection"
-          type="primary"
+          variant="primary"
           disabled={isNameEmpty}
           onClick={onSaveCollection}
         >
@@ -164,13 +169,12 @@ export const EditCollection = ({
       className={styles.collectionEditContainer}
     >
       {mode === 'page' ? (
-        <PagesMode
-          collection={value}
-          updateCollection={onChange}
-          switchMode={switchMode}
+        <SelectPage
+          init={value.allowList}
+          onChange={onIdsChange}
+          header={switchMode}
           buttons={buttons}
-          allPageListConfig={config}
-        ></PagesMode>
+        />
       ) : (
         <RulesMode
           allPageListConfig={config}
@@ -179,7 +183,7 @@ export const EditCollection = ({
           reset={reset}
           updateCollection={onChange}
           buttons={buttons}
-        ></RulesMode>
+        />
       )}
     </div>
   );

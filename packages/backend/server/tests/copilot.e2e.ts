@@ -9,10 +9,9 @@ import Sinon from 'sinon';
 
 import { AuthService } from '../src/core/auth';
 import { WorkspaceModule } from '../src/core/workspaces';
-import { prompts } from '../src/data/migrations/utils/prompts';
 import { ConfigModule } from '../src/fundamentals/config';
 import { CopilotModule } from '../src/plugins/copilot';
-import { PromptService } from '../src/plugins/copilot/prompt';
+import { prompts, PromptService } from '../src/plugins/copilot/prompt';
 import {
   CopilotProviderService,
   FalProvider,
@@ -95,10 +94,6 @@ test.beforeEach(async t => {
   await prompt.set(promptName, 'test', [
     { role: 'system', content: 'hello {{word}}' },
   ]);
-
-  for (const p of prompts) {
-    await prompt.set(p.name, p.model, p.messages, p.config);
-  }
 });
 
 test.afterEach.always(async t => {
@@ -379,7 +374,7 @@ test('should be able to chat with api by workflow', async t => {
   const ret = await chatWithWorkflow(app, token, sessionId, messageId);
   t.is(
     array2sse(sse2array(ret).filter(e => e.event !== 'event')),
-    textToEventStream('generate text to text stream', messageId),
+    textToEventStream(['generate text to text stream'], messageId),
     'should be able to chat with workflow'
   );
 });
@@ -564,15 +559,29 @@ test('should be able to list history', async t => {
     promptName
   );
 
-  const messageId = await createCopilotMessage(app, token, sessionId);
+  const messageId = await createCopilotMessage(app, token, sessionId, 'hello');
   await chatWithText(app, token, sessionId, messageId);
 
-  const histories = await getHistories(app, token, { workspaceId });
-  t.deepEqual(
-    histories.map(h => h.messages.map(m => m.content)),
-    [['generate text to text']],
-    'should be able to list history'
-  );
+  {
+    const histories = await getHistories(app, token, { workspaceId });
+    t.deepEqual(
+      histories.map(h => h.messages.map(m => m.content)),
+      [['hello', 'generate text to text']],
+      'should be able to list history'
+    );
+  }
+
+  {
+    const histories = await getHistories(app, token, {
+      workspaceId,
+      options: { messageOrder: 'desc' },
+    });
+    t.deepEqual(
+      histories.map(h => h.messages.map(m => m.content)),
+      [['generate text to text', 'hello']],
+      'should be able to list history'
+    );
+  }
 });
 
 test('should reject request that user have not permission', async t => {

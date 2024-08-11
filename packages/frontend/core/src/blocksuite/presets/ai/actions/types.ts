@@ -1,3 +1,4 @@
+import type { getCopilotHistoriesQuery, RequestOptions } from '@affine/graphql';
 import type { EditorHost } from '@blocksuite/block-std';
 import type { BlockModel } from '@blocksuite/store';
 
@@ -49,7 +50,11 @@ declare global {
       | 'chat-send'
       | 'block-action-bar';
 
-    type TrackerWhere = 'chat-panel' | 'inline-chat-panel' | 'ai-panel';
+    type TrackerWhere =
+      | 'chat-panel'
+      | 'inline-chat-panel'
+      | 'ai-panel'
+      | 'ai-chat-block';
 
     interface TrackerOptions {
       control: TrackerControl;
@@ -69,9 +74,16 @@ declare global {
 
       // internal context
       host: EditorHost;
-      models?: (BlockModel | BlockSuite.SurfaceElementModelType)[];
+      models?: (BlockModel | BlockSuite.SurfaceElementModel)[];
       control: TrackerControl;
       where: TrackerWhere;
+    }
+
+    interface AIForkChatSessionOptions {
+      docId: string;
+      workspaceId: string;
+      sessionId: string;
+      latestMessageId: string;
     }
 
     interface AIImageActionOptions extends AITextActionOptions {
@@ -94,6 +106,11 @@ declare global {
     type AIActionTextResponse<T extends AITextActionOptions> =
       T['stream'] extends true ? TextStream : Promise<string>;
 
+    interface ChatOptions extends AITextActionOptions {
+      sessionId?: string;
+      isRootSession?: boolean;
+    }
+
     interface TranslateOptions extends AITextActionOptions {
       lang: (typeof translateLangs)[number];
     }
@@ -112,7 +129,7 @@ declare global {
 
     interface AIActions {
       // chat is a bit special because it's has a internally maintained session
-      chat<T extends AITextActionOptions>(options: T): AIActionTextResponse<T>;
+      chat<T extends ChatOptions>(options: T): AIActionTextResponse<T>;
 
       summary<T extends AITextActionOptions>(
         options: T
@@ -222,11 +239,22 @@ declare global {
       action: string;
       createdAt: string;
       messages: {
+        id: string; // message id
         content: string;
         createdAt: string;
-        role: 'user' | 'assistant';
+        role: MessageRole;
+        attachments?: string[];
       }[];
     }
+
+    type MessageRole = 'user' | 'assistant';
+
+    type AIHistoryIds = Pick<AIHistory, 'sessionId' | 'messages'> & {
+      messages: Pick<
+        AIHistory['messages'][number],
+        'id' | 'createdAt' | 'role'
+      >[];
+    };
 
     interface AIHistoryService {
       // non chat histories
@@ -236,13 +264,23 @@ declare global {
       ) => Promise<AIHistory[] | undefined>;
       chats: (
         workspaceId: string,
-        docId?: string
+        docId?: string,
+        options?: RequestOptions<
+          typeof getCopilotHistoriesQuery
+        >['variables']['options']
       ) => Promise<AIHistory[] | undefined>;
       cleanup: (
         workspaceId: string,
         docId: string,
         sessionIds: string[]
       ) => Promise<void>;
+      ids: (
+        workspaceId: string,
+        docId?: string,
+        options?: RequestOptions<
+          typeof getCopilotHistoriesQuery
+        >['variables']['options']
+      ) => Promise<AIHistoryIds[] | undefined>;
     }
 
     interface AIPhotoEngineService {

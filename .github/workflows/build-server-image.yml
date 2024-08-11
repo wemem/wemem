@@ -63,7 +63,6 @@ jobs:
         run: yarn nx build @affine/web --skip-nx-cache
         env:
           BUILD_TYPE: ${{ github.event.inputs.flavor }}
-          SHOULD_REPORT_TRACE: false
           PUBLIC_PATH: '/'
           SELF_HOSTED: true
           MIXPANEL_TOKEN: ${{ secrets.MIXPANEL_TOKEN }}
@@ -96,7 +95,6 @@ jobs:
         run: yarn nx build @affine/admin --skip-nx-cache
         env:
           BUILD_TYPE: ${{ github.event.inputs.flavor }}
-          SHOULD_REPORT_TRACE: false
           PUBLIC_PATH: '/admin/'
           SELF_HOSTED: true
           MIXPANEL_TOKEN: ${{ secrets.MIXPANEL_TOKEN }}

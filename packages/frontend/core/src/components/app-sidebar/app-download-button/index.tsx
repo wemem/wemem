@@ -1,8 +1,9 @@
+import { useCatchEventCallback } from '@affine/core/hooks/use-catch-event-hook';
+import { track } from '@affine/core/mixpanel';
 import { CloseIcon, DownloadIcon } from '@blocksuite/icons/rc';
 import clsx from 'clsx';
 import { useCallback, useState } from 'react';
 
-import { mixpanel } from '../../../utils';
 import * as styles from './index.css';
 
 // Although it is called an input, it is actually a button.
@@ -15,15 +16,13 @@ export function AppDownloadButton({
 }) {
   const [show, setShow] = useState(true);
 
-  const handleClose = useCallback(() => {
+  const handleClose = useCatchEventCallback(() => {
     setShow(false);
   }, []);
 
   // TODO(@JimmFly): unify this type of literal value.
   const handleClick = useCallback(() => {
-    mixpanel.track('Button', {
-      resolve: 'GoToDownloadAppPage',
-    });
+    track.$.navigationPanel.bottomButtons.downloadApp();
     const url = `https://affine.pro/download?channel=stable`;
     open(url, '_blank');
   }, []);
@@ -41,13 +40,7 @@ export function AppDownloadButton({
         <DownloadIcon className={styles.icon} />
         <span className={styles.ellipsisTextOverflow}>Download App</span>
       </div>
-      <div
-        className={styles.closeIcon}
-        onClick={e => {
-          e.stopPropagation();
-          handleClose();
-        }}
-      >
+      <div className={styles.closeIcon} onClick={handleClose}>
         <CloseIcon />
       </div>
       <div className={styles.particles} aria-hidden="true"></div>

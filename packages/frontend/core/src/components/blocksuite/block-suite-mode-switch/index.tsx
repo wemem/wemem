@@ -1,5 +1,6 @@
 import { Tooltip } from '@affine/component/ui/tooltip';
 import { useBlockSuiteDocMeta } from '@affine/core/hooks/use-block-suite-page-meta';
+import { track } from '@affine/core/mixpanel';
 import { useI18n } from '@affine/i18n';
 import {
   type DocMode,
@@ -11,8 +12,8 @@ import type { CSSProperties } from 'react';
 import { useCallback, useEffect } from 'react';
 
 import type { DocCollection } from '../../../shared';
-import { mixpanel, toast } from '../../../utils';
-import { StyledEditorModeSwitch, StyledKeyboardItem } from './style';
+import { toast } from '../../../utils';
+import { StyledEditorModeSwitch } from './style';
 import { EdgelessSwitchItem, PageSwitchItem } from './switch-items';
 
 export type EditorModeSwitchProps = {
@@ -23,17 +24,7 @@ export type EditorModeSwitchProps = {
   isPublic?: boolean;
   publicMode?: DocMode;
 };
-const TooltipContent = () => {
-  const t = useI18n();
-  return (
-    <>
-      {t['Switch']()}
-      <StyledKeyboardItem>
-        {!environment.isServer && environment.isMacOs ? '⌥ + S' : 'Alt + S'}
-      </StyledKeyboardItem>
-    </>
-  );
-};
+
 export const EditorModeSwitch = ({
   style,
   docCollection,
@@ -71,8 +62,8 @@ export const EditorModeSwitch = ({
   }, [currentMode, isPublic, doc, pageId, t, trash]);
 
   const onSwitchToPageMode = useCallback(() => {
-    mixpanel.track('Button', {
-      resolve: 'SwitchToPageMode',
+    track.$.header.actions.switchPageMode({
+      mode: 'page',
     });
     if (currentMode === 'page' || isPublic) {
       return;
@@ -82,8 +73,8 @@ export const EditorModeSwitch = ({
   }, [currentMode, isPublic, doc, t]);
 
   const onSwitchToEdgelessMode = useCallback(() => {
-    mixpanel.track('Button', {
-      resolve: 'SwitchToEdgelessMode',
+    track.$.header.actions.switchPageMode({
+      mode: 'edgeless',
     });
     if (currentMode === 'edgeless' || isPublic) {
       return;
@@ -105,7 +96,9 @@ export const EditorModeSwitch = ({
 
   return (
     <Tooltip
-      content={<TooltipContent />}
+      content={t['Switch']()}
+      shortcut={['$alt', 'S']}
+      side="bottom"
       options={{
         hidden: isPublic || trash,
       }}

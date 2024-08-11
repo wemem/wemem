@@ -18,7 +18,7 @@ import { reportResponse } from '../utils/action-reporter';
 import { readBlobAsURL } from '../utils/image';
 import type { ChatContextValue, ChatMessage } from './chat-context';
 
-const MaximumImageCount = 8;
+const MaximumImageCount = 32;
 
 function getFirstTwoLines(text: string) {
   const lines = text.split('\n');
@@ -141,31 +141,46 @@ export class ChatPanelInput extends WithDisposable(LitElement) {
       }
     }
 
-    .chat-panel-images {
-      display: flex;
-      gap: 4px;
-      flex-wrap: wrap;
-      position: relative;
+    .chat-panel-images-wrapper {
+      overflow: hidden scroll;
+      max-height: 128px;
 
-      .image-container {
-        width: 58px;
-        height: 58px;
-        border-radius: 4px;
-        border: 1px solid var(--affine-border-color);
-        cursor: pointer;
-        overflow: hidden;
-        position: relative;
+      .chat-panel-images {
         display: flex;
-        justify-content: center;
-        align-items: center;
+        gap: 4px;
+        flex-wrap: wrap;
+        position: relative;
 
-        img {
-          max-width: 100%;
-          max-height: 100%;
-          width: auto;
-          height: auto;
+        .image-container {
+          width: 58px;
+          height: 58px;
+          border-radius: 4px;
+          border: 1px solid var(--affine-border-color);
+          cursor: pointer;
+          overflow: hidden;
+          position: relative;
+          display: flex;
+          justify-content: center;
+          align-items: center;
+
+          img {
+            max-width: 100%;
+            max-height: 100%;
+            width: auto;
+            height: auto;
+          }
         }
       }
+    }
+
+    .chat-panel-send svg rect {
+      fill: var(--affine-primary-color);
+    }
+    .chat-panel-send[aria-disabled='true'] {
+      cursor: not-allowed;
+    }
+    .chat-panel-send[aria-disabled='true'] svg rect {
+      fill: var(--affine-text-disable-color);
     }
 
     .close-wrapper {
@@ -232,34 +247,37 @@ export class ChatPanelInput extends WithDisposable(LitElement) {
   private _renderImages(images: File[]) {
     return html`
       <div
-        class="chat-panel-images"
+        class="chat-panel-images-wrapper"
         @mouseleave=${() => {
           this.closeWrapper.style.display = 'none';
           this.curIndex = -1;
         }}
       >
-        ${repeat(
-          images,
-          image => image.name,
-          (image, index) =>
-            html`<div
-              class="image-container"
-              @mouseenter=${(evt: MouseEvent) => {
-                const ele = evt.target as HTMLImageElement;
-                const rect = ele.getBoundingClientRect();
-                assertExists(ele.parentElement);
-                const parentRect = ele.parentElement.getBoundingClientRect();
-                const left = Math.abs(rect.right - parentRect.left) - 8;
-                const top = Math.abs(parentRect.top - rect.top) - 8;
-                this.curIndex = index;
-                this.closeWrapper.style.display = 'flex';
-                this.closeWrapper.style.left = left + 'px';
-                this.closeWrapper.style.top = top + 'px';
-              }}
-            >
-              <img src="${URL.createObjectURL(image)}" alt="${image.name}" />
-            </div>`
-        )}
+        <div class="chat-panel-images">
+          ${repeat(
+            images,
+            image => image.name,
+            (image, index) =>
+              html`<div
+                class="image-container"
+                @mouseenter=${(evt: MouseEvent) => {
+                  const ele = evt.target as HTMLImageElement;
+                  const rect = ele.getBoundingClientRect();
+                  assertExists(ele.parentElement?.parentElement);
+                  const parentRect =
+                    ele.parentElement.parentElement.getBoundingClientRect();
+                  const left = Math.abs(rect.right - parentRect.left) - 8;
+                  const top = Math.abs(parentRect.top - rect.top);
+                  this.curIndex = index;
+                  this.closeWrapper.style.display = 'flex';
+                  this.closeWrapper.style.left = left + 'px';
+                  this.closeWrapper.style.top = top + 'px';
+                }}
+              >
+                <img src="${URL.createObjectURL(image)}" alt="${image.name}" />
+              </div>`
+          )}
+        </div>
         <div
           class="close-wrapper"
           @click=${() => {
@@ -286,18 +304,13 @@ export class ChatPanelInput extends WithDisposable(LitElement) {
     const maxHeight = hasImages ? 272 + 2 : 200 + 2;
 
     return html`<style>
-        .chat-panel-send svg rect {
-          fill: ${this.isInputEmpty && hasImages
-            ? 'var(--affine-text-disable-color)'
-            : 'var(--affine-primary-color)'};
-        }
-
         .chat-panel-input {
           border-color: ${this.focused
             ? 'var(--affine-primary-color)'
             : 'var(--affine-border-color)'};
           box-shadow: ${this.focused ? 'var(--affine-active-shadow)' : 'none'};
           max-height: ${maxHeight}px !important;
+          user-select: none;
         }
       </style>
       <div class="chat-panel-input">
@@ -395,7 +408,11 @@ export class ChatPanelInput extends WithDisposable(LitElement) {
               >
                 ${ChatAbortIcon}
               </div>`
-            : html`<div @click="${this.send}" class="chat-panel-send">
+            : html`<div
+                @click="${this.send}"
+                class="chat-panel-send"
+                aria-disabled=${this.isInputEmpty}
+              >
                 ${ChatSendIcon}
               </div>`}
         </div>
@@ -414,6 +431,7 @@ export class ChatPanelInput extends WithDisposable(LitElement) {
     const { doc } = this.host;
     this.textarea.value = '';
     this.isInputEmpty = true;
+    this.textarea.style.height = 'unset';
     this.updateContext({
       images: [],
       status: 'loading',
@@ -432,12 +450,18 @@ export class ChatPanelInput extends WithDisposable(LitElement) {
       items: [
         ...this.chatContextValue.items,
         {
+          id: '',
           role: 'user',
           content: content,
           createdAt: new Date().toISOString(),
           attachments,
         },
-        { role: 'assistant', content: '', createdAt: new Date().toISOString() },
+        {
+          id: '',
+          role: 'assistant',
+          content: '',
+          createdAt: new Date().toISOString(),
+        },
       ],
     });
 
@@ -453,6 +477,7 @@ export class ChatPanelInput extends WithDisposable(LitElement) {
         signal: abortController.signal,
         where: 'chat-panel',
         control: 'chat-send',
+        isRootSession: true,
       });
 
       if (stream) {
@@ -466,6 +491,24 @@ export class ChatPanelInput extends WithDisposable(LitElement) {
         }
 
         this.updateContext({ status: 'success' });
+
+        if (!this.chatContextValue.chatSessionId) {
+          this.updateContext({
+            chatSessionId: AIProvider.LAST_ROOT_SESSION_ID,
+          });
+        }
+
+        const { items } = this.chatContextValue;
+        const last = items[items.length - 1] as ChatMessage;
+        if (!last.id) {
+          const historyIds = await AIProvider.histories?.ids(
+            doc.collection.id,
+            doc.id,
+            { sessionId: this.chatContextValue.chatSessionId }
+          );
+          if (!historyIds || !historyIds[0]) return;
+          last.id = historyIds[0].messages.at(-1)?.id ?? '';
+        }
       }
     } catch (error) {
       this.updateContext({ status: 'error', error: error as AIError });

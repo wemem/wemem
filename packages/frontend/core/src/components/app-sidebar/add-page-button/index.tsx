@@ -1,17 +1,19 @@
+import { IconButton } from '@affine/component';
 import { useI18n } from '@affine/i18n';
 import { PlusIcon } from '@blocksuite/icons/rc';
 import clsx from 'clsx';
 import type React from 'react';
+import type { MouseEventHandler } from 'react';
 
-import { Spotlight } from '../spolight';
 import * as styles from './index.css';
 
 interface AddPageButtonProps {
-  onClick?: () => void;
+  onClick?: MouseEventHandler;
   className?: string;
   style?: React.CSSProperties;
 }
 
+const sideBottom = { side: 'bottom' as const };
 export function AddPageButton({
   onClick,
   className,
@@ -20,14 +22,16 @@ export function AddPageButton({
   const t = useI18n();
 
   return (
-    <button
+    <IconButton
+      tooltip={t['New Page']()}
+      tooltipOptions={sideBottom}
       data-testid="sidebar-new-page-button"
       style={style}
       className={clsx([styles.root, className])}
       onClick={onClick}
+      onAuxClick={onClick}
     >
-      <PlusIcon className={styles.icon} /> {t['New Page']()}
-      <Spotlight />
-    </button>
+      <PlusIcon />
+    </IconButton>
   );
 }

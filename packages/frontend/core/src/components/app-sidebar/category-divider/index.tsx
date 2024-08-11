@@ -1,68 +1,60 @@
-import { ArrowDownSmallIcon } from '@blocksuite/icons/rc';
+import { ToggleCollapseIcon } from '@blocksuite/icons/rc';
 import clsx from 'clsx';
-import type { PropsWithChildren } from 'react';
+import { type ForwardedRef, forwardRef, type PropsWithChildren } from 'react';
 
 import * as styles from './index.css';
 
-interface CategoryDividerProps extends PropsWithChildren {
-  label: string;
-}
+export type CategoryDividerProps = PropsWithChildren<
+  {
+    label: string;
+    className?: string;
+    collapsed?: boolean;
+    setCollapsed?: (collapsed: boolean) => void;
+  } & {
+    [key: `data-${string}`]: unknown;
+  }
+>;
 
-export function CategoryDivider({ label, children }: CategoryDividerProps) {
-  return (
-    <div className={clsx([styles.root])}>
-      <div className={styles.label}>{label}</div>
-      {children}
-    </div>
-  );
-}
-
-interface CollapsibleCategoryDividerProps extends CategoryDividerProps {
-  label: string;
-  onCollapsedChange: (collapsed: boolean) => void;
-  collapsed: boolean;
-}
-
-export function CollapsibleCategoryDivider({
-  label,
-  children,
-  onCollapsedChange,
-  collapsed,
-}: CollapsibleCategoryDividerProps) {
-  const handleParentClick = (
-    e: React.MouseEvent<HTMLDivElement, MouseEvent>
+export const CategoryDivider = forwardRef(
+  (
+    {
+      label,
+      children,
+      className,
+      collapsed,
+      setCollapsed,
+      ...otherProps
+    }: CategoryDividerProps,
+    ref: ForwardedRef<HTMLDivElement>
   ) => {
-    if (e.target === e.currentTarget) {
-      onCollapsedChange(!collapsed);
-    }
-  };
+    const collapsible = collapsed !== undefined;
 
-  // Handler for the inner icon click event
-  const handleIconClick = (e: React.MouseEvent<HTMLDivElement, MouseEvent>) => {
-    e.stopPropagation();
-    e.preventDefault(); // For links, preventing default action
-    onCollapsedChange(!collapsed);
-  };
-
-  return (
-    <div className={clsx([styles.collapsedRoot])} onClick={handleParentClick}>
-      <div className={styles.label} onClick={handleParentClick}>
-        {label}
-        <div className={styles.iconsContainer} data-collapsible>
-          <div
-            data-disabled={collapsed === undefined ? true : undefined}
-            onClick={handleIconClick}
-            data-testid="fav-collapsed-button"
-            className={styles.collapsedIconContainer}
-          >
-            <ArrowDownSmallIcon
-              className={styles.collapsedIcon}
-              data-collapsed={collapsed !== false}
+    return (
+      <div
+        className={clsx([styles.root, className])}
+        ref={ref}
+        onClick={() => setCollapsed?.(!collapsed)}
+        data-collapsed={collapsed}
+        data-collapsible={collapsible}
+        {...otherProps}
+      >
+        <div className={styles.label}>
+          {label}
+          {collapsible ? (
+            <ToggleCollapseIcon
+              width={16}
+              height={16}
+              data-testid="category-divider-collapse-button"
+              className={styles.collapseIcon}
             />
-          </div>
+          ) : null}
+        </div>
+        <div className={styles.actions} onClick={e => e.stopPropagation()}>
+          {children}
         </div>
       </div>
-      {children}
-    </div>
-  );
-}
+    );
+  }
+);
+
+CategoryDivider.displayName = 'CategoryDivider';

@@ -6,6 +6,7 @@ import {
 import { useJournalInfoHelper } from '@affine/core/hooks/use-journal';
 import { PeekViewService } from '@affine/core/modules/peek-view';
 import { WorkbenchService } from '@affine/core/modules/workbench';
+import type { DocMode } from '@blocksuite/blocks';
 import {
   DocMetaTags,
   DocTitle,
@@ -14,7 +15,6 @@ import {
 } from '@blocksuite/presets';
 import type { Doc } from '@blocksuite/store';
 import {
-  type DocMode,
   DocService,
   DocsService,
   useFramework,
@@ -37,6 +37,7 @@ import { BiDirectionalLinkPanel } from './bi-directional-link-panel';
 import { BlocksuiteEditorJournalDocTitle } from './journal-doc-title';
 import {
   patchDocModeService,
+  patchEdgelessClipboard,
   patchForSharedPage,
   patchNotificationService,
   patchPeekViewService,
@@ -44,8 +45,8 @@ import {
   patchReferenceRenderer,
   type ReferenceReactRenderer,
 } from './specs/custom/spec-patchers';
-import { EdgelessModeSpecs } from './specs/edgeless';
-import { PageModeSpecs } from './specs/page';
+import { createEdgelessModeSpecs } from './specs/edgeless';
+import { createPageModeSpecs } from './specs/page';
 import * as styles from './styles.css';
 
 const adapted = {
@@ -88,7 +89,11 @@ const usePatchSpecs = (page: Doc, shared: boolean, mode: DocMode) => {
     };
   }, [page.collection]);
 
-  const specs = mode === 'page' ? PageModeSpecs : EdgelessModeSpecs;
+  const specs = useMemo(() => {
+    return mode === 'edgeless'
+      ? createEdgelessModeSpecs(framework)
+      : createPageModeSpecs(framework);
+  }, [mode, framework]);
 
   const confirmModal = useConfirmModal();
   const patchedSpecs = useMemo(() => {
@@ -97,9 +102,8 @@ const usePatchSpecs = (page: Doc, shared: boolean, mode: DocMode) => {
       patchReferenceRenderer(patched, reactToLit, referenceRenderer),
       confirmModal
     );
-    if (!page.readonly) {
-      patched = patchPeekViewService(patched, peekViewService);
-    }
+    patched = patchPeekViewService(patched, peekViewService);
+    patched = patchEdgelessClipboard(patched);
     if (!page.readonly) {
       patched = patchQuickSearchService(patched, framework);
     }
@@ -191,7 +195,7 @@ export const BlocksuiteDocEditor = forwardRef<
         ) : (
           <BlocksuiteEditorJournalDocTitle page={page} />
         )}
-        <PagePropertiesTable page={page} />
+        <PagePropertiesTable docId={page.id} />
         <adapted.DocEditor
           className={styles.docContainer}
           ref={onDocRef}

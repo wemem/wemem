@@ -1,118 +1,66 @@
 import { cssVar } from '@toeverything/theme';
+import { cssVarV2 } from '@toeverything/theme/v2';
 import { style } from '@vanilla-extract/css';
+
+const baseAction = style({
+  display: 'flex',
+  gap: 8,
+  opacity: 0,
+});
+
 export const root = style({
   fontSize: cssVar('fontXs'),
-  minHeight: '16px',
-  width: 'calc(100% + 6px)',
+  height: 20,
+  width: 'calc(100%)',
   userSelect: 'none',
   display: 'flex',
   alignItems: 'center',
   justifyContent: 'space-between',
-  marginBottom: '4px',
   padding: '0 8px',
+  borderRadius: 4,
   selectors: {
-    '&:not(:first-of-type)': {
-      marginTop: '16px',
+    [`&[data-collapsible="true"]`]: {
+      cursor: 'pointer',
+    },
+    [`&[data-collapsible="true"]:hover`]: {
+      backgroundColor: cssVarV2('layer/background/hoverOverlay'),
+    },
+    [`&[data-collapsible="true"]:hover:has(${baseAction}:hover)`]: {
+      backgroundColor: 'transparent',
     },
   },
 });
+
+export const actions = style([
+  baseAction,
+  {
+    selectors: {
+      [`${root}:hover &`]: {
+        opacity: 1,
+      },
+    },
+  },
+]);
 export const label = style({
-  color: cssVar('black30'),
+  color: cssVarV2('text/tertiary'),
+  fontWeight: 500,
+  lineHeight: '20px',
+  flexGrow: '0',
   display: 'flex',
-});
-
-export const linkItemRoot = style({
-  color: 'inherit',
-});
-
-export const collapsedRoot = style({
-  fontSize: cssVar('fontXs'),
-  display: 'flex',
+  gap: 2,
   alignItems: 'center',
-  justifyContent: 'space-between',
-  borderRadius: '4px',
-  minHeight: '16px',
-  width: 'calc(100% + 6px)',
-  textAlign: 'left',
-  color: 'inherit',
-  userSelect: 'none',
+  justifyContent: 'start',
   cursor: 'pointer',
-  marginBottom: '4px',
-  padding: '4px 8px',
-  position: 'relative',
-  selectors: {
-    '&:hover': {
-      background: cssVar('hoverColor'),
-    },
-    '&[data-active="true"]': {
-      background: cssVar('hoverColor'),
-    },
-    '&[data-disabled="true"]': {
-      cursor: 'default',
-      color: cssVar('textSecondaryColor'),
-      pointerEvents: 'none',
-    },
-    // this is not visible in dark mode
-    // '&[data-active="true"]:hover': {
-    //   background:
-    //     // make this a variable?
-    //     'linear-gradient(0deg, rgba(0, 0, 0, 0.04), rgba(0, 0, 0, 0.04)), rgba(0, 0, 0, 0.04)',
-    // },
-    '&[data-collapsible="true"]': {
-      paddingLeft: '4px',
-      paddingRight: '4px',
-    },
-    '&[data-collapsible="false"]:is([data-active="true"], :hover)': {
-      width: 'calc(100% + 8px)',
-      transform: 'translateX(-8px)',
-      paddingLeft: '20px',
-      paddingRight: '12px',
-    },
-    [`${linkItemRoot}:first-of-type &`]: {
-      marginTop: '0px',
-    },
-  },
 });
 
-export const collapsedIconContainer = style({
-  width: '17px',
-  height: '17px',
-  display: 'flex',
-  alignItems: 'center',
-  justifyContent: 'center',
-  borderRadius: '2px',
+export const collapseIcon = style({
+  vars: { '--y': '1px', '--r': '90deg' },
+  color: cssVarV2('icon/tertiary'),
+  transform: 'translateY(var(--y)) rotate(var(--r))',
   transition: 'transform 0.2s',
-  color: 'inherit',
   selectors: {
-    '&[data-collapsed="true"]': {
-      transform: 'rotate(-90deg)',
-    },
-    '&[data-disabled="true"]': {
-      opacity: 0.3,
-      pointerEvents: 'none',
-    },
-    '&:hover': {
-      background: cssVar('hoverColor'),
-    },
-  },
-});
-export const iconsContainer = style({
-  display: 'flex',
-  alignItems: 'center',
-  justifyContent: 'flex-start',
-  width: '28px',
-  flexShrink: 0,
-  selectors: {
-    '&[data-collapsible="true"]': {
-      width: '44px',
-    },
-  },
-});
-export const collapsedIcon = style({
-  transition: 'transform 0.2s ease-in-out',
-  selectors: {
-    '&[data-collapsed="true"]': {
-      transform: 'rotate(-90deg)',
+    [`${root}[data-collapsed="true"] &`]: {
+      vars: { '--r': '0deg' },
     },
   },
 });

@@ -1,6 +1,5 @@
 import { toast } from '@affine/component';
 import { Button, IconButton } from '@affine/component/ui/button';
-import { Tooltip } from '@affine/component/ui/tooltip';
 import { useAsyncCallback } from '@affine/core/hooks/affine-async-hooks';
 import type { ImageBlockModel } from '@blocksuite/blocks';
 import { assertExists } from '@blocksuite/global/utils';
@@ -16,9 +15,9 @@ import {
   ViewBarIcon,
 } from '@blocksuite/icons/rc';
 import type { BlockModel } from '@blocksuite/store';
-import { fileTypeFromBuffer } from '@sgtpooki/file-type';
 import { useService } from '@toeverything/infra';
 import clsx from 'clsx';
+import { fileTypeFromBuffer } from 'file-type';
 import { useErrorBoundary } from 'foxact/use-error-boundary';
 import type { PropsWithChildren, ReactElement } from 'react';
 import {
@@ -98,30 +97,6 @@ async function saveBufferToFile(url: string, filename: string) {
 export type ImagePreviewModalProps = {
   docId: string;
   blockId: string;
-};
-
-const ButtonWithTooltip = ({
-  icon,
-  tooltip,
-  disabled,
-  ...props
-}: PropsWithChildren<{
-  disabled?: boolean;
-  icon?: ReactElement;
-  tooltip: string;
-  onClick: () => void;
-  className?: string;
-}>) => {
-  const element = icon ? (
-    <IconButton icon={icon} type="plain" disabled={disabled} {...props} />
-  ) : (
-    <Button disabled={disabled} type="plain" {...props} />
-  );
-  if (disabled) {
-    return element;
-  } else {
-    return <Tooltip content={tooltip}>{element}</Tooltip>;
-  }
 };
 
 const ImagePreviewModalImpl = ({
@@ -362,7 +337,7 @@ const ImagePreviewModalImpl = ({
           </p>
         ) : null}
         <div className={styles.imagePreviewActionBarStyle}>
-          <ButtonWithTooltip
+          <IconButton
             data-testid="previous-image-button"
             tooltip="Previous"
             icon={<ArrowLeftSmallIcon />}
@@ -372,7 +347,7 @@ const ImagePreviewModalImpl = ({
           <div className={styles.cursorStyle}>
             {`${blocks.length ? cursor + 1 : 0}/${blocks.length}`}
           </div>
-          <ButtonWithTooltip
+          <IconButton
             data-testid="next-image-button"
             tooltip="Next"
             icon={<ArrowRightSmallIcon />}
@@ -380,53 +355,59 @@ const ImagePreviewModalImpl = ({
             onClick={() => goto(cursor + 1)}
           />
           <div className={styles.dividerStyle}></div>
-          <ButtonWithTooltip
+          <IconButton
             data-testid="fit-to-screen-button"
             tooltip="Fit to screen"
             icon={<ViewBarIcon />}
             onClick={() => resetZoom()}
           />
-          <ButtonWithTooltip
+          <IconButton
             data-testid="zoom-out-button"
             tooltip="Zoom out"
             icon={<MinusIcon />}
             onClick={zoomOut}
           />
-          <ButtonWithTooltip
+          <Button
             data-testid="reset-scale-button"
             tooltip="Reset scale"
             onClick={resetScale}
+            variant="plain"
           >
             {`${(currentScale * 100).toFixed(0)}%`}
-          </ButtonWithTooltip>
+          </Button>
 
-          <ButtonWithTooltip
+          <IconButton
             data-testid="zoom-in-button"
             tooltip="Zoom in"
             icon={<PlusIcon />}
             onClick={zoomIn}
           />
           <div className={styles.dividerStyle}></div>
-          <ButtonWithTooltip
+          <IconButton
             data-testid="download-button"
             tooltip="Download"
             icon={<DownloadIcon />}
             onClick={downloadHandler}
           />
-          <ButtonWithTooltip
+          <IconButton
             data-testid="copy-to-clipboard-button"
             tooltip="Copy to clipboard"
             icon={<CopyIcon />}
             onClick={copyHandler}
           />
-          <div className={styles.dividerStyle}></div>
-          <ButtonWithTooltip
-            data-testid="delete-button"
-            tooltip="Delete"
-            icon={<DeleteIcon />}
-            disabled={blocks.length === 0}
-            onClick={() => deleteHandler(cursor)}
-          />
+          {blockModel && !blockModel.doc.readonly && (
+            <>
+              <div className={styles.dividerStyle}></div>
+              <IconButton
+                data-testid="delete-button"
+                tooltip="Delete"
+                icon={<DeleteIcon />}
+                disabled={blocks.length === 0}
+                onClick={() => deleteHandler(cursor)}
+                variant="danger"
+              />
+            </>
+          )}
         </div>
       </div>
     </div>
@@ -451,7 +432,7 @@ export const ImagePreviewPeekView = (
 ): ReactElement | null => {
   const [blockId, setBlockId] = useState<string | null>(props.blockId);
   const peekView = useService(PeekViewService).peekView;
-  const onClose = peekView.close;
+  const onClose = useCallback(() => peekView.close(), [peekView]);
   const buttonRef = useRef<HTMLButtonElement | null>(null);
 
   useEffect(() => {

@@ -1,19 +1,19 @@
-import { Tooltip } from '@affine/component';
-import { FavoriteItemsAdapter } from '@affine/core/modules/properties';
+import { Button, IconButton, Tooltip } from '@affine/component';
+import { CompatibleFavoriteItemsAdapter } from '@affine/core/modules/properties';
 import type { Collection } from '@affine/env/filter';
 import { Trans, useI18n } from '@affine/i18n';
 import {
   CloseIcon,
   EdgelessIcon,
   PageIcon,
-  PlusIcon,
   ToggleCollapseIcon,
 } from '@blocksuite/icons/rc';
 import type { DocMeta } from '@blocksuite/store';
 import { useLiveData, useService } from '@toeverything/infra';
+import { cssVar } from '@toeverything/theme';
 import clsx from 'clsx';
 import type { ReactNode } from 'react';
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useMemo, useState } from 'react';
 
 import { FilterList } from '../../filter';
 import { List, ListScrollContainer } from '../../list';
@@ -22,7 +22,6 @@ import { filterPageByRules } from '../../use-collection-manager';
 import { AffineShapeIcon } from '../affine-shape';
 import type { AllPageListConfig } from './edit-collection';
 import * as styles from './edit-collection.css';
-import { useSelectPage } from './hooks';
 
 export const RulesMode = ({
   collection,
@@ -43,16 +42,8 @@ export const RulesMode = ({
   const [showPreview, setShowPreview] = useState(true);
   const allowListPages: DocMeta[] = [];
   const rulesPages: DocMeta[] = [];
-  const [showTips, setShowTips] = useState(false);
-  const favAdapter = useService(FavoriteItemsAdapter);
+  const favAdapter = useService(CompatibleFavoriteItemsAdapter);
   const favorites = useLiveData(favAdapter.favorites$);
-  useEffect(() => {
-    setShowTips(!localStorage.getItem('hide-rules-mode-include-page-tips'));
-  }, []);
-  const hideTips = useCallback(() => {
-    setShowTips(false);
-    localStorage.setItem('hide-rules-mode-include-page-tips', 'true');
-  }, []);
   allPageListConfig.allPages.forEach(meta => {
     if (meta.trash) {
       return;
@@ -72,20 +63,6 @@ export const RulesMode = ({
       allowListPages.push(meta);
     }
   });
-  const { node: selectPageNode, open } = useSelectPage({ allPageListConfig });
-  const openSelectPage = useCallback(() => {
-    open(collection.allowList).then(
-      ids => {
-        updateCollection({
-          ...collection,
-          allowList: ids,
-        });
-      },
-      () => {
-        //do nothing
-      }
-    );
-  }, [open, updateCollection, collection]);
   const [expandInclude, setExpandInclude] = useState(
     collection.allowList.length > 0
   );
@@ -146,20 +123,20 @@ export const RulesMode = ({
                 )}
               />
               <div className={styles.rulesContainerLeftContentInclude}>
-                <div className={styles.includeTitle}>
-                  <ToggleCollapseIcon
-                    onClick={() => setExpandInclude(!expandInclude)}
-                    className={styles.button}
-                    width={24}
-                    height={24}
-                    style={{
-                      transform: expandInclude ? 'rotate(90deg)' : undefined,
-                    }}
-                  ></ToggleCollapseIcon>
-                  <div style={{ color: 'var(--affine-text-secondary-color)' }}>
-                    {t['com.affine.editCollection.rules.include.title']()}
+                {collection.allowList.length > 0 ? (
+                  <div className={styles.includeTitle}>
+                    <IconButton
+                      onClick={() => setExpandInclude(!expandInclude)}
+                      iconStyle={{
+                        transform: expandInclude ? 'rotate(90deg)' : undefined,
+                      }}
+                      icon={<ToggleCollapseIcon />}
+                    />
+                    <div style={{ color: cssVar('textSecondaryColor') }}>
+                      {t['com.affine.editCollection.rules.include.title']()}
+                    </div>
                   </div>
-                </div>
+                ) : null}
                 <div
                   style={{
                     display: expandInclude ? 'flex' : 'none',
@@ -202,8 +179,9 @@ export const RulesMode = ({
                             {page?.title || t['Untitled']()}
                           </div>
                         </div>
-                        <CloseIcon
-                          className={styles.button}
+                        <IconButton
+                          size="14"
+                          icon={<CloseIcon />}
                           onClick={() => {
                             updateCollection({
                               ...collection,
@@ -212,60 +190,13 @@ export const RulesMode = ({
                               ),
                             });
                           }}
-                        ></CloseIcon>
+                        />
                       </div>
                     );
                   })}
-                  <div
-                    onClick={openSelectPage}
-                    className={clsx(styles.button, styles.includeAddButton)}
-                  >
-                    <PlusIcon></PlusIcon>
-                    <div
-                      style={{ color: 'var(--affine-text-secondary-color)' }}
-                    >
-                      {t['com.affine.editCollection.rules.include.add']()}
-                    </div>
-                  </div>
                 </div>
               </div>
             </div>
-            {showTips ? (
-              <div
-                style={{
-                  marginTop: 16,
-                  borderRadius: 8,
-                  backgroundColor:
-                    'var(--affine-background-overlay-panel-color)',
-                  padding: 10,
-                  fontSize: 12,
-                  lineHeight: '20px',
-                }}
-              >
-                <div
-                  style={{
-                    marginBottom: 14,
-                    fontWeight: 600,
-                    color: 'var(--affine-text-secondary-color)',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'space-between',
-                  }}
-                >
-                  <div>{t['com.affine.collection.helpInfo']()}</div>
-                  <CloseIcon
-                    color="var(--affine-icon-color)"
-                    onClick={hideTips}
-                    className={styles.button}
-                    style={{ width: 16, height: 16 }}
-                  />
-                </div>
-                <div style={{ marginBottom: 10, fontWeight: 600 }}>
-                  {t['com.affine.editCollection.rules.include.tipsTitle']()}
-                </div>
-                <div>{t['com.affine.editCollection.rules.include.tips']()}</div>
-              </div>
-            ) : null}
           </div>
         </div>
         <ListScrollContainer
@@ -308,24 +239,16 @@ export const RulesMode = ({
       </div>
       <div className={styles.rulesBottom}>
         <div className={styles.bottomLeft}>
-          <div
-            className={clsx(
-              styles.button,
-              styles.bottomButton,
-              showPreview && styles.previewActive
-            )}
+          <Button
             onClick={() => {
               setShowPreview(!showPreview);
             }}
           >
             {t['com.affine.editCollection.rules.preview']()}
-          </div>
-          <div
-            className={clsx(styles.button, styles.bottomButton)}
-            onClick={reset}
-          >
+          </Button>
+          <Button variant="plain" onClick={reset}>
             {t['com.affine.editCollection.rules.reset']()}
-          </div>
+          </Button>
           <div className={styles.previewCountTips}>
             <Trans
               i18nKey="com.affine.editCollection.rules.countTips"
@@ -341,9 +264,10 @@ export const RulesMode = ({
             </Trans>
           </div>
         </div>
-        <div style={{ display: 'flex', alignItems: 'center' }}>{buttons}</div>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 20 }}>
+          {buttons}
+        </div>
       </div>
-      {selectPageNode}
     </>
   );
 };

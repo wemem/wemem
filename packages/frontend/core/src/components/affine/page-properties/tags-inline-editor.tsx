@@ -14,7 +14,6 @@ import type { HTMLAttributes, PropsWithChildren } from 'react';
 import { useCallback, useMemo, useReducer, useRef, useState } from 'react';
 
 import { TagItem, TempTagItem } from '../../page-list';
-import { tagColors } from './common';
 import type { MenuItemOption } from './menu-items';
 import { renderMenuItemOptions } from './menu-items';
 import * as styles from './tags-inline-editor.css';
@@ -81,7 +80,8 @@ export const EditTagMenu = ({
 }>) => {
   const t = useI18n();
   const legacyProperties = useService(WorkspaceLegacyProperties);
-  const tagList = useService(TagService).tagList;
+  const tagService = useService(TagService);
+  const tagList = tagService.tagList;
   const tag = useLiveData(tagList.tagByTagId$(tagId));
   const tagColor = useLiveData(tag?.color$);
   const tagValue = useLiveData(tag?.value$);
@@ -134,7 +134,7 @@ export const EditTagMenu = ({
     options.push('-');
 
     options.push(
-      tagColors.map(([name, color], i) => {
+      tagService.tagColors.map(([name, color], i) => {
         return {
           text: name,
           icon: (
@@ -171,6 +171,7 @@ export const EditTagMenu = ({
     t,
     tag,
     tagColor,
+    tagService.tagColors,
     tagValue,
   ]);
 
@@ -186,7 +187,8 @@ const isCreateNewTag = (
 
 export const TagsEditor = ({ pageId, readonly }: TagsEditorProps) => {
   const t = useI18n();
-  const tagList = useService(TagService).tagList;
+  const tagService = useService(TagService);
+  const tagList = tagService.tagList;
   const tags = useLiveData(tagList.tags$);
   const tagIds = useLiveData(tagList.tagIdsByPageId$(pageId));
   const [inputValue, setInputValue] = useState('');
@@ -266,10 +268,12 @@ export const TagsEditor = ({ pageId, readonly }: TagsEditorProps) => {
 
   const [nextColor, rotateNextColor] = useReducer(
     color => {
-      const idx = tagColors.findIndex(c => c[1] === color);
-      return tagColors[(idx + 1) % tagColors.length][1];
+      const idx = tagService.tagColors.findIndex(c => c[1] === color);
+      return tagService.tagColors[(idx + 1) % tagService.tagColors.length][1];
     },
-    tagColors[Math.floor(Math.random() * tagColors.length)][1]
+    tagService.tagColors[
+      Math.floor(Math.random() * tagService.tagColors.length)
+    ][1]
   );
 
   const onCreateTag = useCallback(
@@ -403,11 +407,9 @@ export const TagsEditor = ({ pageId, readonly }: TagsEditorProps) => {
                     <div className={styles.spacer} />
                     {!isInternalTag(tag.value$.getValue()) && (
                       <EditTagMenu tagId={tag.id} onTagDelete={onTagDelete}>
-                        <IconButton
-                          className={styles.tagEditIcon}
-                          type="plain"
-                          icon={<MoreHorizontalIcon />}
-                        />
+                        <IconButton className={styles.tagEditIcon}>
+                          <MoreHorizontalIcon />
+                        </IconButton>
                       </EditTagMenu>
                     )}
                   </div>

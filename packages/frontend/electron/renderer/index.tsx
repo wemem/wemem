@@ -1,9 +1,10 @@
 import './polyfill/dispose';
 import '@affine/core/bootstrap/preload';
+import './global.css';
 
 import { appConfigProxy } from '@affine/core/hooks/use-app-config-storage';
 import { performanceLogger } from '@affine/core/shared';
-import { apis, events } from '@affine/electron-api';
+import { apis, appInfo, events } from '@affine/electron-api';
 import {
   init,
   reactRouterV6BrowserTracingIntegration,
@@ -74,11 +75,34 @@ function main() {
     events?.ui.onMaximized(handleMaximized);
     events?.ui.onFullScreen(handleFullscreen);
 
+    const tabId = appInfo?.viewId;
+    const handleActiveTabChange = (active: boolean) => {
+      document.documentElement.dataset.active = String(active);
+    };
+
+    if (tabId) {
+      apis?.ui
+        .isActiveTab()
+        .then(active => {
+          handleActiveTabChange(active);
+          events?.ui.onActiveTabChanged(id => {
+            handleActiveTabChange(id === tabId);
+          });
+        })
+        .catch(console.error);
+    }
+
     const handleResize = debounce(() => {
       apis?.ui.handleWindowResize().catch(console.error);
     }, 50);
     window.addEventListener('resize', handleResize);
     performanceMainLogger.info('setup done');
+    window.addEventListener('dragstart', () => {
+      document.documentElement.dataset.dragging = 'true';
+    });
+    window.addEventListener('dragend', () => {
+      document.documentElement.dataset.dragging = 'false';
+    });
   }
 
   mountApp();
