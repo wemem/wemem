@@ -24,7 +24,7 @@ import {
   useState,
 } from 'react';
 
-import { SubscriptionsService } from '../services/subscriptions-service';
+import { NewSubscriptionService } from '../services/subscriptions-service';
 import {
   cmdkValueAtom,
   useCMDKCommandGroups,
@@ -73,7 +73,7 @@ const QuickSearchGroup = ({
 }) => {
   const t = useI18n();
   const i18nKey = categoryToI18nKey[category];
-  const subscribeFeed = useService(SubscriptionsService).subscribeFeed;
+  const subscribeFeed = useService(NewSubscriptionService).subscribeFeed;
   const query = useLiveData(subscribeFeed.query$);
 
   const onCommendSelect = useAsyncCallback(
@@ -179,7 +179,7 @@ export const CMDKContainer = ({
   const [opening, setOpening] = useState(open);
   const { syncing, progress } = useDocEngineStatus();
   const showLoading = useDebouncedValue(syncing, 500);
-  const subscribeFeed = useService(SubscriptionsService).subscribeFeed;
+  const subscribeFeed = useService(NewSubscriptionService).subscribeFeed;
   const mode = useLiveData(subscribeFeed.mode$);
 
   const inputRef = useRef<HTMLInputElement>(null);
@@ -252,7 +252,7 @@ const CMDKQuickSearchModalInner = ({
   open,
   ...props
 }: CMDKModalProps & { pageMeta?: Partial<DocMeta> }) => {
-  const subscribeFeed = useService(SubscriptionsService).subscribeFeed;
+  const subscribeFeed = useService(NewSubscriptionService).subscribeFeed;
   const query = useLiveData(subscribeFeed.query$);
   const groups = useCMDKCommandGroups();
   const t = useI18n();
@@ -274,7 +274,7 @@ const CMDKQuickSearchCallbackModalInner = ({
   open,
   ...props
 }: CMDKModalProps & { pageMeta?: Partial<DocMeta> }) => {
-  const subscribeFeed = useService(SubscriptionsService).subscribeFeed;
+  const subscribeFeed = useService(NewSubscriptionService).subscribeFeed;
   const query = useLiveData(subscribeFeed.query$);
   const groups = useSearchCallbackCommandGroups();
   const t = useI18n();
@@ -297,7 +297,7 @@ export const NewFeedModal = ({
   open,
   ...props
 }: CMDKModalProps & { pageMeta?: Partial<DocMeta> }) => {
-  const subscribeFeed = useService(SubscriptionsService).subscribeFeed;
+  const subscribeFeed = useService(NewSubscriptionService).subscribeFeed;
   const mode = useLiveData(subscribeFeed.mode$);
   const InnerComp =
     mode === 'commands'
@@ -354,7 +354,7 @@ const CMDKKeyBinding = ({ keyBinding }: { keyBinding: string }) => {
 };
 
 export const NewFeedModalComponent = () => {
-  const subscribeFeed = useService(SubscriptionsService).subscribeFeed;
+  const subscribeFeed = useService(NewSubscriptionService).subscribeFeed;
   const open = useLiveData(subscribeFeed.show$);
 
   const onToggleQuickSearch = useCallback(

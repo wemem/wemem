@@ -161,3 +161,26 @@ export const noReferences = style({
 export const menuItem = style({
   marginTop: '0px',
 });
+
+export const draggedOverHighlight = style({
+  selectors: {
+    '&[data-dragged-over="true"]': {
+      background: cssVar('--affine-hover-color'),
+      borderRadius: '4px',
+    },
+  },
+});
+
+export const subscriptionIcon = style({
+  borderRadius: '50%',
+  height: '8px',
+  width: '8px',
+});
+
+export const subscriptionIconContainer = style({
+  display: 'flex',
+  alignItems: 'center',
+  justifyContent: 'center',
+  width: '1em',
+  height: '1em',
+});

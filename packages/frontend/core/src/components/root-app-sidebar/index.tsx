@@ -46,6 +46,7 @@ import { AppSidebarJournalButton } from './journal-button';
 import { TrashButton } from './trash-button';
 import { UpdaterButton } from './updater-button';
 import { UserInfo } from './user-info';
+import { ExplorerSubscriptions } from '../pure/workspace-slider-bar/subscriptions';
 
 export type RootAppSidebarProps = {
   isPublicWorkspace: boolean;
@@ -154,6 +155,7 @@ export const RootAppSidebar = (): ReactElement => {
         <ExplorerMigrationFavorites />
         <ExplorerCollections />
         <ExplorerTags />
+        <ExplorerSubscriptions />
         <CategoryDivider label={t['com.affine.rootAppSidebar.others']()} />
         <div style={{ padding: '0 8px' }}>
           <TrashButton />

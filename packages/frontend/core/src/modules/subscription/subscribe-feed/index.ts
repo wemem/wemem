@@ -8,15 +8,15 @@ import {
 
 import { SubscribeFeed } from './entities/subscribe-feed';
 import { RecentPagesService } from './services/recent-pages';
-import { SubscriptionsService } from './services/subscriptions-service';
+import { NewSubscriptionService } from './services/subscriptions-service';
 
 export * from './entities/subscribe-feed';
-export { RecentPagesService, SubscriptionsService };
+export { RecentPagesService, NewSubscriptionService as SubscriptionsService };
 
 export function configureSubscribeFeedModule(framework: Framework) {
   framework
     .scope(WorkspaceScope)
-    .service(SubscriptionsService)
+    .service(NewSubscriptionService)
     .service(RecentPagesService, [WorkspaceLocalState, DocsService])
     .entity(SubscribeFeed, [GraphQLService]);
 }

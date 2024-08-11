@@ -1,157 +1,42 @@
-import { toast } from '@affine/component';
-import { RenameModal } from '@affine/component/rename-modal';
+import { type DropTargetOptions } from '@affine/component';
 import { IconButton } from '@affine/component/ui/button';
-import {
-  type CollectionMeta,
-  FeedOperations,
-  filterPage,
-  stopPropagation,
-} from '@affine/core/components/page-list';
+import { type CollectionMeta } from '@affine/core/components/page-list';
 import { FeedAvatar } from '@affine/core/components/page-list/feed/avatar';
-import { Doc } from '@affine/core/components/pure/workspace-slider-bar/collections';
-import { SubscribeButton } from '@affine/core/components/pure/workspace-slider-bar/subscriptions/subscribe-button';
-import { useAllPageListConfig } from '@affine/core/hooks/affine/use-all-page-list-config';
-import { getDNDId } from '@affine/core/hooks/affine/use-global-dnd-helper';
-import { useBlockSuiteDocMeta } from '@affine/core/hooks/use-block-suite-page-meta';
+import { mixpanel, track } from '@affine/core/mixpanel';
+import { ExplorerService } from '@affine/core/modules/explorer';
+import { CollapsibleSection } from '@affine/core/modules/explorer/views/layouts/collapsible-section';
+import { ExplorerDocNode } from '@affine/core/modules/explorer/views/nodes/doc';
+import { useExplorerTagNodeOperations } from '@affine/core/modules/explorer/views/nodes/tag/operations';
+import type { GenericExplorerNode } from '@affine/core/modules/explorer/views/nodes/types';
+import {
+  ExplorerTreeNode,
+  type ExplorerTreeNodeDropEffect,
+  ExplorerTreeRoot,
+} from '@affine/core/modules/explorer/views/tree';
 import { SubscriptionService } from '@affine/core/modules/subscription/services/subscription-service';
-import { FavoriteItemsAdapter } from '@affine/core/modules/properties';
+import { NewSubscriptionService } from '@affine/core/modules/subscription/subscribe-feed/services/subscriptions-service';
+import type { Tag } from '@affine/core/modules/tag';
 import { WorkbenchLink } from '@affine/core/modules/workbench';
-import { mixpanel } from '@affine/core/utils';
-import type { Collection } from '@affine/env/filter';
+import type { AffineDNDData } from '@affine/core/types/dnd';
+import { stopPropagation } from '@affine/core/utils';
 import { useI18n } from '@affine/i18n';
-import { MoreHorizontalIcon } from '@blocksuite/icons/rc';
-import type { DocCollection } from '@blocksuite/store';
-import * as Collapsible from '@radix-ui/react-collapsible';
-import { useLiveData, useService } from '@toeverything/infra';
+import { MoreHorizontalIcon, PlusIcon } from '@blocksuite/icons/rc';
+import {
+  GlobalContextService,
+  useLiveData,
+  useService,
+  useServices,
+} from '@toeverything/infra';
 import clsx from 'clsx';
-import { useAtom } from 'jotai';
-import { atomWithStorage } from 'jotai/utils';
 import { useCallback, useMemo, useState } from 'react';
 import { VscInbox, VscMail } from 'react-icons/vsc';
 
-import { SubscriptionsService } from '@affine/core/modules/subscription/subscribe-feed';
 import { WorkbenchService } from '../../../../modules/workbench';
-import {
-  CollapsibleCategoryDivider,
-  MenuLinkItem as SidebarMenuLinkItem,
-} from '../../../app-sidebar';
-import * as draggableMenuItemStyles from '../components/draggable-menu-item.css';
-import type { SubscriptionsListProps } from '../index';
+import { MenuLinkItem as SidebarMenuLinkItem } from '../../../app-sidebar';
+import { RootEmpty } from './empty';
 import * as styles from './styles.css';
 import { useEditSubscription } from './subscription-hooks';
 import { SubscriptionOperations } from './subscription-operations';
-
-export const FeedSidebarNavItem = ({
-  feed,
-  docCollection,
-  className,
-}: {
-  feed: Collection;
-  docCollection: DocCollection;
-  className?: string;
-}) => {
-  const pages = useBlockSuiteDocMeta(docCollection);
-  const [collapsed, setCollapsed] = useState(true);
-  const [open, setOpen] = useState(false);
-  const config = useAllPageListConfig();
-  const feedService = useService(SubscriptionService);
-  const favAdapter = useService(FavoriteItemsAdapter);
-  const favourites = useLiveData(favAdapter.favorites$);
-  const t = useI18n();
-  const dndId = getDNDId('sidebar-collections', 'collection', feed.id);
-
-  const currentPath = useLiveData(
-    useService(WorkbenchService).workbench.location$.map(
-      location => location.pathname
-    )
-  );
-  const path = `/subscription/${feed.id}`;
-
-  const onRename = useCallback(
-    (name: string) => {
-      feedService.updateSubscription(feed.id, () => ({
-        ...feed,
-        name,
-      }));
-      toast(t['com.affine.toastMessage.rename']());
-    },
-    [feed, feedService, t]
-  );
-  const handleOpen = useCallback(() => {
-    setOpen(true);
-  }, []);
-
-  const pagesToRender = pages.filter(meta => {
-    if (meta.trash) return false;
-    const pageData = {
-      meta,
-      publicMode: config.getPublicMode(meta.id),
-      favorite: favourites.some(fav => fav.id === meta.id),
-    };
-    return filterPage(feed, pageData);
-  });
-
-  return (
-    <Collapsible.Root open={!collapsed} className={className}>
-      <SidebarMenuLinkItem
-        className={draggableMenuItemStyles.draggableMenuItem}
-        data-testid="feed-item"
-        data-feed-id={feed.id}
-        data-type="feed-list-item"
-        active={currentPath.includes(path)}
-        icon={<FeedAvatar image={feed.subscription?.icon} />}
-        to={path}
-        onCollapsedChange={setCollapsed}
-        linkComponent={WorkbenchLink}
-        postfix={
-          <div
-            onClick={stopPropagation}
-            onMouseDown={e => {
-              // prevent drag
-              e.stopPropagation();
-            }}
-            style={{ display: 'flex', alignItems: 'center' }}
-          >
-            <FeedOperations feed={feed} openRenameModal={handleOpen}>
-              <IconButton
-                data-testid="feed-options"
-                type="plain"
-                size="small"
-                style={{ marginLeft: 4 }}
-              >
-                <MoreHorizontalIcon />
-              </IconButton>
-            </FeedOperations>
-            <RenameModal
-              open={open}
-              onOpenChange={setOpen}
-              onRename={onRename}
-              currentName={feed.name}
-            />
-          </div>
-        }
-        collapsed={pagesToRender.length > 0 ? collapsed : undefined}
-      >
-        <span>{feed.name}</span>
-      </SidebarMenuLinkItem>
-      <Collapsible.Content className={styles.collapsibleContent}>
-        <div className={styles.docsListContainer}>
-          {pagesToRender.map(page => {
-            return (
-              <Doc
-                parentId={dndId}
-                inAllowList={false}
-                removeFromAllowList={() => {}}
-                docId={page.id}
-                key={page.id}
-              />
-            );
-          })}
-        </div>
-      </Collapsible.Content>
-    </Collapsible.Root>
-  );
-};
 
 const unseenPath = `/subscription/unseen`;
 const seenPath = `/subscription/seen`;
@@ -165,10 +50,7 @@ export const FeedSidebarReadAll = () => {
   );
   return (
     <SidebarMenuLinkItem
-      className={clsx(
-        draggableMenuItemStyles.draggableMenuItem,
-        styles.menuItem
-      )}
+      className={clsx(styles.menuItem)}
       data-testid="feed-docs-unseen"
       data-type="feed-docs-unseen"
       active={
@@ -192,10 +74,7 @@ export const FeedSidebarReadFeeds = () => {
   );
   return (
     <SidebarMenuLinkItem
-      className={clsx(
-        draggableMenuItemStyles.draggableMenuItem,
-        styles.menuItem
-      )}
+      className={clsx(styles.menuItem)}
       data-testid="feed-docs-unseen"
       data-type="feed-docs-unseen"
       active={
@@ -228,10 +107,7 @@ export const SubscriptionSidebarNavItem = ({
 
   return (
     <SidebarMenuLinkItem
-      className={clsx(
-        draggableMenuItemStyles.draggableMenuItem,
-        styles.menuItem
-      )}
+      className={clsx(styles.menuItem)}
       data-testid="feed-docs-unseen"
       data-type="feed-docs-unseen"
       active={
@@ -260,8 +136,8 @@ export const SubscriptionSidebarNavItem = ({
           >
             <IconButton
               data-testid="tag-options"
-              type="plain"
-              size="small"
+              variant="plain"
+              size="20"
               style={{ marginLeft: 4 }}
             >
               <MoreHorizontalIcon />
@@ -285,10 +161,7 @@ export const FeedSidebarReadNewsletter = () => {
   );
   return (
     <SidebarMenuLinkItem
-      className={clsx(
-        draggableMenuItemStyles.draggableMenuItem,
-        styles.menuItem
-      )}
+      className={clsx(styles.menuItem)}
       data-testid="feed-docs-unseen"
       data-type="feed-docs-unseen"
       active={
@@ -303,14 +176,22 @@ export const FeedSidebarReadNewsletter = () => {
   );
 };
 
-export const collapsedAtom = atomWithStorage(
-  'subscription-sidebar-collapsed',
-  true
-);
-
-export const SubscriptionsList = (_props: SubscriptionsListProps) => {
-  const [collapsed, setCollapsed] = useAtom(collapsedAtom);
-  const subscriptionService = useService(SubscriptionService);
+export const ExplorerSubscriptions = () => {
+  const { newSubscriptionService, subscriptionService, explorerService } =
+    useServices({
+      NewSubscriptionService,
+      SubscriptionService,
+      ExplorerService,
+    });
+  const handleOpenNewFeedModal = useCallback(() => {
+    newSubscriptionService.subscribeFeed.show();
+    mixpanel.track('NewOpened', {
+      segment: 'navigation panel',
+      control: 'new subscription button',
+    });
+  }, [newSubscriptionService]);
+  const explorerSection = explorerService.sections.subscriptions;
+  const collapsed = useLiveData(explorerSection.collapsed$);
   const subscriptions = useLiveData(subscriptionService.subscriptions$);
   const subscriptionsMetas = useMemo(() => {
     const collectionsList: CollectionMeta[] = subscriptions.map(collection => {
@@ -323,38 +204,190 @@ export const SubscriptionsList = (_props: SubscriptionsListProps) => {
   }, [subscriptions]);
 
   const t = useI18n();
-  const subscribeFeed = useService(SubscriptionsService).subscribeFeed;
-  const handleOpenNewFeedModal = useCallback(() => {
-    subscribeFeed.show();
-    mixpanel.track('NewOpened', {
-      segment: 'navigation panel',
-      control: 'new subscription button',
-    });
-  }, [subscribeFeed]);
+
   return (
-    <>
-      <CollapsibleCategoryDivider
-        label={t['ai.readease.rootAppSidebar.feeds']()}
-        onCollapsedChange={setCollapsed}
-        collapsed={collapsed}
-      >
-        <SubscribeButton onClick={handleOpenNewFeedModal} />
-      </CollapsibleCategoryDivider>
-      {subscriptions.length > 0 && !collapsed && (
-        <div data-testid="subscriptions" className={styles.wrapper}>
-          {/* <FeedSidebarReadAll /> */}
-          <FeedSidebarReadFeeds />
-          {subscriptionsMetas.map(meta => {
-            return (
-              <SubscriptionSidebarNavItem
-                key={meta.id}
-                subscriptionMeta={meta}
-              />
-            );
-          })}
-          {/* <FeedSidebarReadNewsletter /> */}
-        </div>
-      )}
-    </>
+    <CollapsibleSection
+      name="subscriptions"
+      headerClassName={styles.draggedOverHighlight}
+      title={t['ai.readease.rootAppSidebar.feeds']()}
+      actions={
+        <IconButton
+          data-testid="explorer-bar-add-favorite-button"
+          onClick={handleOpenNewFeedModal}
+          size="16"
+          tooltip={t['ai.readease.feeds.empty.new-feed-button']()}
+        >
+          <PlusIcon />
+        </IconButton>
+      }
+    >
+      <ExplorerTreeRoot placeholder={<RootEmpty />}>
+        {subscriptionsMetas.length > 0 && !collapsed && (
+          <div data-testid="subscriptions" className={styles.wrapper}>
+            <FeedSidebarReadFeeds />
+          </div>
+        )}
+        {subscriptionsMetas.map(meta => {
+          return (
+            <ExplorerSubscriptionNode
+              key={meta.id}
+              subscriptionId={meta.id}
+              subscriptionMeta={meta}
+            />
+          );
+        })}
+      </ExplorerTreeRoot>
+    </CollapsibleSection>
   );
+};
+
+export const ExplorerSubscriptionNode = ({
+  subscriptionId,
+  subscriptionMeta,
+  location,
+  reorderable,
+  operations: additionalOperations,
+  dropEffect,
+  canDrop,
+  defaultRenaming,
+}: {
+  subscriptionMeta: CollectionMeta;
+  subscriptionId: string;
+  defaultRenaming?: boolean;
+} & GenericExplorerNode) => {
+  const t = useI18n();
+  const { globalContextService } = useServices({
+    GlobalContextService,
+  });
+  const active =
+    useLiveData(globalContextService.globalContext.subscriptionId.$) ===
+    subscriptionId;
+  const [collapsed, setCollapsed] = useState(true);
+  const subscriptionService = useService(SubscriptionService);
+  const unseenPath = `/subscription/${subscriptionMeta.id}/unseen`;
+  const Icon = useCallback(
+    ({ className }: { className?: string }) => {
+      return (
+        <div className={clsx(styles.subscriptionIconContainer, className)}>
+          <FeedAvatar
+            image={subscriptionMeta.subscription?.icon}
+            name={subscriptionMeta.title}
+          />
+        </div>
+      );
+    },
+    [subscriptionMeta.subscription?.icon, subscriptionMeta.title]
+  );
+
+  const dndData = useMemo(() => {
+    return {
+      draggable: {
+        entity: {
+          type: 'subscription',
+          id: subscriptionId,
+        },
+        from: location,
+      },
+      dropTarget: {
+        at: 'explorer:tag',
+      },
+    } satisfies AffineDNDData;
+  }, [location, subscriptionId]);
+
+  const handleRename = useCallback(
+    (newName: string) => {
+      subscriptionService.updateSubscription(
+        subscriptionMeta.id,
+        collection => ({
+          ...collection,
+          name: newName,
+        })
+      );
+      track.$.navigationPanel.organize.renameOrganizeItem({
+        type: 'subscription',
+      });
+    },
+    [subscriptionMeta.id, subscriptionService]
+  );
+
+  const handleDropEffectOnTag = useCallback<ExplorerTreeNodeDropEffect>(
+    data => {
+      if (data.treeInstruction?.type === 'make-child') {
+        if (data.source.data.entity?.type === 'doc') {
+          return 'link';
+        }
+      } else {
+        return dropEffect?.(data);
+      }
+      return;
+    },
+    [dropEffect]
+  );
+
+  const handleCanDrop = useMemo<DropTargetOptions<AffineDNDData>['canDrop']>(
+    () => args => {
+      const entityType = args.source.data.entity?.type;
+      return args.treeInstruction?.type !== 'make-child'
+        ? (typeof canDrop === 'function' ? canDrop(args) : canDrop) ?? true
+        : entityType === 'doc';
+    },
+    [canDrop]
+  );
+
+  const operations = useExplorerTagNodeOperations(
+    subscriptionId,
+    useMemo(
+      () => ({
+        openNodeCollapsed: () => setCollapsed(false),
+      }),
+      []
+    )
+  );
+
+  const finalOperations = useMemo(() => {
+    if (additionalOperations) {
+      return [...operations, ...additionalOperations];
+    }
+    return operations;
+  }, [additionalOperations, operations]);
+
+  return (
+    <ExplorerTreeNode
+      icon={Icon}
+      name={subscriptionMeta.name || t['Untitled']()}
+      dndData={dndData}
+      renameable
+      collapsed={collapsed}
+      setCollapsed={setCollapsed}
+      to={unseenPath}
+      active={active}
+      defaultRenaming={defaultRenaming}
+      reorderable={reorderable}
+      onRename={handleRename}
+      canDrop={handleCanDrop}
+      operations={finalOperations}
+      dropEffect={handleDropEffectOnTag}
+      data-testid={`explorer-tag-${subscriptionId}`}
+    ></ExplorerTreeNode>
+  );
+};
+
+/**
+ * the `tag.pageIds$` has a performance issue,
+ * so we split the tag node children into a separate component,
+ * so it won't be rendered when the tag node is collapsed.
+ */
+export const ExplorerTagNodeDocs = ({ tag }: { tag: Tag }) => {
+  const tagDocIds = useLiveData(tag.pageIds$);
+
+  return tagDocIds.map(docId => (
+    <ExplorerDocNode
+      key={docId}
+      docId={docId}
+      reorderable={false}
+      location={{
+        at: 'explorer:tags:docs',
+      }}
+    />
+  ));
 };

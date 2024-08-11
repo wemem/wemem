@@ -3,11 +3,11 @@ import { SearchIcon } from '@blocksuite/icons/rc';
 import { useLiveData, useService } from '@toeverything/infra';
 import { useCommandState } from 'cmdk';
 
-import { SubscriptionsService } from '../services/subscriptions-service';
+import { NewSubscriptionService } from '../services/subscriptions-service';
 import * as styles from './not-found.css';
 
 export const NotFoundGroup = () => {
-  const subscribeFeed = useService(SubscriptionsService).subscribeFeed;
+  const subscribeFeed = useService(NewSubscriptionService).subscribeFeed;
   const query = useLiveData(subscribeFeed.query$);
   // hack: we know that the filtered count is 3 when there is no result (create page & edgeless & append to journal, for mode === 'cmdk')
   const renderNoResult = useCommandState(state => state.filtered.count === 3);

@@ -18,6 +18,10 @@ export interface AffineDNDData extends DNDData {
       | {
           type: 'tag';
           id: string;
+        }
+      | {
+          type: 'subscription';
+          id: string;
         };
     from?:
       | {

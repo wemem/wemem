@@ -308,7 +308,13 @@ const PageEvents = {
   },
 } as const satisfies PageDivision;
 
-type OrganizeItemType = 'doc' | 'folder' | 'collection' | 'tag' | 'favorite';
+type OrganizeItemType =
+  | 'doc'
+  | 'folder'
+  | 'collection'
+  | 'tag'
+  | 'favorite'
+  | 'subscription';
 type OrganizeItemArgs =
   | {
       type: 'link';

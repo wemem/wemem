@@ -1,15 +1,21 @@
 import { ResizePanel } from '@affine/component/resize-panel';
 import { SubscriptionFilterContainer } from '@affine/core/components/page-list/subscription-page-list/subscription-page-filter';
 import { SubscriptionPageList } from '@affine/core/components/page-list/subscription-page-list/subscription-page-list';
+import { SubscriptionService } from '@affine/core/modules/subscription/services/subscription-service';
 import {
   SeenTag,
   SubscriptionTag,
   UnseenTag,
 } from '@affine/core/modules/tag/entities/internal-tag';
 import type { Filter } from '@affine/env/filter';
+import {
+  GlobalContextService,
+  useLiveData,
+  useService,
+} from '@toeverything/infra';
 import { useAtom } from 'jotai';
 import { atomWithStorage } from 'jotai/utils';
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { useParams } from 'react-router-dom';
 
 import { ViewBody, ViewHeader } from '../../../modules/workbench';
@@ -17,8 +23,6 @@ import * as styles from './index.css';
 import { EmptySubscriptionPage } from './page-subscription-empty';
 import { SubscriptionDetailPage } from './subscription-detail-page';
 import { subscriptionSidebarOpen } from './subscription-sidebar-switch';
-import { useLiveData, useService } from '@toeverything/infra';
-import { SubscriptionService } from '@affine/core/modules/subscription/services/subscription-service';
 
 const MAX_WIDTH = 745;
 const MIN_WIDTH = 256;
@@ -63,9 +67,23 @@ export const AllSubscriptionPage = () => {
   const pageId = params.pageId;
   const subscriptionId = params.subscriptionId;
   const subscriptionService = useService(SubscriptionService);
+  const globalContext = useService(GlobalContextService).globalContext;
   const subscription = useLiveData(
     subscriptionService.subscriptionById$(subscriptionId)
   );
+
+  useEffect(() => {
+    if (subscription) {
+      globalContext.subscriptionId.set(subscription.id);
+      globalContext.isSubscription.set(true);
+
+      return () => {
+        globalContext.subscriptionId.set(null);
+        globalContext.isSubscription.set(false);
+      };
+    }
+    return;
+  }, [subscription, globalContext]);
 
   const filter = useMemo(() => {
     const filter =

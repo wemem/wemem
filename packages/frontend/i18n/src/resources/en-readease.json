@@ -624,7 +624,7 @@
   "ai.readease.feed-docs.mark-all-as-seen": "Mark all as seen",
   "ai.readease.feeds.header": "Subscriptions",
   "ai.readease.feeds.empty.message": "No feeds",
-  "ai.readease.feeds.empty.new-feed-button": "New feed",
+  "ai.readease.feeds.empty.new-feed-button": "New Subscription",
   "ai.readease.feeds.allFeeds": "All Feeds",
   "ai.readease.feeds.new-feed-button": "Subscribe to Feed",
   "ai.readease.feed.toolbar.selected": "<0>{{count}}</0> selected",
