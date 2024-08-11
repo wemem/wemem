@@ -37,7 +37,7 @@ export const SubscriptionSidebarSwitch = ({
       <IconButton
         className={clsx(styles.sidebarSwitch, className)}
         data-show={show}
-        size="large"
+        size="24"
         data-testid={`app-sidebar-arrow-button-${open ? 'collapse' : 'expand'}`}
         style={{
           zIndex: 1,
