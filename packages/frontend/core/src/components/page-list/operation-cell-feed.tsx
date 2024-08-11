@@ -8,7 +8,7 @@ import {
 } from '@affine/component';
 import { useUnsubscribe } from '@affine/core/components/page-list/feed';
 import { useEditSubscription } from '@affine/core/components/page-list/feed/use-edit-feed';
-import { FavoriteItemsAdapter } from '@affine/core/modules/properties';
+import { CompatibleFavoriteItemsAdapter } from '@affine/core/modules/properties';
 import type { Collection } from '@affine/env/filter';
 import { useI18n } from '@affine/i18n';
 import { DeleteIcon, EditIcon, MoreVerticalIcon } from '@blocksuite/icons/rc';
@@ -26,7 +26,7 @@ export interface FeedOperationCellProps {
 export const FeedOperationCell = ({ collection }: FeedOperationCellProps) => {
   const t = useI18n();
 
-  const favAdapter = useService(FavoriteItemsAdapter);
+  const favAdapter = useService(CompatibleFavoriteItemsAdapter);
   const favourite = useLiveData(
     favAdapter.isFavorite$(collection.id, 'collection')
   );
@@ -85,7 +85,7 @@ export const FeedOperationCell = ({ collection }: FeedOperationCellProps) => {
             align: 'end',
           }}
         >
-          <IconButton type="plain">
+          <IconButton variant="plain">
             <MoreVerticalIcon />
           </IconButton>
         </Menu>

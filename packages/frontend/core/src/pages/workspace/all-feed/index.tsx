@@ -4,15 +4,15 @@ import {
   VirtualizedFeedList,
 } from '@affine/core/components/page-list/feeds';
 import { SubscriptionService } from '@affine/core/modules/subscription/services/subscription-service';
-import { mixpanel } from '@affine/core/utils';
+import { SubscriptionsService } from '@affine/core/modules/subscription/subscribe-feed';
 import { useLiveData, useService } from '@toeverything/infra';
 import { useCallback, useMemo, useState } from 'react';
 
-import { SubscriptionsService } from '@affine/core/modules/subscription/subscribe-feed';
-import { ViewBodyIsland, ViewHeaderIsland } from '../../../modules/workbench';
+import { ViewBody, ViewHeader } from '../../../modules/workbench';
 import { EmptyFeedList } from '../page-list-empty-feed';
 import { AllFeedHeader } from './header';
 import * as styles from './index.css';
+import { mixpanel } from '@affine/core/mixpanel';
 
 export const AllCollection = () => {
   const [hideHeaderCreateNew, setHideHeaderCreateNew] = useState(true);
@@ -38,13 +38,13 @@ export const AllCollection = () => {
   }, [subscribeFeed]);
   return (
     <>
-      <ViewHeaderIsland>
+      <ViewHeader>
         <AllFeedHeader
           showCreateNew={!hideHeaderCreateNew}
           handleCreateFeed={handleOpenNewFeedModal}
         />
-      </ViewHeaderIsland>
-      <ViewBodyIsland>
+      </ViewHeader>
+      <ViewBody>
         <div className={styles.body}>
           {feedMetas.length > 0 ? (
             <VirtualizedFeedList
@@ -59,7 +59,7 @@ export const AllCollection = () => {
             />
           )}
         </div>
-      </ViewBodyIsland>
+      </ViewBody>
     </>
   );
 };

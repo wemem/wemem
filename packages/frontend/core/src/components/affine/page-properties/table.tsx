@@ -89,6 +89,7 @@ import {
   TagsValue,
 } from './property-row-value-renderer';
 import * as styles from './styles.css';
+import type { Doc } from '@blocksuite/store';
 
 type PagePropertiesSettingsPopupProps = PropsWithChildren<{
   className?: string;
@@ -1101,7 +1102,13 @@ export const usePagePropertiesManager = (docId: string) => {
 
 // this is the main component that renders the page properties table at the top of the page below
 // the page title
-export const PagePropertiesTable = ({ docId }: { docId: string }) => {
+export const PagePropertiesTable = ({
+  docId,
+  page,
+}: {
+  docId: string;
+  page: Doc;
+}) => {
   const manager = usePagePropertiesManager(docId);
 
   // if the given page is not in the current workspace, then we don't render anything

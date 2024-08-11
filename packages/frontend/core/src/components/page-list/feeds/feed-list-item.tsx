@@ -1,7 +1,7 @@
 import { Checkbox } from '@affine/component';
 import type { FeedListItemProps } from '@affine/core/components/page-list/types-feed';
-import { getDNDId } from '@affine/core/hooks/affine/use-global-dnd-helper';
 import { WorkbenchLink } from '@affine/core/modules/workbench';
+import { stopPropagation } from '@affine/core/utils';
 import { useI18n } from '@affine/i18n';
 import { useDraggable } from '@dnd-kit/core';
 import type { PropsWithChildren } from 'react';
@@ -13,15 +13,15 @@ import type {
   DraggableTitleCellData,
   PageListItemProps,
 } from '../types';
-import { ColWrapper, stopPropagation } from '../utils';
+import { ColWrapper } from '../utils';
 import * as styles from './feed-list-item.css';
 
 const ListTitleCell = ({
-                         title,
-                         preview,
-                       }: Pick<PageListItemProps, 'title' | 'preview'>) => {
+  title,
+  preview,
+}: Pick<PageListItemProps, 'title' | 'preview'>) => {
   const t = useI18n();
-  console.log('preview',preview);
+  console.log('preview', preview);
   return (
     <div data-testid="page-list-item-title" className={styles.titleCell}>
       <div
@@ -51,10 +51,10 @@ const ListIconCell = ({ icon }: Pick<PageListItemProps, 'icon'>) => {
 };
 
 const FeedSelectionCell = ({
-                             selectable,
-                             onSelectedChange,
-                             selected,
-                           }: Pick<
+  selectable,
+  onSelectedChange,
+  selected,
+}: Pick<
   CollectionListItemProps,
   'selectable' | 'onSelectedChange' | 'selected'
 >) => {
@@ -62,7 +62,7 @@ const FeedSelectionCell = ({
     (_event: React.ChangeEvent<HTMLInputElement>) => {
       return onSelectedChange?.();
     },
-    [onSelectedChange],
+    [onSelectedChange]
   );
   if (!selectable) {
     return null;
@@ -79,8 +79,8 @@ const FeedSelectionCell = ({
 };
 
 const FeedListOperationsCell = ({
-                                  operations,
-                                }: Pick<CollectionListItemProps, 'operations'>) => {
+  operations,
+}: Pick<CollectionListItemProps, 'operations'>) => {
   return operations ? (
     <div onClick={stopPropagation} className={styles.operationsCell}>
       {operations}
@@ -104,6 +104,7 @@ export const FeedListItem = (props: FeedListItemProps) => {
       </div>
     );
   }, [
+    props.description,
     props.icon,
     props.onSelectedChange,
     props.selectable,
@@ -113,7 +114,7 @@ export const FeedListItem = (props: FeedListItemProps) => {
 
   // TODO: use getDropItemId
   const { setNodeRef, attributes, listeners, isDragging } = useDraggable({
-    id: getDNDId('collection-list', 'collection', props.feedId),
+    id: props.feedId,
     data: {
       preview: collectionTitleElement,
     } satisfies DraggableTitleCellData,
@@ -144,7 +145,7 @@ export const FeedListItem = (props: FeedListItemProps) => {
             />
             <ListIconCell icon={props.icon} />
           </div>
-          <ListTitleCell title={props.title} preview={props.description}/>
+          <ListTitleCell title={props.title} preview={props.description} />
         </ColWrapper>
       </ColWrapper>
       {props.operations ? (
@@ -161,22 +162,19 @@ export const FeedListItem = (props: FeedListItemProps) => {
 };
 
 type feedListWrapperProps = PropsWithChildren<
-  Pick<
-    FeedListItemProps,
-    'to' | 'feedId' | 'onClick' | 'draggable'
-  > & {
-  isDragging: boolean;
-}
+  Pick<FeedListItemProps, 'to' | 'feedId' | 'onClick' | 'draggable'> & {
+    isDragging: boolean;
+  }
 >;
 
 function FeedListItemWrapper({
-                               to,
-                               isDragging,
-                               feedId,
-                               onClick,
-                               children,
-                               draggable,
-                             }: feedListWrapperProps) {
+  to,
+  isDragging,
+  feedId,
+  onClick,
+  children,
+  draggable,
+}: feedListWrapperProps) {
   const [selectionState, setSelectionActive] = useAtom(selectionStateAtom);
   const handleClick = useCallback(
     (e: React.MouseEvent) => {
@@ -198,7 +196,7 @@ function FeedListItemWrapper({
       selectionState.selectable,
       selectionState.selectionActive,
       setSelectionActive,
-    ],
+    ]
   );
 
   const commonProps = useMemo(
@@ -211,7 +209,7 @@ function FeedListItemWrapper({
       'data-dragging': isDragging,
       onClick: handleClick,
     }),
-    [feedId, draggable, isDragging, onClick, to, handleClick],
+    [feedId, draggable, isDragging, onClick, to, handleClick]
   );
 
   if (to) {

@@ -1,5 +1,4 @@
 import { Checkbox, Tooltip } from '@affine/component';
-import { getDNDId } from '@affine/core/hooks/affine/use-global-dnd-helper';
 import { TagService } from '@affine/core/modules/tag';
 import {
   SubscriptionTag,
@@ -20,10 +19,11 @@ import {
   useAtom,
 } from '../scoped-atoms';
 import type { DraggableTitleCellData, PageListItemProps } from '../types';
-import { ColWrapper, stopPropagation } from '../utils';
+import { ColWrapper } from '../utils';
 import { useSubscriptionPageListDisplayProperties } from './subscription-hooks';
 import * as styles from './subscription-page-list-item.css';
 import { SubscriptionPageTags } from './subscription-page-tags';
+import { stopPropagation } from '@affine/core/utils';
 
 const ListTitleCell = ({
   title,
@@ -187,7 +187,7 @@ export const SubscriptionPageListItem = (props: PageListItemProps) => {
   ]);
 
   const { setNodeRef, attributes, listeners, isDragging } = useDraggable({
-    id: getDNDId('doc-list', 'doc', props.pageId),
+    id: props.pageId,
     data: {
       preview: pageTitleElement,
     } satisfies DraggableTitleCellData,

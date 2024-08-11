@@ -20,7 +20,7 @@ import { useCallback, useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
 
 import { useNavigateHelper } from '../../../hooks/use-navigate-helper';
-import { ViewBodyIsland, ViewHeaderIsland } from '../../../modules/workbench';
+import { ViewBody, ViewHeader } from '../../../modules/workbench';
 import { SubscriptionDetailHeader } from './header';
 import * as styles from './subscription.css';
 
@@ -28,10 +28,10 @@ export const FeedDetail = ({ collection }: { collection: Collection }) => {
   const [filters, setFilters] = useState<Filter[]>([]);
   return (
     <>
-      <ViewHeaderIsland>
+      <ViewHeader>
         <SubscriptionDetailHeader />
-      </ViewHeaderIsland>
-      <ViewBodyIsland>
+      </ViewHeader>
+      <ViewBody>
         <div className={styles.body}>
           <FilterContainer filters={filters} onChangeFilters={setFilters} />
           <VirtualizedPageList
@@ -39,7 +39,7 @@ export const FeedDetail = ({ collection }: { collection: Collection }) => {
             filters={[...collection.filterList, ...filters]}
           />
         </div>
-      </ViewBodyIsland>
+      </ViewBody>
     </>
   );
 };
@@ -89,7 +89,7 @@ const Placeholder = ({ collection }: { collection: Collection }) => {
 
   return (
     <>
-      <ViewHeaderIsland>
+      <ViewHeader>
         <div
           style={{
             display: 'flex',
@@ -128,8 +128,8 @@ const Placeholder = ({ collection }: { collection: Collection }) => {
           </div>
           <div style={{ flex: 1 }} />
         </div>
-      </ViewHeaderIsland>
-      <ViewBodyIsland>
+      </ViewHeader>
+      <ViewBody>
         <div
           style={{
             display: 'flex',
@@ -264,7 +264,7 @@ const Placeholder = ({ collection }: { collection: Collection }) => {
             </div>
           ) : null}
         </div>
-      </ViewBodyIsland>
+      </ViewBody>
       {node}
     </>
   );

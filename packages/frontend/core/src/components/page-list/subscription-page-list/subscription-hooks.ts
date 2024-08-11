@@ -1,11 +1,11 @@
 import { toast } from '@affine/component';
 import { useDuplicateDoc } from '@affine/core/hooks/affine/use-duplicate-doc';
-import { FavoriteItemsAdapter } from '@affine/core/modules/properties';
+import { mixpanel } from '@affine/core/mixpanel';
+import { CompatibleFavoriteItemsAdapter } from '@affine/core/modules/properties';
 import {
   getRefPageId,
   SubscriptionTag,
 } from '@affine/core/modules/tag/entities/internal-tag';
-import { mixpanel } from '@affine/core/utils';
 import { useI18n } from '@affine/i18n';
 import type { Doc, DocMeta } from '@blocksuite/store';
 import { useService, WorkspaceService } from '@toeverything/infra';
@@ -50,7 +50,7 @@ export const useToggleFavoritePage = (page: DocMeta) => {
   const currentWorkspace = useService(WorkspaceService).workspace;
   const duplicate = useDuplicateDoc(currentWorkspace.docCollection);
   const refPageId = getRefPageId(page.tags) as string;
-  const favAdapter = useService(FavoriteItemsAdapter);
+  const favAdapter = useService(CompatibleFavoriteItemsAdapter);
 
   return useCallback(async () => {
     if (!refPageId) {

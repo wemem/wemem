@@ -8,8 +8,8 @@ import clsx from 'clsx';
 import type { MouseEventHandler } from 'react';
 import { useCallback, useMemo } from 'react';
 
-import { stopPropagation } from '../utils';
 import * as styles from './subscription-page-tags.css';
+import { stopPropagation } from '@affine/core/utils';
 
 export interface PageTagsProps {
   tags: Tag[];

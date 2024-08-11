@@ -1,3 +1,4 @@
+import { cssVar } from '@toeverything/theme';
 import { createContext } from 'react';
 
 import type { PagePropertiesManager } from './page-properties-manager';

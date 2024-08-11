@@ -1,22 +1,10 @@
 import { Scrollable } from '@affine/component';
 import { PageDetailSkeleton } from '@affine/component/page-detail-skeleton';
-import { AIProvider } from '@affine/core/blocksuite/presets/ai';
 import { PageDetailEditor } from '@affine/core/components/page-detail-editor';
 import { AIIsland } from '@affine/core/components/pure/ai-island';
 import { SharePageNotFoundError } from '@affine/core/components/share-page-not-found-error';
 import { useActiveBlocksuiteEditor } from '@affine/core/hooks/use-block-suite-editor';
 import { usePageDocumentTitle } from '@affine/core/hooks/use-global-state';
-import {
-  MultiTabSidebarBody,
-  MultiTabSidebarHeaderSwitcher,
-  sidebarTabs,
-  type TabOnLoadFn,
-} from '@affine/core/modules/multi-tab-sidebar';
-import {
-  RightSidebarService,
-  RightSidebarViewIsland,
-} from '@affine/core/modules/right-sidebar';
-import { useIsActiveView } from '@affine/core/modules/workbench';
 import { noop } from '@blocksuite/global/utils';
 import type { AffineEditorContainer } from '@blocksuite/presets';
 import type { Doc as BlockSuiteDoc } from '@blocksuite/store';
@@ -29,13 +17,7 @@ import {
   WorkspaceService,
 } from '@toeverything/infra';
 import clsx from 'clsx';
-import {
-  useCallback,
-  useEffect,
-  useLayoutEffect,
-  useRef,
-  useState,
-} from 'react';
+import { useCallback, useLayoutEffect, useRef, useState } from 'react';
 import type { LoaderFunction } from 'react-router-dom';
 import {
   isRouteErrorResponse,
@@ -133,44 +115,6 @@ export const SubscriptionDetailPage = ({ docId }: IDetailPageProps) => {
   // 使用 useRef 保存上一次的 release 函数
   const previousReleaseRef = useRef<(() => void) | undefined>(undefined);
 
-  const isActiveView = useIsActiveView();
-  const rightSidebar = useService(RightSidebarService).rightSidebar;
-  const activeTabName = useLiveData(rightSidebar.activeTabName$);
-  const isWindowsDesktop = environment.isDesktop && environment.isWindows;
-
-  const setActiveTabName = useCallback(
-    (...args: Parameters<typeof rightSidebar.setActiveTabName>) =>
-      rightSidebar.setActiveTabName(...args),
-    [rightSidebar]
-  );
-
-  const [tabOnLoad, setTabOnLoad] = useState<TabOnLoadFn | null>(null);
-
-  useEffect(() => {
-    const disposable = AIProvider.slots.requestOpenWithChat.on(params => {
-      const opened = rightSidebar.isOpen$.value;
-      const actived = activeTabName === 'chat';
-
-      if (!opened) {
-        rightSidebar.open();
-      }
-      if (!actived) {
-        setActiveTabName('chat');
-      }
-
-      // Save chat parameters:
-      // * The right sidebar is not open
-      // * Chat panel is not activated
-      if (!opened || !actived) {
-        const callback = AIProvider.genRequestChatCardsFn(params);
-        setTabOnLoad(() => callback);
-      } else {
-        setTabOnLoad(null);
-      }
-    });
-    return () => disposable.dispose();
-  }, [activeTabName, rightSidebar, setActiveTabName]);
-
   useLayoutEffect(() => {
     if (!docRecord) {
       return;
@@ -245,37 +189,6 @@ export const SubscriptionDetailPage = ({ docId }: IDetailPageProps) => {
             </Scrollable.Root>
           </div>
         </div>
-        <RightSidebarViewIsland
-          active={isActiveView}
-          header={
-            !isWindowsDesktop ? (
-              <MultiTabSidebarHeaderSwitcher
-                activeTabName={activeTabName ?? sidebarTabs[0]?.name}
-                setActiveTabName={setActiveTabName}
-                tabs={sidebarTabs}
-              />
-            ) : null
-          }
-          body={
-            <MultiTabSidebarBody
-              editor={editor}
-              tab={
-                sidebarTabs.find(ext => ext.name === activeTabName) ??
-                sidebarTabs[0]
-              }
-              onLoad={tabOnLoad}
-            >
-              {/* Show switcher in body for windows desktop */}
-              {isWindowsDesktop && (
-                <MultiTabSidebarHeaderSwitcher
-                  activeTabName={activeTabName ?? sidebarTabs[0]?.name}
-                  setActiveTabName={setActiveTabName}
-                  tabs={sidebarTabs}
-                />
-              )}
-            </MultiTabSidebarBody>
-          }
-        />
       </FrameworkScope>
     </FrameworkScope>
   );

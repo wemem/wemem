@@ -15,8 +15,8 @@ import {
 import { PageOperationCell } from '@affine/core/components/page-list/subscription-page-list/subscription-operation-cell';
 import { useCurrentWorkspacePropertiesAdapter } from '@affine/core/hooks/use-affine-adapter';
 import { CompatibleFavoriteItemsAdapter } from '@affine/core/modules/properties';
-import { RightSidebarService } from '@affine/core/modules/right-sidebar';
 import { getRefPageId } from '@affine/core/modules/tag/entities/internal-tag';
+import { WorkbenchService } from '@affine/core/modules/workbench';
 import { ToggleButton } from '@affine/core/modules/workbench/view/route-container';
 import { useI18n } from '@affine/i18n';
 import { LinkIcon } from '@blocksuite/icons/rc';
@@ -48,12 +48,12 @@ export function SubscriptionPageHeader({
 }) {
   const t = useI18n();
   const pageMeta = useLiveData(page.meta$) as DocMeta;
-  const rightSidebar = useService(RightSidebarService).rightSidebar;
-  const rightSidebarOpen = useLiveData(rightSidebar.isOpen$);
+  const workbench = useService(WorkbenchService).workbench;
+  const rightSidebarOpen = useLiveData(workbench.sidebarOpen$);
   const leftSidebarOpen = useAtomValue(subscriptionSidebarOpen);
   const handleToggleRightSidebar = useCallback(() => {
-    rightSidebar.toggle();
-  }, [rightSidebar]);
+    workbench.toggleSidebar();
+  }, [workbench]);
 
   const refPageId = getRefPageId(pageMeta.tags) as string;
   const favAdapter = useService(CompatibleFavoriteItemsAdapter);
@@ -105,7 +105,7 @@ export function SubscriptionPageHeader({
           // eslint-disable-next-line @typescript-eslint/no-misused-promises
           onClick={deepReading}
           data-testid="share-page-edit-button"
-          type="primary"
+          variant="primary"
         >
           {t['ai.readease.subscription.deep-reading']()}
         </Button>
@@ -119,8 +119,7 @@ export function SubscriptionPageHeader({
         <InfoModal
           open={openInfoModal}
           onOpenChange={setOpenInfoModal}
-          page={blocksuiteDoc}
-          workspace={currentWorkspace}
+          docId={page.id}
         />
       )}
     </div>

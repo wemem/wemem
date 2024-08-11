@@ -12,7 +12,7 @@ import { atomWithStorage } from 'jotai/utils';
 import { useMemo, useState } from 'react';
 import { useParams } from 'react-router-dom';
 
-import { ViewBodyIsland, ViewHeaderIsland } from '../../../modules/workbench';
+import { ViewBody, ViewHeader } from '../../../modules/workbench';
 import * as styles from './index.css';
 import { EmptySubscriptionPage } from './page-subscription-empty';
 import { SubscriptionDetailPage } from './subscription-detail-page';
@@ -98,8 +98,8 @@ export const AllSubscriptionPage = () => {
 
   return (
     <>
-      <ViewHeaderIsland />
-      <ViewBodyIsland>
+      <ViewHeader />
+      <ViewBody>
         <div className={styles.body}>
           <ResizePanel
             open={open}
@@ -143,7 +143,7 @@ export const AllSubscriptionPage = () => {
             <EmptySubscriptionPage />
           )}
         </div>
-      </ViewBodyIsland>
+      </ViewBody>
     </>
   );
 };

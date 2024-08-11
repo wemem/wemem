@@ -15,7 +15,6 @@ import { configurePermissionsModule } from './permissions';
 import { configureWorkspacePropertiesModule } from './properties';
 import { configureQuickSearchModule } from './quicksearch';
 import { configureShareDocsModule } from './share-doc';
-import { configureStorageImpls } from './storage';
 import { configureFeedModule } from './subscription';
 import { configureSubscribeFeedModule } from './subscription/subscribe-feed';
 import { configureTagModule } from './tag';
@@ -27,7 +26,6 @@ export function configureCommonModules(framework: Framework) {
   configureFeedModule(framework);
   configureNavigationModule(framework);
   configureSubscribeFeedModule(framework);
-  configureRightSidebarModule(framework);
   configureTagModule(framework);
   configureWorkspacePropertiesModule(framework);
   configureCloudModule(framework);

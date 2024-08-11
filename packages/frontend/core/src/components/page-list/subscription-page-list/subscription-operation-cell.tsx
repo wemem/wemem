@@ -1,6 +1,6 @@
 import { IconButton, Menu, MenuIcon, MenuItem } from '@affine/component';
 import { useTrashModalHelper } from '@affine/core/hooks/affine/use-trash-modal-helper';
-import { FavoriteItemsAdapter } from '@affine/core/modules/properties';
+import { CompatibleFavoriteItemsAdapter } from '@affine/core/modules/properties';
 import { getRefPageId } from '@affine/core/modules/tag/entities/internal-tag';
 import { useI18n } from '@affine/i18n';
 import {
@@ -32,7 +32,7 @@ export const PageOperationCell = ({ page }: PageOperationCellProps) => {
   const blocksuiteDoc = currentWorkspace.docCollection.getDoc(page.id);
 
   const refPageId = getRefPageId(page.tags) as string;
-  const favAdapter = useService(FavoriteItemsAdapter);
+  const favAdapter = useService(CompatibleFavoriteItemsAdapter);
   const favourite = useLiveData(favAdapter.isFavorite$(refPageId, 'doc'));
 
   const [openInfoModal, setOpenInfoModal] = useState(false);
@@ -55,8 +55,8 @@ export const PageOperationCell = ({ page }: PageOperationCellProps) => {
     <>
       <MenuItem
         // eslint-disable-next-line @typescript-eslint/no-misused-promises, @typescript-eslint/no-floating-promises
-        onClick={() => {
-          deepReading();
+        onClick={async () => {
+          await deepReading();
         }}
         preFix={
           <MenuIcon>
@@ -68,8 +68,8 @@ export const PageOperationCell = ({ page }: PageOperationCellProps) => {
       </MenuItem>
       <MenuItem
         // eslint-disable-next-line @typescript-eslint/no-misused-promises, @typescript-eslint/no-floating-promises
-        onClick={() => {
-          toggleFavoritePage();
+        onClick={async () => {
+          await toggleFavoritePage();
         }}
         preFix={
           <MenuIcon>
@@ -110,7 +110,7 @@ export const PageOperationCell = ({ page }: PageOperationCellProps) => {
             align: 'end',
           }}
         >
-          <IconButton type="plain" data-testid="page-list-operation-button">
+          <IconButton variant="plain" data-testid="page-list-operation-button">
             <MoreVerticalIcon />
           </IconButton>
         </Menu>
@@ -119,8 +119,7 @@ export const PageOperationCell = ({ page }: PageOperationCellProps) => {
         <InfoModal
           open={openInfoModal}
           onOpenChange={setOpenInfoModal}
-          page={blocksuiteDoc}
-          workspace={currentWorkspace}
+          docId={blocksuiteDoc.id}
         />
       ) : null}
     </>
