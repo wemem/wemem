@@ -1,4 +1,3 @@
-import { sha } from '@blocksuite/global/utils';
 import {
   type DocCollection,
   extMimeMap,
@@ -9,6 +8,7 @@ import JSZip from 'jszip';
 
 import { MarkdownAdapter } from '../../../../_common/adapters/markdown.js';
 import { NotionHtmlAdapter } from '../../../../_common/adapters/notion-html.js';
+import { sha } from '../../../../_common/adapters/utils.js';
 import { defaultImageProxyMiddleware } from '../../../../_common/transformers/middlewares.js';
 
 export async function importMarkDown(
@@ -49,7 +49,8 @@ export async function importMarkDown(
     file: text,
     assets: job.assetsManager,
   });
-  return page.id;
+
+  return page?.id;
 }
 
 export async function importHtml(collection: DocCollection, text: string) {
@@ -63,7 +64,7 @@ export async function importHtml(collection: DocCollection, text: string) {
     assets: job.assetsManager,
   });
   const page = await job.snapshotToDoc(snapshot);
-  return page.id;
+  return page?.id;
 }
 
 export async function importNotion(collection: DocCollection, file: File) {

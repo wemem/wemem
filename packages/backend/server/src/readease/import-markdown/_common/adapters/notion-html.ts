@@ -1,4 +1,4 @@
-import { isEqual, sha } from '@blocksuite/global/utils';
+import { isEqual } from '@blocksuite/global/utils';
 import type { DeltaInsert } from '@blocksuite/inline';
 import {
   type AssetsManager,
@@ -29,7 +29,7 @@ import {
   hastQuerySelector,
   type HtmlAST,
 } from './hast.js';
-import { createText, fetchable, fetchImage, isText } from './utils.js';
+import { createText, fetchable, fetchImage, isText, sha } from './utils.js';
 
 export type NotionHtml = string;
 

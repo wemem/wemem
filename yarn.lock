@@ -800,6 +800,8 @@ __metadata:
     ava: "npm:^6.1.2"
     c8: "npm:^10.0.0"
     cookie-parser: "npm:^1.4.6"
+    crypto: "npm:^1.0.1"
+    date-fns: "npm:^3.6.0"
     dotenv: "npm:^16.4.5"
     dotenv-cli: "npm:^7.4.1"
     express: "npm:^4.19.2"
@@ -813,6 +815,7 @@ __metadata:
     ioredis: "npm:^5.3.2"
     jszip: "npm:^3.10.1"
     keyv: "npm:^4.5.4"
+    lib0: "npm:^0.2.97"
     lodash-es: "npm:^4.17.21"
     mixpanel: "npm:^0.18.0"
     mustache: "npm:^4.2.0"
@@ -829,6 +832,8 @@ __metadata:
     prisma: "npm:^5.12.1"
     prom-client: "npm:^15.1.1"
     reflect-metadata: "npm:^0.2.2"
+    remark-parse: "npm:^11.0.0"
+    remark-stringify: "npm:^11.0.0"
     rxjs: "npm:^7.8.1"
     semver: "npm:^7.6.0"
     ses: "npm:^1.4.1"
@@ -838,6 +843,7 @@ __metadata:
     supertest: "npm:^7.0.0"
     ts-node: "npm:^10.9.2"
     typescript: "npm:^5.4.5"
+    unified: "npm:^11.0.5"
     ws: "npm:^8.16.0"
     yjs: "patch:yjs@npm%3A13.6.18#~/.yarn/patches/yjs-npm-13.6.18-ad0d5f7c43.patch"
     zod: "npm:^3.22.4"
@@ -20508,6 +20514,13 @@ __metadata:
   languageName: node
   linkType: hard
 
+"crypto@npm:^1.0.1":
+  version: 1.0.1
+  resolution: "crypto@npm:1.0.1"
+  checksum: 10/087fe3165bd94c333a49e6ed66a0193911f63eac38a24f379b3001a5fe260a59c413646e53a0f67875ba13902b2686d81dc703cb2c147a4ec727dcdc04e5645e
+  languageName: node
+  linkType: hard
+
 "css-declaration-sorter@npm:^7.2.0":
   version: 7.2.0
   resolution: "css-declaration-sorter@npm:7.2.0"
@@ -27981,6 +27994,19 @@ __metadata:
     0gentesthtml: bin/gentesthtml.js
     0serve: bin/0serve.js
   checksum: 10/10529e86bcf6c21d824d4b2045f7a136a0948748309c5411ea0103cd3479fecb961121870ff90da993778848d41542465b3918bacd1e927912fe8a5eaa5d7258
+  languageName: node
+  linkType: hard
+
+"lib0@npm:^0.2.97":
+  version: 0.2.97
+  resolution: "lib0@npm:0.2.97"
+  dependencies:
+    isomorphic.js: "npm:^0.2.4"
+  bin:
+    0ecdsa-generate-keypair: bin/0ecdsa-generate-keypair.js
+    0gentesthtml: bin/gentesthtml.js
+    0serve: bin/0serve.js
+  checksum: 10/c86b0a95a5f6f0e3001515cb64a06580949b95faf2a3f89aab60278a3c4a63583c4805425bef4f5773a20747dd2a5f90689ecf7f2b38126875a96b69cbaea28f
   languageName: node
   linkType: hard
 

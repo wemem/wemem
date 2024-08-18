@@ -66,6 +66,8 @@ export class SyncController {
         message: `workspace ${workspaceId} not found`,
       };
     }
+
+    // 监听更新事件
     workspace.doc.on('update', update => {
       const docId = new DocID(workspaceId, workspaceId);
       this.docManager
@@ -85,52 +87,56 @@ export class SyncController {
         });
     });
 
+    // 获取文档信息
     const meta = workspace.doc.getMap('meta');
     const pages = meta.get('pages') as Y.Array<DocMeta>;
-
     const docCollection = new DocCollection({
       id: workspaceId,
       idGenerator: () => nanoid(21),
       schema: globalBlockSuiteSchema,
     });
+
     docCollection.meta.initialize();
 
-    const subDocId = await importMarkDown(
-      docCollection,
-      markdownContent,
-      title
-    );
+    const docId = await importMarkDown(docCollection, markdownContent, title);
+
+    if (!docId) {
+      return {
+        message: `create doc in workspace ${workspaceId} fail`,
+      };
+    }
 
     // 创建一个新的 YMap 来存储文档信息
     const subDocMeta = new Y.Map();
-    subDocMeta.set('id', subDocId);
+    subDocMeta.set('id', docId);
     subDocMeta.set('title', title);
     subDocMeta.set('createDate', Date.now());
     subDocMeta.set('tags', new Y.Array());
     pages.push([subDocMeta as unknown as DocMeta]);
 
-    const newDoc = docCollection.getDoc(subDocId);
+    // 获取子文档
+    const newDoc = docCollection.getDoc(docId);
     if (!newDoc?.blockCollection.spaceDoc) {
-      throw new DocNotFound({ workspaceId, docId: subDocId });
+      throw new DocNotFound({ workspaceId, docId: docId });
     }
     const subDocUpdate = Y.encodeStateAsUpdate(
       newDoc?.blockCollection.spaceDoc
     );
-    this.docManager
-      .batchPush(workspaceId, subDocId, [Buffer.from(subDocUpdate)])
-      .then(timestamp => {
-        this.eventsGateway.server.to(Sync(workspaceId)).emit('server-updates', {
-          workspaceId,
-          guid: subDocId,
-          updates: [Buffer.from(subDocUpdate).toString('base64')],
-          timestamp,
-        });
-      })
-      .catch(e => {
-        throw e;
-      });
+
+    // 推送子文档更新
+    const timestamp = await this.docManager.batchPush(workspaceId, docId, [
+      Buffer.from(subDocUpdate),
+    ]);
+    this.eventsGateway.server.to(Sync(workspaceId)).emit('server-updates', {
+      workspaceId,
+      guid: docId,
+      updates: [Buffer.from(subDocUpdate).toString('base64')],
+      timestamp,
+    });
+
     return {
-      id: subDocId,
+      workspaceId,
+      docId: docId,
     };
   }
 }

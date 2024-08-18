@@ -1,4 +1,4 @@
-import { assertExists, sha } from '@blocksuite/global/utils';
+import { assertExists } from '@blocksuite/global/utils';
 import type {
   CollectionInfoSnapshot,
   Doc,
@@ -10,6 +10,7 @@ import { extMimeMap, getAssetName, Job } from '@blocksuite/store';
 import JSZip from 'jszip';
 
 import { replaceIdMiddleware, titleMiddleware } from './middlewares.js';
+import { sha } from '../adapters/utils.js';
 
 async function exportDocs(collection: DocCollection, docs: Doc[]) {
   const zip = new JSZip();

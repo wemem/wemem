@@ -1,4 +1,3 @@
-import { sha } from '@blocksuite/global/utils';
 import type { DeltaInsert } from '@blocksuite/inline';
 import type {
   FromBlockSnapshotPayload,
@@ -51,7 +50,7 @@ import {
   hastQuerySelector,
   type HtmlAST,
 } from './hast.js';
-import { fetchable, fetchImage, mergeDeltas } from './utils.js';
+import { fetchable, fetchImage, mergeDeltas, sha } from './utils.js';
 
 export type Html = string;
 

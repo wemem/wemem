@@ -1,25 +1,23 @@
-import { assertExists, sha } from '@blocksuite/global/utils';
+import { assertExists } from '@blocksuite/global/utils';
 import type { DeltaInsert } from '@blocksuite/inline/types';
-import type {
+import {
+  AssetsManager,
+  ASTWalker,
+  BaseAdapter,
+  BlockSnapshot,
+  BlockSnapshotSchema,
+  DocSnapshot,
   FromBlockSnapshotPayload,
   FromBlockSnapshotResult,
   FromDocSnapshotPayload,
   FromDocSnapshotResult,
   FromSliceSnapshotPayload,
   FromSliceSnapshotResult,
-  ToBlockSnapshotPayload,
-  ToDocSnapshotPayload,
-} from '@blocksuite/store';
-import {
-  type AssetsManager,
-  ASTWalker,
-  BaseAdapter,
-  type BlockSnapshot,
-  BlockSnapshotSchema,
-  type DocSnapshot,
   getAssetName,
   nanoid,
-  type SliceSnapshot,
+  SliceSnapshot,
+  ToBlockSnapshotPayload,
+  ToDocSnapshotPayload,
 } from '@blocksuite/store';
 import { format } from 'date-fns/format';
 import type { Heading, Root, RootContentMap, TableRow } from 'mdast';
@@ -33,7 +31,7 @@ import type { AffineTextAttributes } from '../inline/presets/affine-inline-specs
 import { NoteDisplayMode } from '../types.js';
 import { getFilenameFromContentDisposition } from '../utils/header-value-parser.js';
 import { remarkGfm } from './gfm.js';
-import { createText, fetchable, fetchImage, isNullish } from './utils.js';
+import { createText, fetchable, fetchImage, isNullish, sha } from './utils.js';
 
 export type Markdown = string;
 
@@ -56,7 +54,7 @@ type MarkdownToSliceSnapshotPayload = {
 };
 
 export class MarkdownAdapter extends BaseAdapter<Markdown> {
-  private _traverseSnapshot = async (
+  private readonly _traverseSnapshot = async (
     snapshot: BlockSnapshot,
     markdown: MarkdownAST,
     assets?: AssetsManager
@@ -415,7 +413,7 @@ export class MarkdownAdapter extends BaseAdapter<Markdown> {
 
             if (counter === 1) {
               const syncedSnapshot = await this.job.docToSnapshot(syncedDoc);
-              await walker.walkONode(syncedSnapshot.blocks);
+              syncedSnapshot && (await walker.walkONode(syncedSnapshot.blocks));
             } else {
               // TODO(@L-Sun) may be use the nested content
               context
@@ -519,7 +517,7 @@ export class MarkdownAdapter extends BaseAdapter<Markdown> {
     };
   };
 
-  private _traverseMarkdown = (
+  private readonly _traverseMarkdown = (
     markdown: MarkdownAST,
     snapshot: BlockSnapshot,
     assets?: AssetsManager
@@ -714,35 +712,36 @@ export class MarkdownAdapter extends BaseAdapter<Markdown> {
               }
             });
           } else {
-            const res = await fetchImage(
-              o.node.url,
-              undefined,
-              this.configs.get('imageProxy') as string
-            );
-            const clonedRes = res.clone();
-            const file = new File(
-              [await res.blob()],
-              getFilenameFromContentDisposition(
-                res.headers.get('Content-Disposition') ?? ''
-              ) ??
-                (o.node.url.split('/').at(-1) ?? 'image') +
-                  '.' +
-                  (res.headers.get('Content-Type')?.split('/').at(-1) ?? 'png'),
-              {
-                type: res.headers.get('Content-Type') ?? '',
-              }
-            );
-
-            // Check if the file is an image
-            // 如果不是，说明抓取的图片不存在，或者被方爬机制拦截
-            // 此时直接使用原始链接，不进行上传，image-block 渲染时直接使用原始链接
-            if (file.type.includes('image')) {
-              blobId = await sha(await clonedRes.arrayBuffer());
-              assets?.getAssets().set(blobId, file);
-              await assets?.writeToBlob(blobId);
-            } else {
-              blobUrl = o.node.url;
-            }
+            blobUrl = o.node.url;
+            // 暂时使用原始链接
+            // const res = await fetchImage(
+            //   o.node.url,
+            //   undefined,
+            //   this.configs.get('imageProxy') as string
+            // );
+            // const buffer = Buffer.from(await res.arrayBuffer());
+            // const filename = getFilenameFromContentDisposition(
+            //   res.headers.get('Content-Disposition') ?? ''
+            // ) ??
+            //   (o.node.url.split('/').at(-1) ?? 'image') +
+            //   '.' +
+            //   (res.headers.get('Content-Type')?.split('/').at(-1) ?? 'png');
+            // const mimeType = res.headers.get('Content-Type') ?? '';
+            // // 检查是否为图片
+            // // 如果不是，说明抓取的图片不存在，或者被方爬机制拦截
+            // // 此时直接使用原始链接，不进行上传，image-block 渲染时直接使用原始链接
+            // if (mimeType.startsWith('image/')) {
+            //   blobId = await sha(buffer);
+            //   type Asset = Blob & {
+            //     filename?: string;
+            //   };
+            //   const asset: Asset = new Blob([buffer], { type: mimeType });
+            //   (asset as any).filename = filename;
+            //   assets?.getAssets().set(blobId, asset);
+            //   await assets?.writeToBlob(blobId);
+            // } else {
+            //   blobUrl = o.node.url;
+            // }
           }
           context
             .openNode(
@@ -858,10 +857,7 @@ export class MarkdownAdapter extends BaseAdapter<Markdown> {
     });
     walker.setLeave((o, context) => {
       switch (o.node.type) {
-        case 'listItem': {
-          context.closeNode();
-          break;
-        }
+        case 'listItem':
         case 'table': {
           context.closeNode();
           break;

@@ -1,6 +1,5 @@
-import { sha } from '@blocksuite/global/utils';
-import type { AssetsManager } from '@blocksuite/store';
 import {
+  AssetsManager,
   BaseAdapter,
   type BlockSnapshot,
   type DocSnapshot,
@@ -15,6 +14,8 @@ import {
   type ToBlockSnapshotPayload,
   type ToDocSnapshotPayload,
 } from '@blocksuite/store';
+
+import { sha } from './utils';
 
 export type Attachment = File[];
 
