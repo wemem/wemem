@@ -26,6 +26,7 @@ export function setupImageToolbarEntry(imageToolbar: AffineImageToolbarWidget) {
     ]);
   };
   imageToolbar.buildDefaultConfig();
+  return;
   imageToolbar.addConfigItems(
     [
       {
