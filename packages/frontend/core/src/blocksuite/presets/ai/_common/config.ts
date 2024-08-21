@@ -103,7 +103,7 @@ const blockActionTrackerOptions: BlockSuitePresets.TrackerOptions = {
   where: 'ai-panel',
 };
 
-const textBlockShowWhen = (chain: Chain<InitCommandCtx>) => {
+export const textBlockShowWhen = (chain: Chain<InitCommandCtx>) => {
   const [_, ctx] = chain
     .getSelectedModels({
       types: ['block', 'text'],
@@ -117,7 +117,7 @@ const textBlockShowWhen = (chain: Chain<InitCommandCtx>) => {
   );
 };
 
-const codeBlockShowWhen = (chain: Chain<InitCommandCtx>) => {
+export const codeBlockShowWhen = (chain: Chain<InitCommandCtx>) => {
   const [_, ctx] = chain
     .getSelectedModels({
       types: ['block', 'text'],
@@ -226,7 +226,7 @@ const DraftAIGroup: AIItemGroupConfig = {
 // 2. when running in edgeless mode
 //    a. get selected in the note and let the edgeless action to handle it
 //    b. insert the result using the note shape
-function edgelessHandler<T extends keyof BlockSuitePresets.AIActions>(
+export function edgelessHandler<T extends keyof BlockSuitePresets.AIActions>(
   id: T,
   generatingIcon: TemplateResult<1>,
   variants?: Omit<

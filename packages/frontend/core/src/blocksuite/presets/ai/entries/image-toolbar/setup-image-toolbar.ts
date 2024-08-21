@@ -26,6 +26,7 @@ export function setupImageToolbarEntry(imageToolbar: AffineImageToolbarWidget) {
     ]);
   };
   imageToolbar.buildDefaultConfig();
+  // ReadEase的定位是有倾向性的,希望用户重阅读,轻笔记
   return;
   imageToolbar.addConfigItems(
     [
