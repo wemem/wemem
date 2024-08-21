@@ -32,6 +32,7 @@ import { NoteDisplayMode } from '../types.js';
 import { getFilenameFromContentDisposition } from '../utils/header-value-parser.js';
 import { remarkGfm } from './gfm.js';
 import { createText, fetchable, fetchImage, isNullish, sha } from './utils.js';
+import { Logger } from '@nestjs/common';
 
 export type Markdown = string;
 
@@ -54,6 +55,20 @@ type MarkdownToSliceSnapshotPayload = {
 };
 
 export class MarkdownAdapter extends BaseAdapter<Markdown> {
+  private readonly logger = new Logger(MarkdownAdapter.name);
+
+  override async toDoc(payload: ToDocSnapshotPayload<Markdown>) {
+    try {
+      const snapshot = await this.toDocSnapshot(payload);
+      if (!snapshot) return;
+      return await this.job.snapshotToDoc(snapshot);
+    } catch (error) {
+      console.error('Cannot convert doc snapshot to doc');
+      console.error(error);
+      return;
+    }
+  }
+
   private readonly _traverseSnapshot = async (
     snapshot: BlockSnapshot,
     markdown: MarkdownAST,
