@@ -169,7 +169,7 @@ export class CopilotProviderService {
 
   async getProviderByModel<C extends CopilotCapability>(
     model: string,
-    prefer?: CopilotProviderType
+    prefer: CopilotProviderType = CopilotProviderType.OpenAI
   ): Promise<CapabilityToCopilotProvider[C] | null> {
     const providers = Array.from(COPILOT_PROVIDER.keys());
     if (providers.length) {

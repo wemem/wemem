@@ -114,6 +114,9 @@ export class AskAIButton extends WithDisposable(LitElement) {
   );
 
   @property({ attribute: false })
+  accessor buttonText: string = '';
+
+  @property({ attribute: false })
   accessor host!: EditorHost;
 
   @property({ attribute: false })
@@ -191,7 +194,7 @@ export class AskAIButton extends WithDisposable(LitElement) {
         width=${buttonWidthMap[size]}
         height=${buttonHeightMap[size]}
       >
-        ${AIStarIcon} <span>Ask AI</span></icon-button
+        ${AIStarIcon} <span>${this.buttonText || 'Ask AI'}</span></icon-button
       >
     </div>`;
   }

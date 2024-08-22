@@ -1414,5 +1414,17 @@
   "ai.readease.edit-subscription.feedType.RSS.placeholder": "Paste RSS URL",
   "ai.readease.edit-subscription.editTips": "Edit the subscription information.",
   "ai.readease.edit-subscription.name": "Name",
-  "ai.readease.edit-subscription.placeholder": "Enter name"
+  "ai.readease.edit-subscription.placeholder": "Enter name",
+  "ai.readease.ask-ai": "Ask AI",
+  "ai.readease.ask-ai.group-name": "Ask AI...",
+  "ai.readease.ask-ai.explain-selection": "Explain selection",
+  "ai.readease.ask-ai.explain-this-code": "Explain this code",
+  "ai.readease.ask-ai.summarize": "Summarize",
+  "ai.readease.ask-ai.translate-to": "Translate to",
+  "ai.readease.ask-ai.brainstorm-ideas-about-this": "Brainstorm ideas about this",
+  "ai.readease.ask-ai.brainstorm-ideas-with-mind-map": "Brainstorm ideas with mind map",
+  "ai.readease.ask-ai.continue-with-ai": "Continue with AI",
+  "ai.readease.ask-ai.open-ai-chat": "Open AI Chat",
+  "ai.readease.ask-ai.regenerate-mind-map": "Regenerate mind map",
+  "ai.readease.ask-ai.expand-from-this-mind-map-node": "Expand from this mind map node"
 }

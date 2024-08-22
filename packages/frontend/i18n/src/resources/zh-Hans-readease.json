@@ -1330,5 +1330,17 @@
   "ai.readease.internal-tags.seen": "已读",
   "ai.readease.internal-tags.unseen": "未读",
   "ai.readease.rootAppSidebar.tags": "标签",
-  "ai.readease.subscription.deep-reading": "精读"
+  "ai.readease.subscription.deep-reading": "精读",
+  "ai.readease.ask-ai": "问 AI",
+  "ai.readease.ask-ai.group-name": "万事问 AI...",
+  "ai.readease.ask-ai.explain-selection": "解释",
+  "ai.readease.ask-ai.explain-this-code": "解释",
+  "ai.readease.ask-ai.summarize": "总结",
+  "ai.readease.ask-ai.translate-to": "翻译",
+  "ai.readease.ask-ai.brainstorm-ideas-about-this": "头脑风暴（文字版）",
+  "ai.readease.ask-ai.brainstorm-ideas-with-mind-map": "脑图",
+  "ai.readease.ask-ai.continue-with-ai": "继续提问",
+  "ai.readease.ask-ai.open-ai-chat": "开启 AI 对话",
+  "ai.readease.ask-ai.regenerate-mind-map": "重新生成脑图",
+  "ai.readease.ask-ai.expand-from-this-mind-map-node": "扩展脑图"
 }

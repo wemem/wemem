@@ -55,7 +55,7 @@ import {
   imageCustomInput,
 } from '../../utils/selection-utils';
 
-const translateSubItem = translateLangs.map(lang => {
+export const translateSubItem = translateLangs.map(lang => {
   return {
     type: lang,
     handler: actionToHandler('translate', AIStarIconWithAnimation, { lang }),

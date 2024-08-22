@@ -3,13 +3,13 @@ import type { EditorHost } from '@blocksuite/block-std';
 import type { BlockModel } from '@blocksuite/store';
 
 export const translateLangs = [
+  'Simplified Chinese',
+  'Traditional Chinese',
   'English',
   'Spanish',
   'German',
   'French',
   'Italian',
-  'Simplified Chinese',
-  'Traditional Chinese',
   'Japanese',
   'Russian',
   'Korean',

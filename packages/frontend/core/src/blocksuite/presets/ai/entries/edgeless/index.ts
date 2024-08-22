@@ -1,3 +1,4 @@
+import { I18n } from '@affine/i18n';
 import type {
   AIItemGroupConfig,
   EdgelessCopilotWidget,
@@ -8,12 +9,12 @@ import { EdgelessCopilotToolbarEntry } from '@blocksuite/blocks';
 import { noop } from '@blocksuite/global/utils';
 import { html } from 'lit';
 
-import { edgelessActionGroups } from './actions-config';
+import { getEdgelessAIActionGroups } from '../../_common/readease-ai-action-config';
 
 noop(EdgelessCopilotToolbarEntry);
 
 export function setupEdgelessCopilot(widget: EdgelessCopilotWidget) {
-  widget.groups = edgelessActionGroups;
+  widget.groups = getEdgelessAIActionGroups(I18n);
 }
 
 export function setupEdgelessElementToolbarEntry(
@@ -25,22 +26,26 @@ export function setupEdgelessElementToolbarEntry(
     },
     render: (edgeless: EdgelessRootBlockComponent) => {
       const chain = edgeless.service.std.command.chain();
-      const filteredGroups = edgelessActionGroups.reduce((pre, group) => {
-        const filtered = group.items.filter(item =>
-          item.showWhen?.(chain, 'edgeless', edgeless.host)
-        );
+      const filteredGroups = getEdgelessAIActionGroups(I18n).reduce(
+        (pre, group) => {
+          const filtered = group.items.filter(item =>
+            item.showWhen?.(chain, 'edgeless', edgeless.host)
+          );
 
-        if (filtered.length > 0) pre.push({ ...group, items: filtered });
+          if (filtered.length > 0) pre.push({ ...group, items: filtered });
 
-        return pre;
-      }, [] as AIItemGroupConfig[]);
+          return pre;
+        },
+        [] as AIItemGroupConfig[]
+      );
 
       if (filteredGroups.every(group => group.items.length === 0)) return null;
 
       return html`<edgeless-copilot-toolbar-entry
+        .buttonText=${I18n['ai.readease.ask-ai']()}
         .edgeless=${edgeless}
         .host=${edgeless.host}
-        .groups=${edgelessActionGroups}
+        .groups=${getEdgelessAIActionGroups(I18n)}
       ></edgeless-copilot-toolbar-entry>`;
     },
   });
