@@ -122,7 +122,7 @@ export const useSearchFeedsCommands = () => {
       }
 
       subscribe(record);
-      toast(t['ai.readease.notification.message.feed-added']());
+      toast(t['ai.wemem.notification.message.feed-added']());
       navigationHelper.jumpToSubscription(workspace.id, record.id);
     },
     [subscribe, navigationHelper, t, workspace]

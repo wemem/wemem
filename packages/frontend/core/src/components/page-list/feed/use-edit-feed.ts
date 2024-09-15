@@ -10,7 +10,7 @@ export const useEditSubscription = (collection: Collection) => {
   const feedService = useService(SubscriptionService);
   const t = useI18n();
   const { node, open } = useEditSubscriptionModal({
-    title: t['ai.readease.edit-subscription.editFeed'](),
+    title: t['ai.wemem.edit-subscription.editFeed'](),
     showTips: true,
   });
 

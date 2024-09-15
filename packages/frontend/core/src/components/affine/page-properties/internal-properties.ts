@@ -2,7 +2,7 @@ import { PagePropertyType } from '@affine/core/modules/properties/services/schem
 import { useI18n } from '@affine/i18n';
 import { useCallback } from 'react';
 
-export const InternalPropertiesPrefix = 'ai.readease.internal-properties.';
+export const InternalPropertiesPrefix = 'ai.wemem.internal-properties.';
 
 export const AuthorProperty = {
   id: 'author',

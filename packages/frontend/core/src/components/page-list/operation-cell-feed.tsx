@@ -61,7 +61,7 @@ export const FeedOperationCell = ({ collection }: FeedOperationCellProps) => {
       >
         <FavoriteTag onClick={onToggleFavoriteCollection} active={favourite} />
       </ColWrapper>
-      <Tooltip content={t['ai.readease.feed.menu.rename']()} side="top">
+      <Tooltip content={t['ai.wemem.feed.menu.rename']()} side="top">
         <IconButton onClick={handleEditFeed}>
           <EditIcon />
         </IconButton>
@@ -78,7 +78,7 @@ export const FeedOperationCell = ({ collection }: FeedOperationCellProps) => {
               }
               type="danger"
             >
-              {t['ai.readease.subscriptions.unsubscribe']()}
+              {t['ai.wemem.subscriptions.unsubscribe']()}
             </MenuItem>
           }
           contentOptions={{

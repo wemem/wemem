@@ -8,7 +8,7 @@ export const RootEmpty = () => {
   return (
     <ExplorerEmptySection
       icon={PiRss}
-      message={t['com.affine.rootAppSidebar.tags.empty']()}
+      message={t['ai.wemem.rootAppSidebar.subscription.empty']()}
       messageTestId="slider-bar-tags-empty-message"
     />
   );

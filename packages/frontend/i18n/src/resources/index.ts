@@ -7,7 +7,7 @@ import da from './da.json';
 import de from './de.json';
 import en from './en.json';
 import en_US from './en-US.json';
-import en_Readease from './en-readease.json';
+import en_Wemem from './en-wemem.json';
 import es from './es.json';
 import es_AR from './es-AR.json';
 import es_CL from './es-CL.json';
@@ -21,7 +21,7 @@ import ru from './ru.json';
 import sv_SE from './sv-SE.json';
 import ur from './ur.json';
 import zh_Hans from './zh-Hans.json';
-import zh_Hans_Readease from './zh-Hans-readease.json';
+import zh_Hans_Wemem from './zh-Hans-wemem.json';
 import zh_Hant from './zh-Hant.json';
 
 export const LOCALES = [
@@ -53,7 +53,7 @@ export const LOCALES = [
     flagEmoji: '🇬🇧',
     base: true,
     completeRate: 1,
-    res: Object.assign({}, en, en_Readease),
+    res: Object.assign({}, en, en_Wemem),
   },
   {
     id: 1000040003,
@@ -72,7 +72,7 @@ export const LOCALES = [
     originalName: '简体中文',
     flagEmoji: '🇨🇳',
     base: false,
-    res: Object.assign({}, zh_Hans, zh_Hans_Readease),
+    res: Object.assign({}, zh_Hans, zh_Hans_Wemem),
     completeRate: 0.974,
   },
   {

@@ -75,13 +75,13 @@ export const FeedDocsPageListHeader = ({
               value="false"
               data-testid="workspace-feed-docs-unseen-button"
             >
-              {t['ai.readease.feed-docs.unseen']()}
+              {t['ai.wemem.feed-docs.unseen']()}
             </RadioButton>
             <RadioButton
               value="true"
               data-testid="workspace-feed-docs-seen-button"
             >
-              {t['ai.readease.feed-docs.seen']()}
+              {t['ai.wemem.feed-docs.seen']()}
             </RadioButton>
           </RadioButtonGroup>
         </div>
@@ -96,7 +96,7 @@ export const FeedDocsPageListHeader = ({
       <div className={styles.rightButtonGroup}>
         {params.status === 'false' && (
           <Button loading={marking} onClick={onMarkAllAsSeen}>
-            {t['ai.readease.feed-docs.mark-all-as-seen']()}
+            {t['ai.wemem.feed-docs.mark-all-as-seen']()}
           </Button>
         )}
         <PageDisplayMenu />

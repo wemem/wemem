@@ -27,7 +27,7 @@ export function AddFeedButton({
       onClick={onClick}
     >
       <PlusIcon className={styles.icon} />{' '}
-      {t['ai.readease.feeds.new-feed-button']()}
+      {t['ai.wemem.feeds.new-feed-button']()}
       <Spotlight />
     </button>
   );

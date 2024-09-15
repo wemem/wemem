@@ -42,7 +42,7 @@ export function setupEdgelessElementToolbarEntry(
       if (filteredGroups.every(group => group.items.length === 0)) return null;
 
       return html`<edgeless-copilot-toolbar-entry
-        .buttonText=${I18n['ai.readease.ask-ai']()}
+        .buttonText=${I18n['ai.wemem.ask-ai']()}
         .edgeless=${edgeless}
         .host=${edgeless.host}
         .groups=${getEdgelessAIActionGroups(I18n)}

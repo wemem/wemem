@@ -15,7 +15,7 @@ export function registerNewFeedHelpCommands({
       id: 'affine:import-wechat',
       category: 'affine:help',
       icon: <PiWechatLogo />,
-      label: t['ai.readease.feeds.new-feed.cmd.import-from-wechat'](),
+      label: t['ai.wemem.feeds.new-feed.cmd.import-from-wechat'](),
       run() {
         popupWindow(runtimeConfig.changelogUrl);
       },

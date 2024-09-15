@@ -60,7 +60,7 @@ export const FeedSidebarReadAll = () => {
       to={unseenPath}
       linkComponent={WorkbenchLink}
     >
-      <span>{t['ai.readease.rootAppSidebar.feeds.all']()}</span>
+      <span>{t['ai.wemem.rootAppSidebar.feeds.all']()}</span>
     </SidebarMenuLinkItem>
   );
 };
@@ -84,7 +84,7 @@ export const FeedSidebarReadFeeds = () => {
       to={unseenPath}
       linkComponent={WorkbenchLink}
     >
-      <span>{t['ai.readease.rootAppSidebar.feeds.all']()}</span>
+      <span>{t['ai.wemem.rootAppSidebar.feeds.all']()}</span>
     </SidebarMenuLinkItem>
   );
 };
@@ -171,7 +171,7 @@ export const FeedSidebarReadNewsletter = () => {
       to={unseenPath}
       linkComponent={WorkbenchLink}
     >
-      <span>{t['ai.readease.rootAppSidebar.feeds.newsletter']()}</span>
+      <span>{t['ai.wemem.rootAppSidebar.feeds.newsletter']()}</span>
     </SidebarMenuLinkItem>
   );
 };
@@ -209,13 +209,13 @@ export const ExplorerSubscriptions = () => {
     <CollapsibleSection
       name="subscriptions"
       headerClassName={styles.draggedOverHighlight}
-      title={t['ai.readease.rootAppSidebar.feeds']()}
+      title={t['ai.wemem.rootAppSidebar.feeds']()}
       actions={
         <IconButton
           data-testid="explorer-bar-add-favorite-button"
           onClick={handleOpenNewFeedModal}
           size="16"
-          tooltip={t['ai.readease.feeds.empty.new-feed-button']()}
+          tooltip={t['ai.wemem.feeds.empty.new-feed-button']()}
         >
           <PlusIcon />
         </IconButton>

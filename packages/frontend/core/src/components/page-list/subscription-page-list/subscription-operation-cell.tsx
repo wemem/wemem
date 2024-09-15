@@ -64,7 +64,7 @@ export const PageOperationCell = ({ page }: PageOperationCellProps) => {
           </MenuIcon>
         }
       >
-        {t['ai.readease.subscription.deep-reading']()}
+        {t['ai.wemem.subscription.deep-reading']()}
       </MenuItem>
       <MenuItem
         // eslint-disable-next-line @typescript-eslint/no-misused-promises, @typescript-eslint/no-floating-promises

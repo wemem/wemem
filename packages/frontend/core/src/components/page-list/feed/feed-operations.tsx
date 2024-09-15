@@ -29,7 +29,7 @@ export const FeedOperations = ({
   const t = useI18n();
   const { open: openEditFeedNameModal, node: editNameModal } =
     useCreateFeedModal({
-      title: t['ai.readease.edit-subscription.editFeed'](),
+      title: t['ai.wemem.edit-subscription.editFeed'](),
     });
 
   const showEditName = useCallback(() => {
@@ -74,7 +74,7 @@ export const FeedOperations = ({
             <EditIcon />
           </MenuIcon>
         ),
-        name: t['ai.readease.feed.menu.rename'](),
+        name: t['ai.wemem.feed.menu.rename'](),
         click: showEditName,
       },
       ...(appSettings.enableMultiView

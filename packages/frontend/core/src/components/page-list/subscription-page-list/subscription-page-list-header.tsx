@@ -40,7 +40,7 @@ export const SubscriptionPageListHeader = ({
       <div className={styles.docListHeader}>
         <div className={styles.docListHeaderTitle}>
           <div style={{ cursor: 'pointer' }} onClick={handleJumpToFeeds}>
-            {t['ai.readease.feeds.header']()} /
+            {t['ai.wemem.feeds.header']()} /
           </div>
           <div className={styles.titleIcon}>
             <FeedAvatar image={collection.subscription?.icon} />

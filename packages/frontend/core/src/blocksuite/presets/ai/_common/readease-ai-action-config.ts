@@ -40,40 +40,40 @@ import {
 export const getDocAIActionGroups = (I18n: any): AIItemGroupConfig[] => {
   return [
     {
-      name: I18n['ai.readease.ask-ai'](),
+      name: I18n['ai.wemem.ask-ai'](),
       items: [
         {
-          name: I18n['ai.readease.ask-ai.explain-selection'](),
+          name: I18n['ai.wemem.ask-ai.explain-selection'](),
           icon: SelectionIcon,
           showWhen: textBlockShowWhen,
           handler: actionToHandler('explain', AIStarIconWithAnimation),
         },
         {
-          name: I18n['ai.readease.ask-ai.explain-this-code'](),
+          name: I18n['ai.wemem.ask-ai.explain-this-code'](),
           icon: ExplainIcon,
           showWhen: codeBlockShowWhen,
           handler: actionToHandler('explainCode', AIStarIconWithAnimation),
         },
         {
-          name: I18n['ai.readease.ask-ai.summarize'](),
+          name: I18n['ai.wemem.ask-ai.summarize'](),
           icon: AIPenIcon,
           showWhen: textBlockShowWhen,
           handler: actionToHandler('summary', AIPenIconWithAnimation),
         },
         {
-          name: I18n['ai.readease.ask-ai.translate-to'](),
+          name: I18n['ai.wemem.ask-ai.translate-to'](),
           icon: LanguageIcon,
           showWhen: textBlockShowWhen,
           subItem: translateSubItem,
         },
         {
-          name: I18n['ai.readease.ask-ai.brainstorm-ideas-with-mind-map'](),
+          name: I18n['ai.wemem.ask-ai.brainstorm-ideas-with-mind-map'](),
           icon: AIMindMapIcon,
           showWhen: textBlockShowWhen,
           handler: edgelessHandler('brainstormMindmap', AIPenIconWithAnimation),
         },
         {
-          name: I18n['ai.readease.ask-ai.continue-with-ai'](),
+          name: I18n['ai.wemem.ask-ai.continue-with-ai'](),
           icon: CommentIcon,
           handler: host => {
             const panel = getAIPanel(host);
@@ -85,7 +85,7 @@ export const getDocAIActionGroups = (I18n: any): AIItemGroupConfig[] => {
           },
         },
         {
-          name: I18n['ai.readease.ask-ai.open-ai-chat'](),
+          name: I18n['ai.wemem.ask-ai.open-ai-chat'](),
           icon: ChatWithAIIcon,
           handler: host => {
             const panel = getAIPanel(host);
@@ -101,16 +101,16 @@ export const getDocAIActionGroups = (I18n: any): AIItemGroupConfig[] => {
 export const getEdgelessAIActionGroups = (I18n: any): AIItemGroupConfig[] => {
   return [
     {
-      name: I18n['ai.readease.ask-ai.group-name'](),
+      name: I18n['ai.wemem.ask-ai.group-name'](),
       items: [
         {
-          name: I18n['ai.readease.ask-ai.explain-selection'](),
+          name: I18n['ai.wemem.ask-ai.explain-selection'](),
           icon: SelectionIcon,
           showWhen: noteBlockOrTextShowWhen,
           handler: edgelessActionToHandler('explain', AIStarIconWithAnimation),
         },
         {
-          name: I18n['ai.readease.ask-ai.explain-this-code'](),
+          name: I18n['ai.wemem.ask-ai.explain-this-code'](),
           icon: ExplainIcon,
           showWhen: noteWithCodeBlockShowWen,
           handler: edgelessActionToHandler(
@@ -119,19 +119,19 @@ export const getEdgelessAIActionGroups = (I18n: any): AIItemGroupConfig[] => {
           ),
         },
         {
-          name: I18n['ai.readease.ask-ai.summarize'](),
+          name: I18n['ai.wemem.ask-ai.summarize'](),
           icon: AIPenIcon,
           showWhen: noteBlockOrTextShowWhen,
           handler: edgelessActionToHandler('summary', AIPenIconWithAnimation),
         },
         {
-          name: I18n['ai.readease.ask-ai.translate-to'](),
+          name: I18n['ai.wemem.ask-ai.translate-to'](),
           icon: LanguageIcon,
           showWhen: noteBlockOrTextShowWhen,
           subItem: edgelessTranslateSubItem,
         },
         {
-          name: I18n['ai.readease.ask-ai.brainstorm-ideas-with-mind-map'](),
+          name: I18n['ai.wemem.ask-ai.brainstorm-ideas-with-mind-map'](),
           icon: AIMindMapIcon,
           showWhen: noteBlockOrTextShowWhen,
           handler: edgelessActionToHandler(
@@ -140,7 +140,7 @@ export const getEdgelessAIActionGroups = (I18n: any): AIItemGroupConfig[] => {
           ),
         },
         {
-          name: I18n['ai.readease.ask-ai.regenerate-mind-map'](),
+          name: I18n['ai.wemem.ask-ai.regenerate-mind-map'](),
           icon: AIMindMapIcon,
           showWhen: mindmapRootShowWhen,
           handler: edgelessActionToHandler(
@@ -152,7 +152,7 @@ export const getEdgelessAIActionGroups = (I18n: any): AIItemGroupConfig[] => {
           ),
         },
         {
-          name: I18n['ai.readease.ask-ai.expand-from-this-mind-map-node'](),
+          name: I18n['ai.wemem.ask-ai.expand-from-this-mind-map-node'](),
           icon: AIExpandMindMapIcon,
           showWhen: mindmapChildShowWhen,
           handler: edgelessActionToHandler(
@@ -177,7 +177,7 @@ export const getEdgelessAIActionGroups = (I18n: any): AIItemGroupConfig[] => {
           beta: true,
         },
         {
-          name: I18n['ai.readease.ask-ai.continue-with-ai'](),
+          name: I18n['ai.wemem.ask-ai.continue-with-ai'](),
           icon: CommentIcon,
           handler: host => {
             const panel = getAIPanel(host);
@@ -190,7 +190,7 @@ export const getEdgelessAIActionGroups = (I18n: any): AIItemGroupConfig[] => {
           },
         },
         {
-          name: I18n['ai.readease.ask-ai.open-ai-chat'](),
+          name: I18n['ai.wemem.ask-ai.open-ai-chat'](),
           icon: ChatWithAIIcon,
           handler: host => {
             const panel = getAIPanel(host);

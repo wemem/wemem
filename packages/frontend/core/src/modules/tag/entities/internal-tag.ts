@@ -3,7 +3,7 @@ import type { Tag } from '@affine/env/filter';
 import { useI18n } from '@affine/i18n';
 import { useCallback } from 'react';
 
-export const InternalTagPrefix = 'ai.readease.internal-tags.';
+export const InternalTagPrefix = 'ai.wemem.internal-tags.';
 
 export const RefPageTagPrefix = `${InternalTagPrefix}ref-page.`;
 

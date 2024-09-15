@@ -82,13 +82,13 @@ export const SubscriptionDocsPageListHeader = ({
               value="unseen"
               data-testid="workspace-feed-docs-unseen-button"
             >
-              {t['ai.readease.feed-docs.unseen']()}
+              {t['ai.wemem.feed-docs.unseen']()}
             </RadioButton>
             <RadioButton
               value="seen"
               data-testid="workspace-feed-docs-seen-button"
             >
-              {t['ai.readease.feed-docs.seen']()}
+              {t['ai.wemem.feed-docs.seen']()}
             </RadioButton>
           </RadioButtonGroup>
         </div>
@@ -107,7 +107,7 @@ export const SubscriptionDocsPageListHeader = ({
             loading={marking}
             onClick={onMarkAllAsSeen}
           >
-            {t['ai.readease.feed-docs.mark-all-as-seen']()}
+            {t['ai.wemem.feed-docs.mark-all-as-seen']()}
           </Button>
         )}
         <SubscriptionPageListDisplayMenu />

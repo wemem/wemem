@@ -8,12 +8,12 @@ export function getRuntimeConfig(buildFlags: BuildFlags): RuntimeConfig {
     get stable() {
       return {
         appBuildType: 'stable' as const,
-        serverUrlPrefix: 'https://app.readease.ai',
+        serverUrlPrefix: 'https://app.wemem.ai',
         appVersion: packageJson.version,
         editorVersion: packageJson.devDependencies['@blocksuite/presets'],
         githubUrl: 'https://github.com/toeverything/AFFiNE',
-        changelogUrl: 'https://readease.ai/what-is-new',
-        downloadUrl: 'https://readease.ai/download',
+        changelogUrl: 'https://wemem.ai/what-is-new',
+        downloadUrl: 'https://wemem.ai/download',
         imageProxyUrl: '/api/worker/image-proxy',
         linkPreviewUrl: '/api/worker/link-preview',
         enablePreloading: true,
@@ -33,7 +33,7 @@ export function getRuntimeConfig(buildFlags: BuildFlags): RuntimeConfig {
       return {
         ...this.stable,
         appBuildType: 'beta' as const,
-        serverUrlPrefix: 'https://insider.readease.ai',
+        serverUrlPrefix: 'https://insider.wemem.ai',
         changelogUrl: 'https://github.com/toeverything/AFFiNE/releases',
       };
     },
@@ -41,7 +41,7 @@ export function getRuntimeConfig(buildFlags: BuildFlags): RuntimeConfig {
       return {
         ...this.stable,
         appBuildType: 'internal' as const,
-        serverUrlPrefix: 'https://insider.readease.ai',
+        serverUrlPrefix: 'https://insider.wemem.ai',
         changelogUrl: 'https://github.com/toeverything/AFFiNE/releases',
       };
     },

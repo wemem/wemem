@@ -219,7 +219,7 @@ class ReplaceVisitor {
   visitJSXText(n: JSXText) {
     if (n.value.includes('AFFiNE')) {
       // console.log(`Replacements made in JSXText`);
-      n.value = n.value.replace(/AFFiNE/g, 'ReadEase');
+      n.value = n.value.replace(/AFFiNE/g, 'Wemem');
     }
     return n;
   }
@@ -234,8 +234,8 @@ class ReplaceVisitor {
   visitStringLiteral(n: StringLiteral, parent?: SwcNode) {
     if (matchAffinePro(n.value)) {
       console.log(`域名替换: ${n.value}`);
-      n.value = n.value.replace(/affine.pro/g, 'readease.ai');
-      n.raw = n.raw?.replace(/affine.pro/g, 'readease.ai');
+      n.value = n.value.replace(/affine.pro/g, 'wemem.ai');
+      n.raw = n.raw?.replace(/affine.pro/g, 'wemem.ai');
     }
 
     if (n.value.includes('AFFiNE') || n.value.includes('AFFINE')) {
@@ -271,11 +271,9 @@ class ReplaceVisitor {
       ) {
         console.log(`字符串替换: ${n.value}`);
         n.value = n.value
-          .replace(/AFFiNE/g, 'ReadEase')
-          .replace(/AFFINE/g, 'ReadEase');
-        n.raw = n.raw
-          ?.replace(/AFFiNE/g, 'ReadEase')
-          .replace(/AFFINE/g, 'ReadEase');
+          .replace(/AFFiNE/g, 'Wemem')
+          .replace(/AFFINE/g, 'Wemem');
+        n.raw = n.raw?.replace(/AFFiNE/g, 'Wemem').replace(/AFFINE/g, 'Wemem');
       }
     }
     return n;
@@ -292,12 +290,10 @@ class ReplaceVisitor {
   visitTemplateElement(n: TemplateElement) {
     if (n.raw.includes('AFFiNE') || n.raw.includes('AFFINE')) {
       console.log(`模板替换: ${n.raw}`);
-      n.raw = n.raw
-        .replace(/AFFiNE/g, 'ReadEase')
-        .replace(/AFFINE/g, 'ReadEase');
+      n.raw = n.raw.replace(/AFFiNE/g, 'Wemem').replace(/AFFINE/g, 'Wemem');
       n.cooked = n.cooked
-        ?.replace(/AFFiNE/g, 'ReadEase')
-        .replace(/AFFINE/g, 'ReadEase');
+        ?.replace(/AFFiNE/g, 'Wemem')
+        .replace(/AFFINE/g, 'Wemem');
     }
     return n;
   }
@@ -310,7 +306,7 @@ class ReplaceVisitor {
       value.value.includes('AFFiNE')
     ) {
       // console.log(`Replacements made in JSXAttribute: ${value.value}`);
-      value.value = value.value.replace(/AFFiNE/g, 'ReadEase');
+      value.value = value.value.replace(/AFFiNE/g, 'Wemem');
     }
     return n;
   }

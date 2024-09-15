@@ -35,7 +35,7 @@ export function AddPageFeedButton({
         icon={<PiRss />}
         onClick={onOpenNewFeedModal}
       >
-        {t['ai.readease.feeds.new-feed-button']()}
+        {t['ai.wemem.feeds.new-feed-button']()}
       </Button>
       <Spotlight />
     </div>

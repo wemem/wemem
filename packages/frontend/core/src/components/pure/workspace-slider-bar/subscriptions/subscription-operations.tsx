@@ -55,7 +55,7 @@ export const SubscriptionOperations = ({
             <DeleteIcon />
           </MenuIcon>
         ),
-        name: t['ai.readease.subscriptions.unsubscribe'](),
+        name: t['ai.wemem.subscriptions.unsubscribe'](),
         click: () => {
           unsubscribe(subscriptionMeta.id);
         },

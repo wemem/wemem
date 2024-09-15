@@ -17,7 +17,7 @@ export function setupFormatBarEntry(formatBar: AffineFormatBarWidget) {
         type: 'custom' as const,
         render(formatBar: AffineFormatBarWidget): TemplateResult | null {
           return html` <ask-ai-button
-            .buttonText=${I18n['ai.readease.ask-ai']()}
+            .buttonText=${I18n['ai.wemem.ask-ai']()}
             .host=${formatBar.host}
             .actionGroups=${getDocAIActionGroups(I18n)}
             .toggleType=${'hover'}

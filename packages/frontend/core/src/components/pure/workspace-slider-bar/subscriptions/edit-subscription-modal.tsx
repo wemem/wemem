@@ -91,13 +91,13 @@ export const EditSubscription = ({
     <div>
       <div className={styles.content}>
         <div className={styles.label}>
-          {t['ai.readease.edit-subscription.name']()}
+          {t['ai.wemem.edit-subscription.name']()}
         </div>
         <Input
           autoFocus
           value={value}
           data-testid="input-collection-title"
-          placeholder={t['ai.readease.edit-subscription.placeholder']()}
+          placeholder={t['ai.wemem.edit-subscription.placeholder']()}
           onChange={useCallback((value: string) => onChange(value), [onChange])}
           // eslint-disable-next-line @typescript-eslint/ban-ts-comment
           // @ts-expect-error
@@ -110,13 +110,13 @@ export const EditSubscription = ({
         ></Input>
         {showTips ? (
           <div className={styles.createTips}>
-            {t[`ai.readease.edit-subscription.editTips`]()}
+            {t[`ai.wemem.edit-subscription.editTips`]()}
           </div>
         ) : null}
       </div>
       <div className={styles.footer}>
         <Button size="large" onClick={onCancel}>
-          {t['ai.readease.edit-subscription.button.cancel']()}
+          {t['ai.wemem.edit-subscription.button.cancel']()}
         </Button>
         <Button
           size="large"
@@ -125,7 +125,7 @@ export const EditSubscription = ({
           disabled={isNameEmpty}
           onClick={save}
         >
-          {onConfirmText ?? t['ai.readease.edit-subscription.button.create']()}
+          {onConfirmText ?? t['ai.wemem.edit-subscription.button.create']()}
         </Button>
       </div>
     </div>

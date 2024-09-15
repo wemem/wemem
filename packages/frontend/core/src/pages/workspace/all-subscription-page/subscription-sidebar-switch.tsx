@@ -24,8 +24,8 @@ export const SubscriptionSidebarSwitch = ({
   const [open, setOpen] = useAtom(subscriptionSidebarOpen);
   const t = useI18n();
   const tooltipContent = open
-    ? t['ai.readease.subscription.sidebar-switch.collapse']()
-    : t['ai.readease.subscription.sidebar-switch.expand']();
+    ? t['ai.wemem.subscription.sidebar-switch.collapse']()
+    : t['ai.wemem.subscription.sidebar-switch.expand']();
   const collapseKeyboardShortcuts =
     environment.isBrowser && environment.isMacOs ? ' ⌘+/' : ' Ctrl+/';
 

@@ -107,7 +107,7 @@ export function SubscriptionPageHeader({
           data-testid="share-page-edit-button"
           variant="primary"
         >
-          {t['ai.readease.subscription.deep-reading']()}
+          {t['ai.wemem.subscription.deep-reading']()}
         </Button>
       </div>
       <ToggleButton
@@ -138,7 +138,7 @@ export const OpenOriginal = ({ originalUrl }: { originalUrl: string }) => {
   );
   return (
     <Tooltip
-      content={t['ai.readease.subscription.detail.open-original']()}
+      content={t['ai.wemem.subscription.detail.open-original']()}
       side="top"
     >
       <IconButton onClick={handleClick}>
