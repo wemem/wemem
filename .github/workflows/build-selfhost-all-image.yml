@@ -55,7 +55,6 @@ jobs:
     steps:
       - uses: actions/checkout@v4
         with:
-          token: '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'
           submodules: recursive
       - name: Setup Version
         id: version
@@ -88,7 +87,6 @@ jobs:
     steps:
       - uses: actions/checkout@v4
         with:
-          token: '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'
           submodules: recursive
       - name: Setup Version
         id: version
@@ -246,7 +244,7 @@ jobs:
           platforms: linux/amd64,linux/arm64,linux/arm/v7
           provenance: true
           file: .github/deployment/node/Dockerfile
-          tags: ghcr.io/readeaseai/affine-server:${{env.RELEASE_FLAVOR}}-${{ env.GIT_SHORT_HASH }},ghcr.io/readeaseai/affine-server:${{env.RELEASE_FLAVOR}}
+          tags: ghcr.io/wemem/wemem-server:${{env.RELEASE_FLAVOR}}-${{ env.GIT_SHORT_HASH }},ghcr.io/wemem/wemem-server:${{env.RELEASE_FLAVOR}}
   build-web-image:
     name: Build Web Image
     runs-on: ubuntu-latest
@@ -294,4 +292,4 @@ jobs:
           platforms: linux/amd64,linux/arm64
           provenance: true
           file: .github/deployment/front/Dockerfile
-          tags: ghcr.io/readeaseai/affine-web:${{env.RELEASE_FLAVOR}}-${{ env.GIT_SHORT_HASH }},ghcr.io/readeaseai/affine-web:${{env.RELEASE_FLAVOR}}
+          tags: ghcr.io/wemem/wemem-web:${{env.RELEASE_FLAVOR}}-${{ env.GIT_SHORT_HASH }},ghcr.io/wemem/wemem-web:${{env.RELEASE_FLAVOR}}

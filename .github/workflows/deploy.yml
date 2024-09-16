@@ -139,7 +139,7 @@ jobs:
           platforms: linux/amd64,linux/arm64
           provenance: true
           file: .github/deployment/front/Dockerfile
-          tags: ghcr.io/readeaseai/affine-front:${{env.RELEASE_FLAVOR}}-${{ env.GIT_SHORT_HASH }},ghcr.io/readeaseai/affine-front:${{env.RELEASE_FLAVOR}}
+          tags: ghcr.io/wemem/wemem-front:${{env.RELEASE_FLAVOR}}-${{ env.GIT_SHORT_HASH }},ghcr.io/wemem/wemem-front:${{env.RELEASE_FLAVOR}}
 
   deploy:
     name: Deploy to cluster
