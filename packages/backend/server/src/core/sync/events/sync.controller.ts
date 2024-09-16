@@ -9,7 +9,7 @@ import {
   Throttle,
   WorkspaceAccessDenied,
 } from '../../../fundamentals';
-import { importMarkDown } from '../../../readease/import-markdown/root-block/widgets/linked-doc/import-doc/import-doc';
+import { importMarkDown } from '../../../wemem/import-markdown/root-block/widgets/linked-doc/import-doc/import-doc';
 import { CurrentUser } from '../../auth';
 import { DocManager } from '../../doc';
 import { DocID } from '../../utils/doc';
