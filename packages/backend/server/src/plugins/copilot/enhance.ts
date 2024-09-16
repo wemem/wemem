@@ -1,6 +1,4 @@
-import { Prompt } from '../../data/migrations/utils/prompts';
-
-export const enhancePrompt = (prompt: Prompt): Prompt => {
+export const enhancePrompt = (prompt: any): any => {
   switch (prompt.name) {
     case 'debug:chat:gpt4':
     case 'chat:gpt4':
