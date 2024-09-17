@@ -1,7 +1,5 @@
-import type { LoaderDefinitionFunction } from 'webpack';
-
 // 替换函数
-function replaceAffine(obj: any) {
+function replaceAffine(obj) {
   for (const key in obj) {
     if (typeof obj[key] === 'object' && obj[key] !== null) {
       // 递归调用替换子对象
@@ -11,14 +9,11 @@ function replaceAffine(obj: any) {
       obj[key] = obj[key].replace(/AFFiNE/g, 'Wemem');
     }
   }
-
   return obj;
 }
-
-const jsonReplaceLoader: LoaderDefinitionFunction = function (source) {
-  const jsonObject = JSON.parse(source as string);
+const jsonReplaceLoader = function (source) {
+  const jsonObject = JSON.parse(source);
   replaceAffine(jsonObject);
   return JSON.stringify(jsonObject, null, 2);
 };
-
 export default jsonReplaceLoader;

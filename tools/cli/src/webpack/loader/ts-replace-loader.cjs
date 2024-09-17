@@ -1,229 +1,18 @@
-import { parseSync, printSync } from '@swc/core';
-import type {
-  Accessibility,
-  Argument,
-  ArrayExpression,
-  ArrayPattern,
-  ArrowFunctionExpression,
-  AssignmentExpression,
-  AssignmentPattern,
-  AssignmentPatternProperty,
-  AssignmentProperty,
-  AwaitExpression,
-  BigIntLiteral,
-  BinaryExpression,
-  BindingIdentifier,
-  BlockStatement,
-  BooleanLiteral,
-  BreakStatement,
-  CallExpression,
-  CatchClause,
-  Class,
-  ClassDeclaration,
-  ClassExpression,
-  ClassMember,
-  ClassMethod,
-  ClassProperty,
-  ComputedPropName,
-  ConditionalExpression,
-  Constructor,
-  ContinueStatement,
-  DebuggerStatement,
-  Declaration,
-  Decorator,
-  DefaultDecl,
-  DoWhileStatement,
-  EmptyStatement,
-  ExportAllDeclaration,
-  ExportDeclaration,
-  ExportDefaultDeclaration,
-  ExportDefaultExpression,
-  ExportDefaultSpecifier,
-  ExportNamedDeclaration,
-  ExportNamespaceSpecifier,
-  ExportSpecifier,
-  Expression,
-  ExpressionStatement,
-  ExprOrSpread,
-  Fn,
-  ForInStatement,
-  ForOfStatement,
-  ForStatement,
-  FunctionDeclaration,
-  FunctionExpression,
-  GetterProperty,
-  Identifier,
-  IfStatement,
-  Import,
-  ImportDeclaration,
-  ImportDefaultSpecifier,
-  ImportNamespaceSpecifier,
-  ImportSpecifier,
-  JSXAttribute,
-  JSXAttributeName,
-  JSXAttributeOrSpread,
-  JSXAttrValue,
-  JSXClosingElement,
-  JSXClosingFragment,
-  JSXElement,
-  JSXElementChild,
-  JSXElementName,
-  JSXEmptyExpression,
-  JSXExpressionContainer,
-  JSXFragment,
-  JSXMemberExpression,
-  JSXNamespacedName,
-  JSXObject,
-  JSXOpeningElement,
-  JSXOpeningFragment,
-  JSXSpreadChild,
-  JSXText,
-  KeyValuePatternProperty,
-  KeyValueProperty,
-  LabeledStatement,
-  MemberExpression,
-  MetaProperty,
-  MethodProperty,
-  Module,
-  ModuleDeclaration,
-  ModuleExportName,
-  ModuleItem,
-  NamedExportSpecifier,
-  NamedImportSpecifier,
-  NewExpression,
-  Node as SwcNode,
-  NullLiteral,
-  NumericLiteral,
-  ObjectExpression,
-  ObjectPattern,
-  ObjectPatternProperty,
-  OptionalChainingCall,
-  OptionalChainingExpression,
-  Param,
-  ParenthesisExpression,
-  Pattern,
-  PrivateMethod,
-  PrivateName,
-  PrivateProperty,
-  Program,
-  Property,
-  PropertyName,
-  RegExpLiteral,
-  RestElement,
-  ReturnStatement,
-  Script,
-  SequenceExpression,
-  SetterProperty,
-  SpreadElement,
-  Statement,
-  StaticBlock,
-  StringLiteral,
-  Super,
-  SuperPropExpression,
-  SwitchCase,
-  SwitchStatement,
-  TaggedTemplateExpression,
-  TemplateElement,
-  TemplateLiteral,
-  ThisExpression,
-  ThrowStatement,
-  TryStatement,
-  TsAsExpression,
-  TsCallSignatureDeclaration,
-  TsConstAssertion,
-  TsConstructSignatureDeclaration,
-  TsEntityName,
-  TsEnumDeclaration,
-  TsEnumMember,
-  TsEnumMemberId,
-  TsExportAssignment,
-  TsExpressionWithTypeArguments,
-  TsExternalModuleReference,
-  TsFnParameter,
-  TsGetterSignature,
-  TsImportEqualsDeclaration,
-  TsIndexSignature,
-  TsInstantiation,
-  TsInterfaceBody,
-  TsInterfaceDeclaration,
-  TsMethodSignature,
-  TsModuleBlock,
-  TsModuleDeclaration,
-  TsModuleName,
-  TsModuleReference,
-  TsNamespaceBody,
-  TsNamespaceDeclaration,
-  TsNamespaceExportDeclaration,
-  TsNonNullExpression,
-  TsParameterProperty,
-  TsParameterPropertyParameter,
-  TsPropertySignature,
-  TsQualifiedName,
-  TsSatisfiesExpression,
-  TsSetterSignature,
-  TsType,
-  TsTypeAliasDeclaration,
-  TsTypeAnnotation,
-  TsTypeAssertion,
-  TsTypeElement,
-  TsTypeParameter,
-  TsTypeParameterDeclaration,
-  TsTypeParameterInstantiation,
-  UnaryExpression,
-  UpdateExpression,
-  VariableDeclaration,
-  VariableDeclarator,
-  WhileStatement,
-  WithStatement,
-  YieldExpression,
-} from '@swc/types';
-import type { LoaderDefinitionFunction } from 'webpack';
-
-const tsReplaceLoader: LoaderDefinitionFunction = function (source) {
-  const resourcePath = this.resourcePath;
-  // if (!resourcePath.includes('app-sidebar/app-download-button/index.tsx')) {
-  //   return source;
-  // }
-  // if (resourcePath.includes('workspace/page-list-empty.tsx')) {
-  // console.log(`Processing file: ${resourcePath}`);
-  // console.log(`Original Source: ${source}`);
-
-  const ast = parseSync(source, {
-    syntax: 'typescript',
-    tsx: true,
-  });
-
-  const visitor = new ReplaceVisitor();
-  const newAst = visitor.visitProgram(ast);
-
-  const { code } = printSync(newAst, {
-    inputSourceMap: true, // Preserves the source map if available
-    sourceFileName: resourcePath,
-  });
-  // console.log('Modified Source:', code);
-
-  return code;
-};
-
-export default tsReplaceLoader;
-
-const matchAffinePro = (url: string): boolean => {
+const matchAffinePro = url => {
   // 更新正则表达式模式以支持 http 和 https 以及路径部分
   const pattern = /^https?:\/\/(\w*\.)?affine\.pro(\/.*)?$/;
-
   // 使用正则表达式测试字符串是否匹配
   return pattern.test(url);
 };
 
 class ReplaceVisitor {
-  visitJSXText(n: JSXText) {
+  visitJSXText(n) {
     if (n.value.includes('AFFiNE')) {
       // console.log(`Replacements made in JSXText`);
       n.value = n.value.replace(/AFFiNE/g, 'Wemem');
     }
     return n;
   }
-
   /**
    * 替换模板字面量中的内容
    * 例如 const str = `https://affine.pro/`;
@@ -231,19 +20,27 @@ class ReplaceVisitor {
    * @param n
    * @returns
    */
-  visitTemplateLiteral(n: TemplateLiteral): Expression {
+  visitTemplateLiteral(n) {
     n.expressions = n.expressions.map(expr => this.visitExpression(expr));
     n.quasis = n.quasis.map(quasi => {
-      if (matchAffinePro(quasi.raw)) {
-        console.log(`模板字符串域名替换: ${quasi.raw}`);
-        quasi.raw = quasi.raw.replace(/affine\.pro/g, 'wemem.ai');
-        quasi.cooked = quasi.cooked?.replace(/affine\.pro/g, 'wemem.ai');
+      var _a;
+      if (matchAffinePro(quasi.raw) || quasi.raw.includes('AFFiNE')) {
+        console.log(`模板字符串替换: ${quasi.raw}`);
+        quasi.raw = quasi.raw
+          .replace(/affine\.pro/g, 'wemem.ai')
+          .replace(/AFFiNE/g, 'Wemem');
+        quasi.cooked =
+          (_a = quasi.cooked) === null || _a === void 0
+            ? void 0
+            : _a
+                .replace(/affine\.pro/g, 'wemem.ai')
+                .replace(/AFFiNE/g, 'Wemem');
       }
+
       return quasi;
     });
     return n;
   }
-
   /**
    * 替换字符串字面量中的内容
    * 例如 const str = 'AFFiNE AI';
@@ -251,25 +48,27 @@ class ReplaceVisitor {
    * @param n
    * @returns
    */
-  visitStringLiteral(n: StringLiteral, parent?: SwcNode) {
+  visitStringLiteral(n, parent) {
+    var _a, _b;
     if (matchAffinePro(n.value)) {
       console.log(`域名替换: ${n.value}`);
       n.value = n.value.replace(/affine.pro/g, 'wemem.ai');
-      n.raw = n.raw?.replace(/affine.pro/g, 'wemem.ai');
+      n.raw =
+        (_a = n.raw) === null || _a === void 0
+          ? void 0
+          : _a.replace(/affine.pro/g, 'wemem.ai');
     }
-
     if (n.value.includes('AFFiNE') || n.value.includes('AFFINE')) {
       // <div>AFFiNE AI</div>;
       const isChildrenHas =
         parent &&
         parent.type === 'KeyValueProperty' &&
-        (parent as AssignmentProperty).key.value === 'children';
+        parent.key.value === 'children';
       // const some= { stable: 'AFFiNE'}
       const isObjValue =
         parent &&
         parent.type === 'KeyValueProperty' &&
-        (parent as AssignmentProperty).key.type === 'Identifier';
-
+        parent.key.type === 'Identifier';
       // export const CloudPlanLayout = ({
       //    title = 'AFFiNE Cloud',
       // }: PlanCardProps) => {
@@ -279,7 +78,7 @@ class ReplaceVisitor {
       const isCompoentProperty =
         parent &&
         parent.type === 'AssignmentPatternProperty' &&
-        (parent as AssignmentPatternProperty).key.type === 'Identifier';
+        parent.key.type === 'Identifier';
       // <div>{condition ? 'AFFiNE AI' : 'AFFiNE AI'}</div>
       const isConditionalExpression =
         parent && parent.type === 'ConditionalExpression';
@@ -293,12 +92,14 @@ class ReplaceVisitor {
         n.value = n.value
           .replace(/AFFiNE/g, 'Wemem')
           .replace(/AFFINE/g, 'Wemem');
-        n.raw = n.raw?.replace(/AFFiNE/g, 'Wemem').replace(/AFFINE/g, 'Wemem');
+        n.raw =
+          (_b = n.raw) === null || _b === void 0
+            ? void 0
+            : _b.replace(/AFFiNE/g, 'Wemem').replace(/AFFINE/g, 'Wemem');
       }
     }
     return n;
   }
-
   /**
    * 替换模板放在中的内容
    * 例如 html`<div>AFFINE AI</div>`
@@ -307,18 +108,19 @@ class ReplaceVisitor {
    * @param n
    * @returns
    */
-  visitTemplateElement(n: TemplateElement) {
+  visitTemplateElement(n) {
+    var _a;
     if (n.raw.includes('AFFiNE') || n.raw.includes('AFFINE')) {
       console.log(`模板替换: ${n.raw}`);
       n.raw = n.raw.replace(/AFFiNE/g, 'Wemem').replace(/AFFINE/g, 'Wemem');
-      n.cooked = n.cooked
-        ?.replace(/AFFiNE/g, 'Wemem')
-        .replace(/AFFINE/g, 'Wemem');
+      n.cooked =
+        (_a = n.cooked) === null || _a === void 0
+          ? void 0
+          : _a.replace(/AFFiNE/g, 'Wemem').replace(/AFFINE/g, 'Wemem');
     }
     return n;
   }
-
-  visitJSXAttribute(n: JSXAttribute) {
+  visitJSXAttribute(n) {
     const value = n.value;
     if (
       value &&
@@ -330,8 +132,7 @@ class ReplaceVisitor {
     }
     return n;
   }
-
-  visitProgram(n: Program): Program {
+  visitProgram(n) {
     switch (n.type) {
       case 'Module':
         return this.visitModule(n);
@@ -339,29 +140,24 @@ class ReplaceVisitor {
         return this.visitScript(n);
     }
   }
-
-  visitModule(m: Module): Module {
+  visitModule(m) {
     m.body = this.visitModuleItems(m.body);
     return m;
   }
-
-  visitScript(m: Script): Script {
+  visitScript(m) {
     m.body = this.visitStatements(m.body);
     return m;
   }
-
-  visitModuleItems(items: ModuleItem[]): ModuleItem[] {
+  visitModuleItems(items) {
     return items.map(this.visitModuleItem.bind(this));
   }
-
-  visitModuleItem(n: ModuleItem): ModuleItem {
+  visitModuleItem(n) {
     // 针对 ImportDeclaration 的节点，不处理其子节点
     // 例如 import stickerCover032 from './stickers/Paper/Cover/AFFiNE AI.svg';
     // 替换之后会导致导入路径不正确
     if (n.type === 'ImportDeclaration') {
       return n;
     }
-
     switch (n.type) {
       case 'ExportDeclaration':
       case 'ExportDefaultDeclaration':
@@ -376,8 +172,7 @@ class ReplaceVisitor {
         return this.visitStatement(n);
     }
   }
-
-  visitModuleDeclaration(n: ModuleDeclaration): ModuleDeclaration {
+  visitModuleDeclaration(n) {
     switch (n.type) {
       case 'ExportDeclaration':
         return this.visitExportDeclaration(n);
@@ -399,29 +194,20 @@ class ReplaceVisitor {
         return this.visitTsNamespaceExportDeclaration(n);
     }
   }
-
-  visitTsNamespaceExportDeclaration(
-    n: TsNamespaceExportDeclaration
-  ): ModuleDeclaration {
+  visitTsNamespaceExportDeclaration(n) {
     n.id = this.visitBindingIdentifier(n.id);
     return n;
   }
-
-  visitTsExportAssignment(n: TsExportAssignment): TsExportAssignment {
+  visitTsExportAssignment(n) {
     n.expression = this.visitExpression(n.expression, n);
-
     return n;
   }
-
-  visitTsImportEqualsDeclaration(
-    n: TsImportEqualsDeclaration
-  ): ModuleDeclaration {
+  visitTsImportEqualsDeclaration(n) {
     n.id = this.visitBindingIdentifier(n.id);
     n.moduleRef = this.visitTsModuleReference(n.moduleRef);
     return n;
   }
-
-  visitTsModuleReference(n: TsModuleReference): TsModuleReference {
+  visitTsModuleReference(n) {
     switch (n.type) {
       case 'Identifier':
         return this.visitIdentifierReference(n);
@@ -431,35 +217,27 @@ class ReplaceVisitor {
         return this.visitTsQualifiedName(n);
     }
   }
-
-  visitTsExternalModuleReference(
-    n: TsExternalModuleReference
-  ): TsExternalModuleReference {
+  visitTsExternalModuleReference(n) {
     n.expression = this.visitStringLiteral(n.expression);
     return n;
   }
-
-  visitExportAllDeclaration(n: ExportAllDeclaration): ModuleDeclaration {
+  visitExportAllDeclaration(n) {
     n.source = this.visitStringLiteral(n.source);
     return n;
   }
-
-  visitExportDefaultExpression(n: ExportDefaultExpression): ModuleDeclaration {
+  visitExportDefaultExpression(n) {
     n.expression = this.visitExpression(n.expression, n);
     return n;
   }
-
-  visitExportNamedDeclaration(n: ExportNamedDeclaration): ModuleDeclaration {
+  visitExportNamedDeclaration(n) {
     n.specifiers = this.visitExportSpecifiers(n.specifiers);
     n.source = this.visitOptionalStringLiteral(n.source);
     return n;
   }
-
-  visitExportSpecifiers(nodes: ExportSpecifier[]): ExportSpecifier[] {
+  visitExportSpecifiers(nodes) {
     return nodes.map(this.visitExportSpecifier.bind(this));
   }
-
-  visitExportSpecifier(n: ExportSpecifier): ExportSpecifier {
+  visitExportSpecifier(n) {
     switch (n.type) {
       case 'ExportDefaultSpecifier':
         return this.visitExportDefaultSpecifier(n);
@@ -469,15 +247,14 @@ class ReplaceVisitor {
         return this.visitNamedExportSpecifier(n);
     }
   }
-  visitNamedExportSpecifier(n: NamedExportSpecifier): ExportSpecifier {
+  visitNamedExportSpecifier(n) {
     if (n.exported) {
       n.exported = this.visitModuleExportName(n.exported);
     }
     n.orig = this.visitModuleExportName(n.orig);
     return n;
   }
-
-  visitModuleExportName(n: ModuleExportName): ModuleExportName {
+  visitModuleExportName(n) {
     switch (n.type) {
       case 'Identifier':
         return this.visitIdentifier(n);
@@ -485,33 +262,24 @@ class ReplaceVisitor {
         return this.visitStringLiteral(n);
     }
   }
-
-  visitExportNamespaceSpecifier(n: ExportNamespaceSpecifier): ExportSpecifier {
+  visitExportNamespaceSpecifier(n) {
     n.name = this.visitModuleExportName(n.name);
     return n;
   }
-
-  visitExportDefaultSpecifier(n: ExportDefaultSpecifier): ExportSpecifier {
+  visitExportDefaultSpecifier(n) {
     n.exported = this.visitBindingIdentifier(n.exported);
     return n;
   }
-
-  visitOptionalStringLiteral(
-    n: StringLiteral | undefined
-  ): StringLiteral | undefined {
+  visitOptionalStringLiteral(n) {
     if (n) {
       return this.visitStringLiteral(n);
     }
   }
-
-  visitExportDefaultDeclaration(
-    n: ExportDefaultDeclaration
-  ): ModuleDeclaration {
+  visitExportDefaultDeclaration(n) {
     n.decl = this.visitDefaultDeclaration(n.decl);
     return n;
   }
-
-  visitDefaultDeclaration(n: DefaultDecl): DefaultDecl {
+  visitDefaultDeclaration(n) {
     switch (n.type) {
       case 'ClassExpression':
         return this.visitClassExpression(n);
@@ -521,77 +289,60 @@ class ReplaceVisitor {
         return this.visitTsInterfaceDeclaration(n);
     }
   }
-
-  visitFunctionExpression(n: FunctionExpression): FunctionExpression {
+  visitFunctionExpression(n) {
     n = this.visitFunction(n);
     if (n.identifier) {
       n.identifier = this.visitBindingIdentifier(n.identifier);
     }
     return n;
   }
-
-  visitClassExpression(n: ClassExpression): ClassExpression {
+  visitClassExpression(n) {
     n = this.visitClass(n);
     if (n.identifier) {
       n.identifier = this.visitBindingIdentifier(n.identifier);
     }
     return n;
   }
-
-  visitExportDeclaration(n: ExportDeclaration): ModuleDeclaration {
+  visitExportDeclaration(n) {
     n.declaration = this.visitDeclaration(n.declaration);
     return n;
   }
-
-  visitArrayExpression(e: ArrayExpression): Expression {
+  visitArrayExpression(e) {
     if (e.elements) {
       e.elements = e.elements.map(this.visitArrayElement.bind(this));
     }
     return e;
   }
-
-  visitArrayElement(e: ExprOrSpread | undefined): ExprOrSpread | undefined {
+  visitArrayElement(e) {
     if (e) {
       return this.visitExprOrSpread(e);
     }
   }
-
-  visitExprOrSpread(e: ExprOrSpread): ExprOrSpread {
-    return {
-      ...e,
+  visitExprOrSpread(e) {
+    return Object.assign(Object.assign({}, e), {
       expression: this.visitExpression(e.expression),
-    };
+    });
   }
-  visitExprOrSpreads(nodes: ExprOrSpread[]): ExprOrSpread[] {
+  visitExprOrSpreads(nodes) {
     return nodes.map(this.visitExprOrSpread.bind(this));
   }
-
-  visitSpreadElement(e: SpreadElement): SpreadElement {
+  visitSpreadElement(e) {
     e.arguments = this.visitExpression(e.arguments);
     return e;
   }
-
-  visitOptionalExpression(
-    e: Expression | undefined,
-    parent?: SwcNode
-  ): Expression | undefined {
+  visitOptionalExpression(e, parent) {
     if (e) {
       return this.visitExpression(e, parent);
     }
   }
-
-  visitArrowFunctionExpression(e: ArrowFunctionExpression): Expression {
+  visitArrowFunctionExpression(e) {
     e.body = this.visitArrowBody(e.body);
     e.params = this.visitPatterns(e.params);
     e.returnType = this.visitTsTypeAnnotation(e.returnType);
     e.typeParameters = this.visitTsTypeParameterDeclaration(e.typeParameters);
-
     return e;
   }
-
-  visitArrowBody(
-    body: BlockStatement | Expression
-  ): BlockStatement | Expression {
+  visitArrowBody(body) {
     switch (body.type) {
       case 'BlockStatement':
         return this.visitBlockStatement(body);
@@ -599,18 +350,14 @@ class ReplaceVisitor {
         return this.visitExpression(body);
     }
   }
-
-  visitBlockStatement(block: BlockStatement): BlockStatement {
+  visitBlockStatement(block) {
     block.stmts = this.visitStatements(block.stmts);
-
     return block;
   }
-
-  visitStatements(stmts: Statement[]): Statement[] {
+  visitStatements(stmts) {
     return stmts.map(this.visitStatement.bind(this));
   }
-
-  visitStatement(stmt: Statement): Statement {
+  visitStatement(stmt) {
     switch (stmt.type) {
       case 'ClassDeclaration':
       case 'FunctionDeclaration':
@@ -620,7 +367,6 @@ class ReplaceVisitor {
       case 'TsTypeAliasDeclaration':
       case 'VariableDeclaration':
         return this.visitDeclaration(stmt);
-
       case 'BreakStatement':
         return this.visitBreakStatement(stmt);
       case 'BlockStatement':
@@ -657,58 +403,46 @@ class ReplaceVisitor {
         return this.visitWithStatement(stmt);
       case 'ExpressionStatement':
         return this.visitExpressionStatement(stmt);
-
       default:
-        throw new Error(`Unknown statement type: ` + (stmt as any).type);
+        throw new Error(`Unknown statement type: ` + stmt.type);
     }
   }
-
-  visitSwitchStatement(stmt: SwitchStatement): Statement {
+  visitSwitchStatement(stmt) {
     stmt.discriminant = this.visitExpression(stmt.discriminant);
     stmt.cases = this.visitSwitchCases(stmt.cases);
     return stmt;
   }
-
-  visitSwitchCases(cases: SwitchCase[]): SwitchCase[] {
+  visitSwitchCases(cases) {
     return cases.map(this.visitSwitchCase.bind(this));
   }
-
-  visitSwitchCase(c: SwitchCase): SwitchCase {
+  visitSwitchCase(c) {
     c.test = this.visitOptionalExpression(c.test);
     c.consequent = this.visitStatements(c.consequent);
-
     return c;
   }
-
-  visitIfStatement(stmt: IfStatement): Statement {
+  visitIfStatement(stmt) {
     stmt.test = this.visitExpression(stmt.test);
     stmt.consequent = this.visitStatement(stmt.consequent);
     stmt.alternate = this.visitOptionalStatement(stmt.alternate);
-
     return stmt;
   }
-
-  visitOptionalStatement(stmt: Statement | undefined): Statement | undefined {
+  visitOptionalStatement(stmt) {
     if (stmt) {
       return this.visitStatement(stmt);
     }
   }
-
-  visitBreakStatement(stmt: BreakStatement): Statement {
+  visitBreakStatement(stmt) {
     if (stmt.label) {
       stmt.label = this.visitLabelIdentifier(stmt.label);
     }
-
     return stmt;
   }
-
-  visitWhileStatement(stmt: WhileStatement): Statement {
+  visitWhileStatement(stmt) {
     stmt.test = this.visitExpression(stmt.test);
     stmt.body = this.visitStatement(stmt.body);
     return stmt;
   }
-
-  visitTryStatement(stmt: TryStatement): Statement {
+  visitTryStatement(stmt) {
     stmt.block = this.visitBlockStatement(stmt.block);
     stmt.handler = this.visitCatchClause(stmt.handler);
     if (stmt.finalizer) {
@@ -716,39 +450,31 @@ class ReplaceVisitor {
     }
     return stmt;
   }
-
-  visitCatchClause(handler: CatchClause | undefined): CatchClause | undefined {
+  visitCatchClause(handler) {
     if (handler) {
       if (handler.param) {
         handler.param = this.visitPattern(handler.param);
       }
-
       handler.body = this.visitBlockStatement(handler.body);
     }
-
     return handler;
   }
-
-  visitThrowStatement(stmt: ThrowStatement): Statement {
+  visitThrowStatement(stmt) {
     stmt.argument = this.visitExpression(stmt.argument);
     return stmt;
   }
-
-  visitReturnStatement(stmt: ReturnStatement): Statement {
+  visitReturnStatement(stmt) {
     if (stmt.argument) {
       stmt.argument = this.visitExpression(stmt.argument);
     }
     return stmt;
   }
-
-  visitLabeledStatement(stmt: LabeledStatement): Statement {
+  visitLabeledStatement(stmt) {
     stmt.label = this.visitLabelIdentifier(stmt.label);
     stmt.body = this.visitStatement(stmt.body);
-
     return stmt;
   }
-
-  visitForStatement(stmt: ForStatement): Statement {
+  visitForStatement(stmt) {
     if (stmt.init) {
       if (stmt.init.type === 'VariableDeclaration') {
         stmt.init = this.visitVariableDeclaration(stmt.init);
@@ -756,15 +482,12 @@ class ReplaceVisitor {
         stmt.init = this.visitOptionalExpression(stmt.init);
       }
     }
-
     stmt.test = this.visitOptionalExpression(stmt.test);
     stmt.update = this.visitOptionalExpression(stmt.update);
     stmt.body = this.visitStatement(stmt.body);
-
     return stmt;
   }
-
-  visitForOfStatement(stmt: ForOfStatement): Statement {
+  visitForOfStatement(stmt) {
     if (stmt.left.type === 'VariableDeclaration') {
       stmt.left = this.visitVariableDeclaration(stmt.left);
     } else {
@@ -774,8 +497,7 @@ class ReplaceVisitor {
     stmt.body = this.visitStatement(stmt.body);
     return stmt;
   }
-
-  visitForInStatement(stmt: ForInStatement): Statement {
+  visitForInStatement(stmt) {
     if (stmt.left.type === 'VariableDeclaration') {
       stmt.left = this.visitVariableDeclaration(stmt.left);
     } else {
@@ -785,28 +507,23 @@ class ReplaceVisitor {
     stmt.body = this.visitStatement(stmt.body);
     return stmt;
   }
-
-  visitEmptyStatement(stmt: EmptyStatement): EmptyStatement {
+  visitEmptyStatement(stmt) {
     return stmt;
   }
-
-  visitDoWhileStatement(stmt: DoWhileStatement): Statement {
+  visitDoWhileStatement(stmt) {
     stmt.body = this.visitStatement(stmt.body);
     stmt.test = this.visitExpression(stmt.test);
     return stmt;
   }
-
-  visitDebuggerStatement(stmt: DebuggerStatement): Statement {
+  visitDebuggerStatement(stmt) {
     return stmt;
   }
-
-  visitWithStatement(stmt: WithStatement): Statement {
+  visitWithStatement(stmt) {
     stmt.object = this.visitExpression(stmt.object);
     stmt.body = this.visitStatement(stmt.body);
     return stmt;
   }
-
-  visitDeclaration(decl: Declaration): Declaration {
+  visitDeclaration(decl) {
     switch (decl.type) {
       case 'ClassDeclaration':
         return this.visitClassDeclaration(decl);
@@ -824,38 +541,32 @@ class ReplaceVisitor {
         return this.visitVariableDeclaration(decl);
     }
   }
-
-  visitVariableDeclaration(n: VariableDeclaration): VariableDeclaration {
+  visitVariableDeclaration(n) {
     n.declarations = this.visitVariableDeclarators(n.declarations);
     return n;
   }
-
-  visitVariableDeclarators(nodes: VariableDeclarator[]): VariableDeclarator[] {
+  visitVariableDeclarators(nodes) {
     return nodes.map(this.visitVariableDeclarator.bind(this));
   }
-
-  visitVariableDeclarator(n: VariableDeclarator): VariableDeclarator {
+  visitVariableDeclarator(n) {
     n.id = this.visitPattern(n.id);
     n.init = this.visitOptionalExpression(n.init);
     return n;
   }
-
-  visitTsTypeAliasDeclaration(n: TsTypeAliasDeclaration): Declaration {
+  visitTsTypeAliasDeclaration(n) {
     n.id = this.visitBindingIdentifier(n.id);
     n.typeAnnotation = this.visitTsType(n.typeAnnotation);
     n.typeParams = this.visitTsTypeParameterDeclaration(n.typeParams);
     return n;
   }
-
-  visitTsModuleDeclaration(n: TsModuleDeclaration): Declaration {
+  visitTsModuleDeclaration(n) {
     n.id = this.visitTsModuleName(n.id);
     if (n.body) {
       n.body = this.visitTsNamespaceBody(n.body);
     }
     return n;
   }
-
-  visitTsModuleName(n: TsModuleName): TsModuleName {
+  visitTsModuleName(n) {
     switch (n.type) {
       case 'Identifier':
         return this.visitBindingIdentifier(n);
@@ -863,8 +574,7 @@ class ReplaceVisitor {
         return this.visitStringLiteral(n);
     }
   }
-
-  visitTsNamespaceBody(n: TsNamespaceBody): TsNamespaceBody | undefined {
+  visitTsNamespaceBody(n) {
     if (n) {
       switch (n.type) {
         case 'TsModuleBlock':
@@ -874,10 +584,7 @@ class ReplaceVisitor {
       }
     }
   }
-
-  visitTsNamespaceDeclaration(
-    n: TsNamespaceDeclaration
-  ): TsModuleBlock | TsNamespaceDeclaration {
+  visitTsNamespaceDeclaration(n) {
     const body = this.visitTsNamespaceBody(n.body);
     if (body) {
       n.body = body;
@@ -885,32 +592,25 @@ class ReplaceVisitor {
     n.id = this.visitBindingIdentifier(n.id);
     return n;
   }
-
-  visitTsModuleBlock(n: TsModuleBlock): TsModuleBlock | TsNamespaceDeclaration {
+  visitTsModuleBlock(n) {
     n.body = this.visitModuleItems(n.body);
     return n;
   }
-
-  visitTsInterfaceDeclaration(
-    n: TsInterfaceDeclaration
-  ): TsInterfaceDeclaration {
+  visitTsInterfaceDeclaration(n) {
     n.id = this.visitBindingIdentifier(n.id);
     n.typeParams = this.visitTsTypeParameterDeclaration(n.typeParams);
     n.extends = this.visitTsExpressionsWithTypeArguments(n.extends);
     n.body = this.visitTsInterfaceBody(n.body);
     return n;
   }
-
-  visitTsInterfaceBody(n: TsInterfaceBody): TsInterfaceBody {
+  visitTsInterfaceBody(n) {
     n.body = this.visitTsTypeElements(n.body);
     return n;
   }
-
-  visitTsTypeElements(nodes: TsTypeElement[]): TsTypeElement[] {
+  visitTsTypeElements(nodes) {
     return nodes.map(this.visitTsTypeElement.bind(this));
   }
-
-  visitTsTypeElement(n: TsTypeElement): TsTypeElement {
+  visitTsTypeElement(n) {
     switch (n.type) {
       case 'TsCallSignatureDeclaration':
         return this.visitTsCallSignatureDeclaration(n);
@@ -928,57 +628,48 @@ class ReplaceVisitor {
         return this.visitTsIndexSignature(n);
     }
   }
-
-  visitTsCallSignatureDeclaration(
-    n: TsCallSignatureDeclaration
-  ): TsCallSignatureDeclaration {
+  visitTsCallSignatureDeclaration(n) {
     n.params = this.visitTsFnParameters(n.params);
     n.typeAnnotation = this.visitTsTypeAnnotation(n.typeAnnotation);
     return n;
   }
-  visitTsConstructSignatureDeclaration(
-    n: TsConstructSignatureDeclaration
-  ): TsConstructSignatureDeclaration {
+  visitTsConstructSignatureDeclaration(n) {
     n.params = this.visitTsFnParameters(n.params);
     n.typeAnnotation = this.visitTsTypeAnnotation(n.typeAnnotation);
     return n;
   }
-  visitTsPropertySignature(n: TsPropertySignature): TsPropertySignature {
+  visitTsPropertySignature(n) {
     n.params = this.visitTsFnParameters(n.params);
     n.typeAnnotation = this.visitTsTypeAnnotation(n.typeAnnotation);
     return n;
   }
-  visitTsGetterSignature(n: TsGetterSignature): TsGetterSignature {
+  visitTsGetterSignature(n) {
     n.typeAnnotation = this.visitTsTypeAnnotation(n.typeAnnotation);
     return n;
   }
-  visitTsSetterSignature(n: TsSetterSignature): TsSetterSignature {
+  visitTsSetterSignature(n) {
     n.param = this.visitTsFnParameter(n.param);
     return n;
   }
-  visitTsMethodSignature(n: TsMethodSignature): TsMethodSignature {
+  visitTsMethodSignature(n) {
     n.params = this.visitTsFnParameters(n.params);
     n.typeAnn = this.visitTsTypeAnnotation(n.typeAnn);
     return n;
   }
-
-  visitTsEnumDeclaration(n: TsEnumDeclaration): Declaration {
+  visitTsEnumDeclaration(n) {
     n.id = this.visitIdentifier(n.id);
     n.members = this.visitTsEnumMembers(n.members);
     return n;
   }
-
-  visitTsEnumMembers(nodes: TsEnumMember[]): TsEnumMember[] {
+  visitTsEnumMembers(nodes) {
     return nodes.map(this.visitTsEnumMember.bind(this));
   }
-
-  visitTsEnumMember(n: TsEnumMember): TsEnumMember {
+  visitTsEnumMember(n) {
     n.id = this.visitTsEnumMemberId(n.id);
     n.init = this.visitOptionalExpression(n.init);
     return n;
   }
-
-  visitTsEnumMemberId(n: TsEnumMemberId): TsEnumMemberId {
+  visitTsEnumMemberId(n) {
     switch (n.type) {
       case 'Identifier':
         return this.visitBindingIdentifier(n);
@@ -986,25 +677,20 @@ class ReplaceVisitor {
         return this.visitStringLiteral(n);
     }
   }
-
-  visitFunctionDeclaration(decl: FunctionDeclaration): Declaration {
+  visitFunctionDeclaration(decl) {
     decl.identifier = this.visitIdentifier(decl.identifier);
     decl = this.visitFunction(decl);
-
     return decl;
   }
-
-  visitClassDeclaration(decl: ClassDeclaration): Declaration {
+  visitClassDeclaration(decl) {
     decl = this.visitClass(decl);
     decl.identifier = this.visitIdentifier(decl.identifier);
     return decl;
   }
-
-  visitClassBody(members: ClassMember[]): ClassMember[] {
+  visitClassBody(members) {
     return members.map(this.visitClassMember.bind(this));
   }
-
-  visitClassMember(member: ClassMember): ClassMember {
+  visitClassMember(member) {
     switch (member.type) {
       case 'ClassMethod':
         return this.visitClassMethod(member);
@@ -1024,43 +710,36 @@ class ReplaceVisitor {
         return this.visitStaticBlock(member);
     }
   }
-
-  visitTsIndexSignature(n: TsIndexSignature): TsIndexSignature {
+  visitTsIndexSignature(n) {
     n.params = this.visitTsFnParameters(n.params);
     if (n.typeAnnotation)
       n.typeAnnotation = this.visitTsTypeAnnotation(n.typeAnnotation);
     return n;
   }
-
-  visitTsFnParameters(params: TsFnParameter[]): TsFnParameter[] {
+  visitTsFnParameters(params) {
     return params.map(this.visitTsFnParameter.bind(this));
   }
-
-  visitTsFnParameter(n: TsFnParameter): TsFnParameter {
+  visitTsFnParameter(n) {
     n.typeAnnotation = this.visitTsTypeAnnotation(n.typeAnnotation);
     return n;
   }
-
-  visitPrivateProperty(n: PrivateProperty): ClassMember {
+  visitPrivateProperty(n) {
     n.decorators = this.visitDecorators(n.decorators);
     n.key = this.visitPrivateName(n.key);
     n.typeAnnotation = this.visitTsTypeAnnotation(n.typeAnnotation);
     n.value = this.visitOptionalExpression(n.value);
     return n;
   }
-
-  visitPrivateMethod(n: PrivateMethod): ClassMember {
+  visitPrivateMethod(n) {
     n.accessibility = this.visitAccessibility(n.accessibility);
     n.function = this.visitFunction(n.function);
     n.key = this.visitPrivateName(n.key);
     return n;
   }
-
-  visitPrivateName(n: PrivateName): PrivateName {
+  visitPrivateName(n) {
     return n;
   }
-
-  visitConstructor(n: Constructor): ClassMember {
+  visitConstructor(n) {
     n.accessibility = this.visitAccessibility(n.accessibility);
     n.key = this.visitPropertyName(n.key);
     n.params = this.visitConstructorParameters(n.params);
@@ -1069,16 +748,10 @@ class ReplaceVisitor {
     }
     return n;
   }
-
-  visitConstructorParameters(
-    nodes: (Param | TsParameterProperty)[]
-  ): (Param | TsParameterProperty)[] {
+  visitConstructorParameters(nodes) {
     return nodes.map(this.visitConstructorParameter.bind(this));
   }
-
-  visitConstructorParameter(
-    n: Param | TsParameterProperty
-  ): Param | TsParameterProperty {
+  visitConstructorParameter(n) {
     switch (n.type) {
       case 'TsParameterProperty':
         return this.visitTsParameterProperty(n);
@@ -1086,29 +759,21 @@ class ReplaceVisitor {
         return this.visitParameter(n);
     }
   }
-
-  visitStaticBlock(n: StaticBlock): StaticBlock {
+  visitStaticBlock(n) {
     n.body = this.visitBlockStatement(n.body);
     return n;
   }
-
-  visitTsParameterProperty(
-    n: TsParameterProperty
-  ): TsParameterProperty | Param {
+  visitTsParameterProperty(n) {
     n.accessibility = this.visitAccessibility(n.accessibility);
     n.decorators = this.visitDecorators(n.decorators);
     n.param = this.visitTsParameterPropertyParameter(n.param);
     return n;
   }
-
-  visitTsParameterPropertyParameter(
-    n: TsParameterPropertyParameter
-  ): TsParameterPropertyParameter {
+  visitTsParameterPropertyParameter(n) {
     n.typeAnnotation = this.visitTsTypeAnnotation(n.typeAnnotation);
     return n;
   }
-
-  visitPropertyName(key: PropertyName): PropertyName {
+  visitPropertyName(key) {
     switch (key.type) {
       case 'Identifier':
         return this.visitBindingIdentifier(key);
@@ -1122,12 +787,10 @@ class ReplaceVisitor {
         return this.visitComputedPropertyKey(key);
     }
   }
-
-  visitAccessibility(n: Accessibility | undefined): Accessibility | undefined {
+  visitAccessibility(n) {
     return n;
   }
-
-  visitClassProperty(n: ClassProperty): ClassMember {
+  visitClassProperty(n) {
     n.accessibility = this.visitAccessibility(n.accessibility);
     n.decorators = this.visitDecorators(n.decorators);
     n.key = this.visitPropertyName(n.key);
@@ -1135,36 +798,29 @@ class ReplaceVisitor {
     n.value = this.visitOptionalExpression(n.value);
     return n;
   }
-
-  visitClassMethod(n: ClassMethod): ClassMember {
+  visitClassMethod(n) {
     n.accessibility = this.visitAccessibility(n.accessibility);
     n.function = this.visitFunction(n.function);
     n.key = this.visitPropertyName(n.key);
     return n;
   }
-
-  visitComputedPropertyKey(n: ComputedPropName): ComputedPropName {
+  visitComputedPropertyKey(n) {
     n.expression = this.visitExpression(n.expression, n);
     return n;
   }
-
-  visitClass<T extends Class>(n: T): T {
+  visitClass(n) {
     n.decorators = this.visitDecorators(n.decorators);
-
     n.superClass = this.visitOptionalExpression(n.superClass);
-
     n.superTypeParams = this.visitTsTypeParameterInstantiation(
       n.superTypeParams
     );
     if (n.implements) {
       n.implements = this.visitTsExpressionsWithTypeArguments(n.implements);
     }
-
     n.body = this.visitClassBody(n.body);
     return n;
   }
-
-  visitFunction<T extends Fn>(n: T): T {
+  visitFunction(n) {
     n.decorators = this.visitDecorators(n.decorators);
     n.params = this.visitParameters(n.params);
     if (n.body) {
@@ -1174,35 +830,24 @@ class ReplaceVisitor {
     n.typeParameters = this.visitTsTypeParameterDeclaration(n.typeParameters);
     return n;
   }
-
-  visitTsExpressionsWithTypeArguments(
-    nodes: TsExpressionWithTypeArguments[]
-  ): TsExpressionWithTypeArguments[] {
+  visitTsExpressionsWithTypeArguments(nodes) {
     return nodes.map(this.visitTsExpressionWithTypeArguments.bind(this));
   }
-
-  visitTsExpressionWithTypeArguments(
-    n: TsExpressionWithTypeArguments
-  ): TsExpressionWithTypeArguments {
+  visitTsExpressionWithTypeArguments(n) {
     n.expression = this.visitExpression(n.expression);
     n.typeArguments = this.visitTsTypeParameterInstantiation(n.typeArguments);
     return n;
   }
-
-  visitTsTypeParameterInstantiation(
-    n: TsTypeParameterInstantiation | undefined
-  ): TsTypeParameterInstantiation | undefined {
+  visitTsTypeParameterInstantiation(n) {
     if (n) {
       n.params = this.visitTsTypes(n.params);
     }
     return n;
   }
-
-  visitTsTypes(nodes: TsType[]): TsType[] {
+  visitTsTypes(nodes) {
     return nodes.map(this.visitTsType.bind(this));
   }
-
-  visitTsEntityName(n: TsEntityName): TsEntityName {
+  visitTsEntityName(n) {
     switch (n.type) {
       case 'Identifier':
         return this.visitBindingIdentifier(n);
@@ -1210,38 +855,31 @@ class ReplaceVisitor {
         return this.visitTsQualifiedName(n);
     }
   }
-
-  visitTsQualifiedName(n: TsQualifiedName): TsQualifiedName {
+  visitTsQualifiedName(n) {
     n.left = this.visitTsEntityName(n.left);
     n.right = this.visitIdentifier(n.right);
     return n;
   }
-
-  visitDecorators(nodes: Decorator[] | undefined): Decorator[] | undefined {
+  visitDecorators(nodes) {
     if (nodes) {
       return nodes.map(this.visitDecorator.bind(this));
     }
   }
-
-  visitDecorator(n: Decorator): Decorator {
+  visitDecorator(n) {
     n.expression = this.visitExpression(n.expression);
-
     return n;
   }
-
-  visitExpressionStatement(stmt: ExpressionStatement): Statement {
+  visitExpressionStatement(stmt) {
     stmt.expression = this.visitExpression(stmt.expression);
     return stmt;
   }
-
-  visitContinueStatement(stmt: ContinueStatement): Statement {
+  visitContinueStatement(stmt) {
     if (stmt.label) {
       stmt.label = this.visitLabelIdentifier(stmt.label);
     }
     return stmt;
   }
-
-  visitExpression(n: Expression, parent?: SwcNode): Expression {
+  visitExpression(n, parent) {
     switch (n.type) {
       case 'ArrayExpression':
         return this.visitArrayExpression(n);
@@ -1333,14 +971,11 @@ class ReplaceVisitor {
         return n;
     }
   }
-  visitOptionalChainingExpression(n: OptionalChainingExpression): Expression {
+  visitOptionalChainingExpression(n) {
     n.base = this.visitMemberExpressionOrOptionalChainingCall(n.base);
     return n;
   }
-
-  visitMemberExpressionOrOptionalChainingCall(
-    n: MemberExpression | OptionalChainingCall
-  ): MemberExpression | OptionalChainingCall {
+  visitMemberExpressionOrOptionalChainingCall(n) {
     switch (n.type) {
       case 'MemberExpression':
         return this.visitMemberExpression(n);
@@ -1348,22 +983,19 @@ class ReplaceVisitor {
         return this.visitOptionalChainingCall(n);
     }
   }
-
-  visitOptionalChainingCall(n: OptionalChainingCall): OptionalChainingCall {
+  visitOptionalChainingCall(n) {
     n.callee = this.visitExpression(n.callee);
     n.arguments = this.visitExprOrSpreads(n.arguments);
     if (n.typeArguments)
       n.typeArguments = this.visitTsTypeParameterInstantiation(n.typeArguments);
     return n;
   }
-
-  visitAssignmentExpression(n: AssignmentExpression): Expression {
+  visitAssignmentExpression(n) {
     n.left = this.visitPatternOrExpression(n.left);
     n.right = this.visitExpression(n.right);
     return n;
   }
-
-  visitPatternOrExpression(n: Pattern | Expression): Pattern | Expression {
+  visitPatternOrExpression(n) {
     switch (n.type) {
       case 'ObjectPattern':
       case 'ArrayPattern':
@@ -1375,75 +1007,61 @@ class ReplaceVisitor {
         return this.visitExpression(n);
     }
   }
-
-  visitYieldExpression(n: YieldExpression): Expression {
+  visitYieldExpression(n) {
     n.argument = this.visitOptionalExpression(n.argument);
     return n;
   }
-
-  visitUpdateExpression(n: UpdateExpression): Expression {
+  visitUpdateExpression(n) {
     n.argument = this.visitExpression(n.argument);
     return n;
   }
-
-  visitUnaryExpression(n: UnaryExpression): Expression {
+  visitUnaryExpression(n) {
     n.argument = this.visitExpression(n.argument);
     return n;
   }
-
-  visitTsTypeAssertion(n: TsTypeAssertion): Expression {
+  visitTsTypeAssertion(n) {
     n.expression = this.visitExpression(n.expression);
     n.typeAnnotation = this.visitTsType(n.typeAnnotation);
     return n;
   }
-
-  visitTsConstAssertion(n: TsConstAssertion): Expression {
+  visitTsConstAssertion(n) {
     n.expression = this.visitExpression(n.expression);
     return n;
   }
-
-  visitTsInstantiation(n: TsInstantiation): TsInstantiation {
+  visitTsInstantiation(n) {
     n.expression = this.visitExpression(n.expression);
     return n;
   }
-
-  visitTsNonNullExpression(n: TsNonNullExpression): Expression {
+  visitTsNonNullExpression(n) {
     n.expression = this.visitExpression(n.expression);
     return n;
   }
-
-  visitTsAsExpression(n: TsAsExpression): Expression {
+  visitTsAsExpression(n) {
     n.expression = this.visitExpression(n.expression);
     n.typeAnnotation = this.visitTsType(n.typeAnnotation);
     return n;
   }
-
-  visitTsSatisfiesExpression(n: TsSatisfiesExpression): Expression {
+  visitTsSatisfiesExpression(n) {
     n.expression = this.visitExpression(n.expression);
     n.typeAnnotation = this.visitTsType(n.typeAnnotation);
     return n;
   }
-
-  visitThisExpression(n: ThisExpression): Expression {
+  visitThisExpression(n) {
     return n;
   }
-
   // visitTemplateLiteral(n: TemplateLiteral): Expression {
   //   n.expressions = n.expressions.map(this.visitExpression.bind(this));
   //   n.quasis = n.quasis.map(this.visitTemplateElement);
   //   return n;
   // }
-
-  visitParameters(n: Param[]): Param[] {
+  visitParameters(n) {
     return n.map(this.visitParameter.bind(this));
   }
-
-  visitParameter(n: Param): Param {
+  visitParameter(n) {
     n.pat = this.visitPattern(n.pat);
     return n;
   }
-
-  visitTaggedTemplateExpression(n: TaggedTemplateExpression): Expression {
+  visitTaggedTemplateExpression(n) {
     n.tag = this.visitExpression(n.tag);
     const template = this.visitTemplateLiteral(n.template);
     if (template.type === 'TemplateLiteral') {
@@ -1451,35 +1069,27 @@ class ReplaceVisitor {
     }
     return n;
   }
-
-  visitSequenceExpression(n: SequenceExpression): Expression {
+  visitSequenceExpression(n) {
     n.expressions = n.expressions.map(this.visitExpression.bind(this));
     return n;
   }
-
-  visitRegExpLiteral(n: RegExpLiteral): Expression {
+  visitRegExpLiteral(n) {
     return n;
   }
-
-  visitParenthesisExpression(n: ParenthesisExpression): Expression {
+  visitParenthesisExpression(n) {
     n.expression = this.visitExpression(n.expression);
     return n;
   }
-
-  visitObjectExpression(n: ObjectExpression): Expression {
+  visitObjectExpression(n) {
     if (n.properties) {
       n.properties = this.visitObjectProperties(n.properties);
     }
     return n;
   }
-
-  visitObjectProperties(
-    nodes: (Property | SpreadElement)[]
-  ): (Property | SpreadElement)[] {
+  visitObjectProperties(nodes) {
     return nodes.map(this.visitObjectProperty.bind(this));
   }
-
-  visitObjectProperty(n: Property | SpreadElement): Property | SpreadElement {
+  visitObjectProperty(n) {
     switch (n.type) {
       case 'SpreadElement':
         return this.visitSpreadElement(n);
@@ -1487,8 +1097,7 @@ class ReplaceVisitor {
         return this.visitProperty(n);
     }
   }
-
-  visitProperty(n: Property): Property | SpreadElement {
+  visitProperty(n) {
     switch (n.type) {
       case 'Identifier':
         return this.visitIdentifier(n);
@@ -1504,8 +1113,7 @@ class ReplaceVisitor {
         return this.visitSetterProperty(n);
     }
   }
-
-  visitSetterProperty(n: SetterProperty): Property | SpreadElement {
+  visitSetterProperty(n) {
     n.key = this.visitPropertyName(n.key);
     n.param = this.visitPattern(n.param);
     if (n.body) {
@@ -1513,8 +1121,7 @@ class ReplaceVisitor {
     }
     return n;
   }
-
-  visitMethodProperty(n: MethodProperty): Property | SpreadElement {
+  visitMethodProperty(n) {
     n.key = this.visitPropertyName(n.key);
     if (n.body) {
       n.body = this.visitBlockStatement(n.body);
@@ -1525,14 +1132,12 @@ class ReplaceVisitor {
     n.typeParameters = this.visitTsTypeParameterDeclaration(n.typeParameters);
     return n;
   }
-
-  visitKeyValueProperty(n: KeyValueProperty): Property | SpreadElement {
+  visitKeyValueProperty(n) {
     n.key = this.visitPropertyName(n.key);
     n.value = this.visitExpression(n.value, n);
     return n;
   }
-
-  visitGetterProperty(n: GetterProperty): Property | SpreadElement {
+  visitGetterProperty(n) {
     n.key = this.visitPropertyName(n.key);
     if (n.body) {
       n.body = this.visitBlockStatement(n.body);
@@ -1540,18 +1145,15 @@ class ReplaceVisitor {
     n.typeAnnotation = this.visitTsTypeAnnotation(n.typeAnnotation);
     return n;
   }
-
-  visitAssignmentProperty(n: AssignmentProperty): Property | SpreadElement {
+  visitAssignmentProperty(n) {
     n.key = this.visitIdentifier(n.key);
     n.value = this.visitExpression(n.value);
     return n;
   }
-
-  visitNullLiteral(n: NullLiteral): NullLiteral {
+  visitNullLiteral(n) {
     return n;
   }
-
-  visitNewExpression(n: NewExpression): Expression {
+  visitNewExpression(n) {
     n.callee = this.visitExpression(n.callee);
     if (n.arguments) {
       n.arguments = this.visitArguments(n.arguments);
@@ -1559,30 +1161,23 @@ class ReplaceVisitor {
     n.typeArguments = this.visitTsTypeArguments(n.typeArguments);
     return n;
   }
-
-  visitTsTypeArguments(
-    n: TsTypeParameterInstantiation | undefined
-  ): TsTypeParameterInstantiation | undefined {
+  visitTsTypeArguments(n) {
     if (n) {
       n.params = this.visitTsTypes(n.params);
     }
     return n;
   }
-
-  visitArguments(nodes: Argument[]): Argument[] {
+  visitArguments(nodes) {
     return nodes.map(this.visitArgument.bind(this));
   }
-
-  visitArgument(n: Argument): Argument {
+  visitArgument(n) {
     n.expression = this.visitExpression(n.expression);
     return n;
   }
-
-  visitMetaProperty(n: MetaProperty): Expression {
+  visitMetaProperty(n) {
     return n;
   }
-
-  visitMemberExpression(n: MemberExpression): MemberExpression {
+  visitMemberExpression(n) {
     n.object = this.visitExpression(n.object);
     switch (n.property.type) {
       case 'Computed': {
@@ -1599,8 +1194,7 @@ class ReplaceVisitor {
       }
     }
   }
-
-  visitSuperPropExpression(n: SuperPropExpression): Expression {
+  visitSuperPropExpression(n) {
     switch (n.property.type) {
       case 'Computed': {
         n.property = this.visitComputedPropertyKey(n.property);
@@ -1612,27 +1206,23 @@ class ReplaceVisitor {
       }
     }
   }
-
-  visitCallee(n: Expression | Super | Import): Expression | Super | Import {
+  visitCallee(n) {
     if (n.type === 'Super' || n.type === 'Import') {
       return n;
     }
     return this.visitExpression(n);
   }
-
-  visitJSXNamespacedName(n: JSXNamespacedName): JSXNamespacedName {
+  visitJSXNamespacedName(n) {
     n.namespace = this.visitIdentifierReference(n.namespace);
     n.name = this.visitIdentifierReference(n.name);
     return n;
   }
-
-  visitJSXMemberExpression(n: JSXMemberExpression): JSXMemberExpression {
+  visitJSXMemberExpression(n) {
     n.object = this.visitJSXObject(n.object);
     n.property = this.visitIdentifierReference(n.property);
     return n;
   }
-
-  visitJSXObject(n: JSXObject): JSXObject {
+  visitJSXObject(n) {
     switch (n.type) {
       case 'Identifier':
         return this.visitIdentifierReference(n);
@@ -1640,8 +1230,7 @@ class ReplaceVisitor {
         return this.visitJSXMemberExpression(n);
     }
   }
-
-  visitJSXFragment(n: JSXFragment): JSXFragment {
+  visitJSXFragment(n) {
     n.opening = this.visitJSXOpeningFragment(n.opening);
     if (n.children) {
       n.children = this.visitJSXElementChildren(n.children);
@@ -1649,16 +1238,13 @@ class ReplaceVisitor {
     n.closing = this.visitJSXClosingFragment(n.closing);
     return n;
   }
-
-  visitJSXClosingFragment(n: JSXClosingFragment): JSXClosingFragment {
+  visitJSXClosingFragment(n) {
     return n;
   }
-
-  visitJSXElementChildren(nodes: JSXElementChild[]): JSXElementChild[] {
+  visitJSXElementChildren(nodes) {
     return nodes.map(this.visitJSXElementChild.bind(this));
   }
-
-  visitJSXElementChild(n: JSXElementChild): JSXElementChild {
+  visitJSXElementChild(n) {
     switch (n.type) {
       case 'JSXElement':
         return this.visitJSXElement(n);
@@ -1672,44 +1258,33 @@ class ReplaceVisitor {
         return this.visitJSXText(n);
     }
   }
-
-  visitJSXExpressionContainer(
-    n: JSXExpressionContainer
-  ): JSXExpressionContainer {
+  visitJSXExpressionContainer(n) {
     n.expression = this.visitExpression(n.expression);
     return n;
   }
-
-  visitJSXSpreadChild(n: JSXSpreadChild): JSXElementChild {
+  visitJSXSpreadChild(n) {
     n.expression = this.visitExpression(n.expression);
     return n;
   }
-
-  visitJSXOpeningFragment(n: JSXOpeningFragment): JSXOpeningFragment {
+  visitJSXOpeningFragment(n) {
     return n;
   }
-
-  visitJSXEmptyExpression(n: JSXEmptyExpression): Expression {
+  visitJSXEmptyExpression(n) {
     return n;
   }
-
-  visitJSXElement(n: JSXElement): JSXElement {
+  visitJSXElement(n) {
     n.opening = this.visitJSXOpeningElement(n.opening);
     n.children = this.visitJSXElementChildren(n.children);
     n.closing = this.visitJSXClosingElement(n.closing);
     return n;
   }
-
-  visitJSXClosingElement(
-    n: JSXClosingElement | undefined
-  ): JSXClosingElement | undefined {
+  visitJSXClosingElement(n) {
     if (n) {
       n.name = this.visitJSXElementName(n.name);
     }
     return n;
   }
-
-  visitJSXElementName(n: JSXElementName): JSXElementName {
+  visitJSXElementName(n) {
     switch (n.type) {
       case 'Identifier':
         return this.visitIdentifierReference(n);
@@ -1719,21 +1294,16 @@ class ReplaceVisitor {
         return this.visitJSXNamespacedName(n);
     }
   }
-
-  visitJSXOpeningElement(n: JSXOpeningElement): JSXOpeningElement {
+  visitJSXOpeningElement(n) {
     n.name = this.visitJSXElementName(n.name);
     n.typeArguments = this.visitTsTypeParameterInstantiation(n.typeArguments);
     n.attributes = this.visitJSXAttributeOrSpreads(n.attributes);
     return n;
   }
-
-  visitJSXAttributes(
-    attrs: JSXAttributeOrSpread[] | undefined
-  ): JSXAttributeOrSpread[] | undefined {
+  visitJSXAttributes(attrs) {
     if (attrs) return attrs.map(this.visitJSXAttributeOrSpread.bind(this));
   }
-
-  visitJSXAttributeOrSpread(n: JSXAttributeOrSpread): JSXAttributeOrSpread {
+  visitJSXAttributeOrSpread(n) {
     switch (n.type) {
       case 'JSXAttribute':
         return this.visitJSXAttribute(n);
@@ -1741,17 +1311,11 @@ class ReplaceVisitor {
         return this.visitSpreadElement(n);
     }
   }
-  visitJSXAttributeOrSpreads(
-    nodes: JSXAttributeOrSpread[]
-  ): JSXAttributeOrSpread[] {
+  visitJSXAttributeOrSpreads(nodes) {
     return nodes.map(this.visitJSXAttributeOrSpread.bind(this));
   }
-
-  visitJSXAttributeValue(
-    n: JSXAttrValue | undefined
-  ): JSXAttrValue | undefined {
+  visitJSXAttributeValue(n) {
     if (!n) return n;
-
     switch (n.type) {
       case 'BooleanLiteral':
         return this.visitBooleanLiteral(n);
@@ -1763,7 +1327,6 @@ class ReplaceVisitor {
         return this.visitJSXText(n);
       case 'StringLiteral':
         return this.visitStringLiteral(n);
-
       case 'JSXElement':
         return this.visitJSXElement(n);
       case 'JSXExpressionContainer':
@@ -1773,8 +1336,7 @@ class ReplaceVisitor {
     }
     return n;
   }
-
-  visitJSXAttributeName(n: JSXAttributeName): JSXAttributeName {
+  visitJSXAttributeName(n) {
     switch (n.type) {
       case 'Identifier':
         return this.visitIdentifierReference(n);
@@ -1782,53 +1344,42 @@ class ReplaceVisitor {
         return this.visitJSXNamespacedName(n);
     }
   }
-
-  visitConditionalExpression(n: ConditionalExpression): Expression {
+  visitConditionalExpression(n) {
     n.test = this.visitExpression(n.test, n);
     n.consequent = this.visitExpression(n.consequent, n);
     n.alternate = this.visitExpression(n.alternate, n);
     return n;
   }
-
-  visitCallExpression(n: CallExpression): Expression {
+  visitCallExpression(n) {
     n.callee = this.visitCallee(n.callee);
     n.typeArguments = this.visitTsTypeParameterInstantiation(n.typeArguments);
     if (n.arguments) {
       n.arguments = this.visitArguments(n.arguments);
     }
-
     return n;
   }
-
-  visitBooleanLiteral(n: BooleanLiteral): BooleanLiteral {
+  visitBooleanLiteral(n) {
     return n;
   }
-
-  visitBinaryExpression(n: BinaryExpression): Expression {
+  visitBinaryExpression(n) {
     n.left = this.visitExpression(n.left);
     n.right = this.visitExpression(n.right);
     return n;
   }
-
-  visitAwaitExpression(n: AwaitExpression): Expression {
+  visitAwaitExpression(n) {
     n.argument = this.visitExpression(n.argument);
     return n;
   }
-
-  visitTsTypeParameterDeclaration(
-    n: TsTypeParameterDeclaration | undefined
-  ): TsTypeParameterDeclaration | undefined {
+  visitTsTypeParameterDeclaration(n) {
     if (n) {
       n.parameters = this.visitTsTypeParameters(n.parameters);
     }
     return n;
   }
-
-  visitTsTypeParameters(nodes: TsTypeParameter[]): TsTypeParameter[] {
+  visitTsTypeParameters(nodes) {
     return nodes.map(this.visitTsTypeParameter.bind(this));
   }
-
-  visitTsTypeParameter(n: TsTypeParameter): TsTypeParameter {
+  visitTsTypeParameter(n) {
     if (n.constraint) {
       n.constraint = this.visitTsType(n.constraint);
     }
@@ -1838,98 +1389,73 @@ class ReplaceVisitor {
     n.name = this.visitIdentifierReference(n.name);
     return n;
   }
-
-  visitTsTypeAnnotation(
-    a: TsTypeAnnotation | undefined
-  ): TsTypeAnnotation | undefined {
+  visitTsTypeAnnotation(a) {
     if (a) {
       a.typeAnnotation = this.visitTsType(a.typeAnnotation);
     }
     return a;
   }
-
-  visitTsType(n: TsType): TsType {
+  visitTsType(n) {
     throw new Error('Method visitTsType not implemented.');
   }
-
-  visitPatterns(nodes: Pattern[]): Pattern[] {
+  visitPatterns(nodes) {
     return nodes.map(this.visitPattern.bind(this));
   }
-
-  visitImportDeclaration(n: ImportDeclaration): ImportDeclaration {
+  visitImportDeclaration(n) {
     n.source = this.visitStringLiteral(n.source);
     n.specifiers = this.visitImportSpecifiers(n.specifiers || []);
     return n;
   }
-
-  visitImportSpecifiers(nodes: ImportSpecifier[]): ImportSpecifier[] {
+  visitImportSpecifiers(nodes) {
     return nodes.map(this.visitImportSpecifier.bind(this));
   }
-
-  visitImportSpecifier(node: ImportSpecifier): ImportSpecifier {
+  visitImportSpecifier(node) {
     switch (node.type) {
       case 'ImportDefaultSpecifier':
         return this.visitImportDefaultSpecifier(node);
-
       case 'ImportNamespaceSpecifier':
         return this.visitImportNamespaceSpecifier(node);
-
       case 'ImportSpecifier':
         return this.visitNamedImportSpecifier(node);
     }
   }
-  visitNamedImportSpecifier(node: NamedImportSpecifier): NamedImportSpecifier {
+  visitNamedImportSpecifier(node) {
     node.local = this.visitBindingIdentifier(node.local);
-
     if (node.imported) {
       node.imported = this.visitModuleExportName(node.imported);
     }
-
     return node;
   }
-
-  visitImportNamespaceSpecifier(
-    node: ImportNamespaceSpecifier
-  ): ImportNamespaceSpecifier {
+  visitImportNamespaceSpecifier(node) {
     node.local = this.visitBindingIdentifier(node.local);
-
     return node;
   }
-
-  visitImportDefaultSpecifier(node: ImportDefaultSpecifier): ImportSpecifier {
+  visitImportDefaultSpecifier(node) {
     node.local = this.visitBindingIdentifier(node.local);
-
     return node;
   }
-
-  visitBindingIdentifier(i: BindingIdentifier): BindingIdentifier {
+  visitBindingIdentifier(i) {
     if (i.typeAnnotation) {
       i.typeAnnotation = this.visitTsTypeAnnotation(i.typeAnnotation);
     }
     return this.visitIdentifier(i);
   }
-
-  visitIdentifierReference(i: Identifier): Identifier {
+  visitIdentifierReference(i) {
     return this.visitIdentifier(i);
   }
-
-  visitLabelIdentifier(label: Identifier): Identifier {
+  visitLabelIdentifier(label) {
     return this.visitIdentifier(label);
   }
-
-  visitIdentifier(n: Identifier): Identifier {
+  visitIdentifier(n) {
     return n;
   }
-
-  visitNumericLiteral(n: NumericLiteral): NumericLiteral {
+  visitNumericLiteral(n) {
     return n;
   }
-
-  visitBigIntLiteral(n: BigIntLiteral): BigIntLiteral {
+  visitBigIntLiteral(n) {
     return n;
   }
-
-  visitPattern(n: Pattern): Pattern {
+  visitPattern(n) {
     switch (n.type) {
       case 'Identifier':
         return this.visitBindingIdentifier(n);
@@ -1945,33 +1471,26 @@ class ReplaceVisitor {
         return this.visitExpression(n);
     }
   }
-
-  visitRestElement(n: RestElement): RestElement {
+  visitRestElement(n) {
     n.argument = this.visitPattern(n.argument);
     n.typeAnnotation = this.visitTsTypeAnnotation(n.typeAnnotation);
     return n;
   }
-
-  visitAssignmentPattern(n: AssignmentPattern): Pattern {
+  visitAssignmentPattern(n) {
     n.left = this.visitPattern(n.left);
     n.right = this.visitExpression(n.right);
     n.typeAnnotation = this.visitTsTypeAnnotation(n.typeAnnotation);
     return n;
   }
-
-  visitObjectPattern(n: ObjectPattern): Pattern {
+  visitObjectPattern(n) {
     n.properties = this.visitObjectPatternProperties(n.properties || []);
     n.typeAnnotation = this.visitTsTypeAnnotation(n.typeAnnotation);
     return n;
   }
-
-  visitObjectPatternProperties(
-    nodes: ObjectPatternProperty[]
-  ): ObjectPatternProperty[] {
+  visitObjectPatternProperties(nodes) {
     return nodes.map(this.visitObjectPatternProperty.bind(this));
   }
-
-  visitObjectPatternProperty(n: ObjectPatternProperty): ObjectPatternProperty {
+  visitObjectPatternProperty(n) {
     switch (n.type) {
       case 'AssignmentPatternProperty':
         return this.visitAssignmentPatternProperty(n);
@@ -1981,39 +1500,30 @@ class ReplaceVisitor {
         return this.visitRestElement(n);
     }
   }
-
-  visitKeyValuePatternProperty(
-    n: KeyValuePatternProperty
-  ): ObjectPatternProperty {
+  visitKeyValuePatternProperty(n) {
     n.key = this.visitPropertyName(n.key);
     n.value = this.visitPattern(n.value);
     return n;
   }
-
-  visitAssignmentPatternProperty(
-    n: AssignmentPatternProperty
-  ): ObjectPatternProperty {
+  visitAssignmentPatternProperty(n) {
     n.key = this.visitBindingIdentifier(n.key);
     n.value = this.visitOptionalExpression(n.value, n);
     return n;
   }
-
-  visitArrayPattern(n: ArrayPattern): Pattern {
+  visitArrayPattern(n) {
     n.typeAnnotation = this.visitTsTypeAnnotation(n.typeAnnotation);
     n.elements = this.visitArrayPatternElements(n.elements);
     return n;
   }
-
-  visitArrayPatternElements(
-    nodes: (Pattern | undefined)[]
-  ): (Pattern | undefined)[] {
+  visitArrayPatternElements(nodes) {
     return nodes.map(this.visitArrayPatternElement.bind(this));
   }
-
-  visitArrayPatternElement(n: Pattern | undefined): Pattern | undefined {
+  visitArrayPatternElement(n) {
     if (n) {
       n = this.visitPattern(n);
     }
     return n;
   }
 }
+
+export default ReplaceVisitor;
