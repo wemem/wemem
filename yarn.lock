@@ -251,7 +251,6 @@ __metadata:
     postcss-loader: "npm:^8.1.1"
     raw-loader: "npm:^4.0.2"
     source-map-loader: "npm:^5.0.0"
-    string-replace-loader: "npm:^3.1.0"
     style-loader: "npm:^4.0.0"
     swc-loader: "npm:^0.2.6"
     tailwindcss: "npm:^3.4.4"
@@ -813,6 +812,7 @@ __metadata:
     graphql-upload: "npm:^16.0.2"
     html-validate: "npm:^8.20.1"
     ioredis: "npm:^5.3.2"
+    jscodeshift: "npm:^17.0.0"
     jszip: "npm:^3.10.1"
     keyv: "npm:^4.5.4"
     lib0: "npm:^0.2.97"
@@ -845,7 +845,6 @@ __metadata:
     socket.io: "npm:^4.7.5"
     stripe: "npm:^16.0.0"
     supertest: "npm:^7.0.0"
-    ts-node: "npm:^10.9.2"
     typescript: "npm:^5.4.5"
     unified: "npm:^11.0.5"
     ws: "npm:^8.16.0"
@@ -27748,6 +27747,39 @@ __metadata:
   languageName: node
   linkType: hard
 
+"jscodeshift@npm:^17.0.0":
+  version: 17.0.0
+  resolution: "jscodeshift@npm:17.0.0"
+  dependencies:
+    "@babel/core": "npm:^7.24.7"
+    "@babel/parser": "npm:^7.24.7"
+    "@babel/plugin-transform-class-properties": "npm:^7.24.7"
+    "@babel/plugin-transform-modules-commonjs": "npm:^7.24.7"
+    "@babel/plugin-transform-nullish-coalescing-operator": "npm:^7.24.7"
+    "@babel/plugin-transform-optional-chaining": "npm:^7.24.7"
+    "@babel/plugin-transform-private-methods": "npm:^7.24.7"
+    "@babel/preset-flow": "npm:^7.24.7"
+    "@babel/preset-typescript": "npm:^7.24.7"
+    "@babel/register": "npm:^7.24.6"
+    flow-parser: "npm:0.*"
+    graceful-fs: "npm:^4.2.4"
+    micromatch: "npm:^4.0.7"
+    neo-async: "npm:^2.5.0"
+    picocolors: "npm:^1.0.1"
+    recast: "npm:^0.23.9"
+    temp: "npm:^0.9.4"
+    write-file-atomic: "npm:^5.0.1"
+  peerDependencies:
+    "@babel/preset-env": ^7.1.6
+  peerDependenciesMeta:
+    "@babel/preset-env":
+      optional: true
+  bin:
+    jscodeshift: bin/jscodeshift.js
+  checksum: 10/d47000c33775336332e1ee431354881ce25a42354a82c712e109f598eac90be747d412c85428e1fa0302136823e44e4f42487746d62752120cd6879665bcef0a
+  languageName: node
+  linkType: hard
+
 "jsesc@npm:^2.5.1":
   version: 2.5.2
   resolution: "jsesc@npm:2.5.2"
@@ -36222,18 +36254,6 @@ __metadata:
     char-regex: "npm:^2.0.0"
     strip-ansi: "npm:^7.0.1"
   checksum: 10/71f73b8c8a743e01dcd001bcf1b197db78d5e5e53b12bd898cddaf0961be09f947dfd8c429783db3694b55b05cb5a51de6406c5085ff1aaa10c4771440c8396d
-  languageName: node
-  linkType: hard
-
-"string-replace-loader@npm:^3.1.0":
-  version: 3.1.0
-  resolution: "string-replace-loader@npm:3.1.0"
-  dependencies:
-    loader-utils: "npm:^2.0.0"
-    schema-utils: "npm:^3.0.0"
-  peerDependencies:
-    webpack: ^5
-  checksum: 10/15fec37e2ddfc83819ad6b8005b5518e4314de69b9332077d8f032292b02106000ccc5ac52ceb1285efe30a5286620aef1e51c7d3c00d08fa4571d648b32cfa9
   languageName: node
   linkType: hard
 
