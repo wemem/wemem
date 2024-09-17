@@ -27,3 +27,4 @@ export * from './ui/table';
 export * from './ui/toast';
 export * from './ui/tooltip';
 export * from './utils';
+export * from './wemem/icons';

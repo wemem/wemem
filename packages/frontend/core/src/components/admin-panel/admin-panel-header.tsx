@@ -1,6 +1,6 @@
-import { Button, useConfirmModal } from '@affine/component';
+import { Button, Logo1IconBorder, useConfirmModal } from '@affine/component';
 import { useNavigateHelper } from '@affine/core/hooks/use-navigate-helper';
-import { ArrowRightBigIcon, Logo1Icon } from '@blocksuite/icons/rc';
+import { ArrowRightBigIcon } from '@blocksuite/icons/rc';
 import { useCallback } from 'react';
 
 import * as styles from './index.css';
@@ -25,7 +25,7 @@ export const AdminPanelHeader = ({
 
   return (
     <div className={styles.header}>
-      <Logo1Icon className={styles.logo} onClick={handleJumpToIndex} />
+      <Logo1IconBorder className={styles.logo} onClick={handleJumpToIndex} />
       <div className={styles.title}>
         <span>After editing, please click the Save button on the right.</span>
         <ArrowRightBigIcon />

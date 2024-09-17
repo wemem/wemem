@@ -1,11 +1,10 @@
-import { Scrollable } from '@affine/component';
+import { Logo1IconBorder, Scrollable } from '@affine/component';
 import { useActiveBlocksuiteEditor } from '@affine/core/hooks/use-block-suite-editor';
 import { usePageDocumentTitle } from '@affine/core/hooks/use-global-state';
 import { AuthService } from '@affine/core/modules/cloud';
 import { WorkspaceFlavour } from '@affine/env/workspace';
 import { useI18n } from '@affine/i18n';
 import { noop } from '@blocksuite/global/utils';
-import { Logo1Icon } from '@blocksuite/icons/rc';
 import type { AffineEditorContainer } from '@blocksuite/presets';
 import type { Doc as BlockSuiteDoc } from '@blocksuite/store';
 import type { Doc, DocMode, Workspace } from '@toeverything/infra';
@@ -248,7 +247,7 @@ export const Component = () => {
                     <span className={styles.linkText}>
                       {t['com.affine.share-page.footer.built-with']()}
                     </span>
-                    <Logo1Icon fontSize={20} />
+                    <Logo1IconBorder />
                   </a>
                 ) : null}
               </div>

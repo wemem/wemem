@@ -181,7 +181,7 @@ import type { LoaderDefinitionFunction } from 'webpack';
 
 const tsReplaceLoader: LoaderDefinitionFunction = function (source) {
   const resourcePath = this.resourcePath;
-  // if (!resourcePath.includes('setting-modal/general-setting/plans/layout.tsx')) {
+  // if (!resourcePath.includes('app-sidebar/app-download-button/index.tsx')) {
   //   return source;
   // }
   // if (resourcePath.includes('workspace/page-list-empty.tsx')) {
@@ -221,6 +221,26 @@ class ReplaceVisitor {
       // console.log(`Replacements made in JSXText`);
       n.value = n.value.replace(/AFFiNE/g, 'Wemem');
     }
+    return n;
+  }
+
+  /**
+   * 替换模板字面量中的内容
+   * 例如 const str = `https://affine.pro/`;
+   * 或 react 组件中的字符串字面量 return <div>AFFiNE AI</div>;
+   * @param n
+   * @returns
+   */
+  visitTemplateLiteral(n: TemplateLiteral): Expression {
+    n.expressions = n.expressions.map(expr => this.visitExpression(expr));
+    n.quasis = n.quasis.map(quasi => {
+      if (matchAffinePro(quasi.raw)) {
+        console.log(`模板字符串域名替换: ${quasi.raw}`);
+        quasi.raw = quasi.raw.replace(/affine\.pro/g, 'wemem.ai');
+        quasi.cooked = quasi.cooked?.replace(/affine\.pro/g, 'wemem.ai');
+      }
+      return quasi;
+    });
     return n;
   }
 
@@ -1408,11 +1428,11 @@ class ReplaceVisitor {
     return n;
   }
 
-  visitTemplateLiteral(n: TemplateLiteral): Expression {
-    n.expressions = n.expressions.map(this.visitExpression.bind(this));
-    n.quasis = n.quasis.map(this.visitTemplateElement);
-    return n;
-  }
+  // visitTemplateLiteral(n: TemplateLiteral): Expression {
+  //   n.expressions = n.expressions.map(this.visitExpression.bind(this));
+  //   n.quasis = n.quasis.map(this.visitTemplateElement);
+  //   return n;
+  // }
 
   visitParameters(n: Param[]): Param[] {
     return n.map(this.visitParameter.bind(this));

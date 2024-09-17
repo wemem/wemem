@@ -1,8 +1,8 @@
 import { Button } from '@affine/component/ui/button';
 import { useI18n } from '@affine/i18n';
-import { Logo1Icon } from '@blocksuite/icons/rc';
 import { useCallback } from 'react';
 
+import { Logo1IconBorder } from '../../wemem/icons';
 import { DesktopNavbar } from './desktop-navbar';
 import * as styles from './index.css';
 import { MobileNavbar } from './mobile-navbar';
@@ -23,7 +23,7 @@ export const AffineOtherPageLayout = ({
       {environment.isDesktop ? null : (
         <div className={styles.topNav}>
           <a href="/" rel="noreferrer" className={styles.affineLogo}>
-            <Logo1Icon width={24} height={24} />
+            <Logo1IconBorder size="1.5em" />
           </a>
 
           <DesktopNavbar />

@@ -1,10 +1,9 @@
-import { Loading } from '@affine/component';
+import { Loading, Logo1IconBorder } from '@affine/component';
 import { Divider } from '@affine/component/ui/divider';
 import { MenuItem } from '@affine/component/ui/menu';
 import { track } from '@affine/core/mixpanel';
 import { AuthService } from '@affine/core/modules/cloud';
 import { useI18n } from '@affine/i18n';
-import { Logo1Icon } from '@blocksuite/icons/rc';
 import {
   useLiveData,
   useService,
@@ -40,7 +39,7 @@ export const SignInItem = () => {
     >
       <div className={styles.signInWrapper}>
         <div className={styles.iconContainer}>
-          <Logo1Icon />
+          <Logo1IconBorder />
         </div>
 
         <div className={styles.signInTextContainer}>

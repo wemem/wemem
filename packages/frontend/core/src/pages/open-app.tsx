@@ -1,8 +1,8 @@
+import { Logo1IconBorder } from '@affine/component';
 import { Button } from '@affine/component/ui/button';
 import type { GetCurrentUserQuery } from '@affine/graphql';
 import { fetcher, getCurrentUserQuery } from '@affine/graphql';
 import { Trans, useI18n } from '@affine/i18n';
-import { Logo1Icon } from '@blocksuite/icons/rc';
 import { useCallback, useMemo } from 'react';
 import type { LoaderFunction } from 'react-router-dom';
 import { useLoaderData, useSearchParams } from 'react-router-dom';
@@ -81,7 +81,7 @@ const OpenAppImpl = ({ urlToOpen, channel }: OpenAppProps) => {
     <div className={styles.root}>
       <div className={styles.topNav}>
         <a href="/" rel="noreferrer" className={styles.affineLogo}>
-          <Logo1Icon width={24} height={24} />
+          <Logo1IconBorder />
         </a>
 
         <div className={styles.topNavLinks}>
