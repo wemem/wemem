@@ -67,7 +67,7 @@ export const emailTemplate = ({
           }">
             <table border="0" cellspacing="0" cellpadding="0">
               <tr>
-                <td style="border-radius: 8px" bgcolor="#1E96EB">
+                <td style="border-radius: 8px" bgcolor="#3E6FDB">
                   <a
                     href="${buttonUrl}"
                     target="_blank"
@@ -80,7 +80,7 @@ export const emailTemplate = ({
                       text-decoration: none;
                       border-radius: 8px;
                       padding: 8px 18px;
-                      border: 1px solid rgba(0,0,0,.1);
+                      border: 1px solid rgba(62,111,219,0.1);
                       display: inline-block;
                       font-weight: bold;
                     "
