@@ -147,38 +147,6 @@ export const emailTemplate = ({
                     />
                   </a>
                 </td>
-                /* <td style="padding: 0 10px">
-                  <a href="https://discord.gg/Arn7TqJBvG" target="_blank"
-                    ><img
-                      src="https://cdn.affine.pro/mail/Discord.png"
-                      alt="AFFiNE discord link"
-                      height="16px"
-                  /></a>
-                </td>
-                <td style="padding: 0 10px">
-                  <a href="https://www.youtube.com/@wememai" target="_blank"
-                    ><img
-                      src="https://cdn.affine.pro/mail/Youtube.png"
-                      alt="AFFiNE youtube link"
-                      height="16px"
-                  /></a>
-                </td>
-                <td style="padding: 0 10px">
-                  <a href="https://t.me/affineworkos" target="_blank"
-                    ><img
-                      src="https://cdn.affine.pro/mail/Telegram.png"
-                      alt="AFFiNE telegram link"
-                      height="16px"
-                  /></a>
-                </td>
-                <td style="padding: 0 10px">
-                  <a href="https://www.reddit.com/r/Affine/" target="_blank"
-                    ><img
-                      src="https://cdn.affine.pro/mail/Reddit.png"
-                      alt="AFFiNE reddit link"
-                      height="16px"
-                  /></a>
-                </td> */
               </tr>
             </table>
           </td>
@@ -219,3 +187,37 @@ export const emailTemplate = ({
       </table>
     </body>`;
 };
+
+// 移除的社交链接
+// <td style="padding: 0 10px">
+//                   <a href="https://discord.gg/Arn7TqJBvG" target="_blank"
+//                     ><img
+//                       src="https://cdn.affine.pro/mail/Discord.png"
+//                       alt="AFFiNE discord link"
+//                       height="16px"
+//                   /></a>
+//                 </td>
+//                 <td style="padding: 0 10px">
+//                   <a href="https://www.youtube.com/@wememai" target="_blank"
+//                     ><img
+//                       src="https://cdn.affine.pro/mail/Youtube.png"
+//                       alt="AFFiNE youtube link"
+//                       height="16px"
+//                   /></a>
+//                 </td>
+//                 <td style="padding: 0 10px">
+//                   <a href="https://t.me/affineworkos" target="_blank"
+//                     ><img
+//                       src="https://cdn.affine.pro/mail/Telegram.png"
+//                       alt="AFFiNE telegram link"
+//                       height="16px"
+//                   /></a>
+//                 </td>
+//                 <td style="padding: 0 10px">
+//                   <a href="https://www.reddit.com/r/Affine/" target="_blank"
+//                     ><img
+//                       src="https://cdn.affine.pro/mail/Reddit.png"
+//                       alt="AFFiNE reddit link"
+//                       height="16px"
+//                   /></a>
+//                 </td>
