@@ -8,7 +8,7 @@ import { createApp } from './app';
 import { URLHelper } from './fundamentals';
 
 const app = await createApp();
-const listeningHost = AFFiNE.deploy ? '0.0.0.0' : 'localhost';
+const listeningHost = AFFiNE.deploy ? '::' : 'localhost';
 await app.listen(AFFiNE.server.port, listeningHost);
 const url = app.get(URLHelper);
 
