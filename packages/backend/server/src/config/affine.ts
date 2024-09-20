@@ -104,7 +104,7 @@ AFFiNE.use('payment', {
 //
 // /* Cloudflare R2 Plugin */
 // /* Enable if you choose to store workspace blobs or user avatars in Cloudflare R2 Storage Service */
-if (env.R2_OBJECT_STORAGE_ACCOUNT_ID) {
+if (process.env.R2_OBJECT_STORAGE_ACCOUNT_ID) {
   AFFiNE.use('cloudflare-r2', {
     accountId: process.env.R2_OBJECT_STORAGE_ACCOUNT_ID,
     credentials: {
