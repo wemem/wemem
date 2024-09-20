@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-non-null-assertion */
 //
 // ###############################################################
 // ##                AFFiNE Configuration System                ##
@@ -37,7 +36,6 @@ AFFiNE.server.port = 3010;
 // /* The external URL of your server, will be consist of protocol + host + port by default */
 // /* Useful when you want to customize the link to server resources for example the doc share link or email link */
 // AFFiNE.server.externalUrl = 'http://affine.local:8080'
-//
 //
 // ###############################################################
 // ##                   Server Function settings                ##
@@ -84,27 +82,53 @@ AFFiNE.server.port = 3010;
 // /* Redis Plugin */
 // /* Provide caching and session storing backed by Redis. */
 // /* Useful when you deploy AFFiNE server in a cluster. */
-// AFFiNE.use('redis', {
-//   /* override options */
-// });
+AFFiNE.use('redis', {
+  host: process.env.REDIS_SERVER_HOST,
+  db: 0,
+  port: 6379,
+  username: process.env.REDIS_SERVER_USER,
+  password: process.env.REDIS_SERVER_PASSWORD,
+});
 //
 //
 // /* Payment Plugin */
-// AFFiNE.use('payment', {
-//   stripe: { keys: {}, apiVersion: '2023-10-16' },
-// });
-//
+AFFiNE.use('payment', {
+  stripe: {
+    keys: {
+      // fake the key to ensure the server generate full GraphQL Schema even env vars are not set
+      APIKey: '1',
+      webhookKey: '1',
+    },
+  },
+});
 //
 // /* Cloudflare R2 Plugin */
 // /* Enable if you choose to store workspace blobs or user avatars in Cloudflare R2 Storage Service */
-// AFFiNE.use('cloudflare-r2', {
-//   accountId: '',
-//   credentials: {
-//     accessKeyId: '',
-//     secretAccessKey: '',
-//   },
-// });
-//
+if (env.R2_OBJECT_STORAGE_ACCOUNT_ID) {
+  AFFiNE.use('cloudflare-r2', {
+    accountId: process.env.R2_OBJECT_STORAGE_ACCOUNT_ID,
+    credentials: {
+      accessKeyId: process.env.R2_OBJECT_STORAGE_ACCESS_KEY_ID,
+      secretAccessKey: process.env.R2_OBJECT_STORAGE_SECRET_ACCESS_KEY,
+    },
+  });
+  AFFiNE.storages.avatar.provider = 'cloudflare-r2';
+  AFFiNE.storages.avatar.bucket = 'account-avatar';
+  AFFiNE.storages.avatar.publicLinkFactory = key =>
+    `https://avatar.affineassets.com/${key}`;
+
+  AFFiNE.storages.blob.provider = 'cloudflare-r2';
+  AFFiNE.storages.blob.bucket = `workspace-blobs-${
+    AFFiNE.affine.canary ? 'canary' : 'prod'
+  }`;
+
+  AFFiNE.use('copilot', {
+    storage: {
+      provider: 'cloudflare-r2',
+      bucket: `workspace-copilot-${AFFiNE.affine.canary ? 'canary' : 'prod'}`,
+    },
+  });
+}
 // /* AWS S3 Plugin */
 // /* Enable if you choose to store workspace blobs or user avatars in AWS S3 Storage Service */
 // AFFiNE.use('aws-s3', {
@@ -151,18 +175,13 @@ AFFiNE.server.port = 3010;
 //     },
 //   },
 // });
-//
 // /* Copilot Plugin */
-// AFFiNE.use('copilot', {
-//   openai: {
-//     apiKey: 'your-key',
-//   },
-//   fal: {
-//     apiKey: 'your-key',
-//   },
-//   unsplashKey: 'your-key',
-//   storage: {
-//     provider: 'cloudflare-r2',
-//     bucket: 'copilot',
-//   }
-// })
+AFFiNE.use('copilot', {
+  openai: {
+    apiKey: process.env.COPILOT_OPENAI_API_KEY,
+    baseURL: process.env.COPILOT_OPENAI_BASE_URL,
+  },
+  fal: {
+    apiKey: '',
+  },
+});

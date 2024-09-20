@@ -111,11 +111,15 @@ class ReplaceVisitor {
         console.log(`字符串替换: ${n.value}`);
         n.value = n.value
           .replace(/AFFiNE/g, 'Wemem')
-          .replace(/AFFINE/g, 'Wemem');
+          .replace(/AFFINE/g, 'Wemem')
+          .replace(/support@toeverything\.info/g, 'ai.wemem@gmail.com');
         n.raw =
           (_b = n.raw) === null || _b === void 0
             ? void 0
-            : _b.replace(/AFFiNE/g, 'Wemem').replace(/AFFINE/g, 'Wemem');
+            : _b
+                .replace(/AFFiNE/g, 'Wemem')
+                .replace(/AFFINE/g, 'Wemem')
+                .replace(/support@toeverything\.info/g, 'ai.wemem@gmail.com');
       }
     }
     return n;
@@ -132,11 +136,17 @@ class ReplaceVisitor {
     var _a;
     if (n.raw.includes('AFFiNE') || n.raw.includes('AFFINE')) {
       console.log(`模板替换: ${n.raw}`);
-      n.raw = n.raw.replace(/AFFiNE/g, 'Wemem').replace(/AFFINE/g, 'Wemem');
+      n.raw = n.raw
+        .replace(/AFFiNE/g, 'Wemem')
+        .replace(/AFFINE/g, 'Wemem')
+        .replace(/support@toeverything\.info/g, 'ai.wemem@gmail.com');
       n.cooked =
         (_a = n.cooked) === null || _a === void 0
           ? void 0
-          : _a.replace(/AFFiNE/g, 'Wemem').replace(/AFFINE/g, 'Wemem');
+          : _a
+              .replace(/AFFiNE/g, 'Wemem')
+              .replace(/AFFINE/g, 'Wemem')
+              .replace(/support@toeverything\.info/g, 'ai.wemem@gmail.com');
     }
     return n;
   }
@@ -145,10 +155,13 @@ class ReplaceVisitor {
     if (
       value &&
       value.type === 'StringLiteral' &&
-      value.value.includes('AFFiNE')
+      (value.value.includes('AFFiNE') ||
+        value.value.includes('support@toeverything.info'))
     ) {
       // console.log(`Replacements made in JSXAttribute: ${value.value}`);
-      value.value = value.value.replace(/AFFiNE/g, 'Wemem');
+      value.value = value.value
+        .replace(/AFFiNE/g, 'Wemem')
+        .replace(/support@toeverything\.info/g, 'ai.wemem@gmail.com');
     }
     return n;
   }
