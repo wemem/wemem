@@ -14,6 +14,7 @@ class Redis extends IORedis implements OnModuleDestroy, OnModuleInit {
     super({
       ...opts,
       lazyConnect: true,
+      family: 0, // 同时支持IPv4和IPv6
     });
   }
 
