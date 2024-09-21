@@ -1,6 +1,7 @@
 import { WorkspaceAvatar } from '@affine/component/workspace-avatar';
 import { UNTITLED_WORKSPACE_NAME } from '@affine/env/constant';
 import { WorkspaceFlavour } from '@affine/env/workspace';
+import { useI18n } from '@affine/i18n';
 import { CollaborationIcon, SettingsIcon } from '@blocksuite/icons/rc';
 import type { WorkspaceMetadata } from '@toeverything/infra';
 import { type MouseEvent, useCallback } from 'react';
@@ -50,11 +51,11 @@ export const WorkspaceCard = ({
   currentWorkspaceId,
   meta,
   isOwner = true,
-  enableCloudText = 'Enable Cloud',
   name,
 }: WorkspaceCardProps) => {
   const isLocal = meta.flavour === WorkspaceFlavour.LOCAL;
   const displayName = name ?? UNTITLED_WORKSPACE_NAME;
+  const t = useI18n();
 
   const onEnableCloud = useCallback(
     (e: MouseEvent) => {
@@ -91,7 +92,7 @@ export const WorkspaceCard = ({
               className={styles.showOnCardHover}
               onClick={onEnableCloud}
             >
-              {enableCloudText}
+              {t['ai.wemem.workspaceCard.enableCloud']()}
             </Button>
           ) : null}
           {isOwner ? null : <CollaborationIcon />}
