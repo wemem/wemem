@@ -5,8 +5,11 @@ function replaceAffine(obj) {
       // 递归调用替换子对象
       replaceAffine(obj[key]);
     } else if (typeof obj[key] === 'string') {
-      // 替换字符串中的 "affine" 为 "readease"
-      obj[key] = obj[key].replace(/AFFiNE/g, 'Wemem');
+      // 替换字符串中的 "affine" 为 "wemem"
+      obj[key] = obj[key]
+        .replace(/Cloud 服务/g, '云服务')
+        .replace(/Cloud /g, '云服务')
+        .replace(/AFFiNE/g, 'Wemem');
     }
   }
   return obj;

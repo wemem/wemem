@@ -1,6 +1,6 @@
 import { parseSync, printSync } from '@swc/core';
 
-import ReplaceVisitor from './ts-replace-loader.mjs';
+import ReplaceVisitor from './code-replace-visitor.mjs';
 
 const tsReplaceLoader = function (source) {
   const resourcePath = this.resourcePath;

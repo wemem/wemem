@@ -270,7 +270,7 @@ export const createConfiguration: (
                   loader: path.resolve(
                     dirname(fileURLToPath(import.meta.url)),
                     'loader',
-                    'ts-replace-loader.js'
+                    'code-replace-loader.js'
                   ), // 使用自定义 loader
                 },
                 {
