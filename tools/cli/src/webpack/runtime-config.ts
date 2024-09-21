@@ -84,7 +84,9 @@ export function getRuntimeConfig(buildFlags: BuildFlags): RuntimeConfig {
       : currentBuildPreset.enableEnhanceShareMode,
     allowLocalWorkspace: process.env.ALLOW_LOCAL_WORKSPACE
       ? process.env.ALLOW_LOCAL_WORKSPACE === 'true'
-      : currentBuildPreset.allowLocalWorkspace,
+      : buildFlags.mode === 'development'
+        ? true
+        : currentBuildPreset.allowLocalWorkspace,
   };
 
   const testEnvironmentPreset = {
