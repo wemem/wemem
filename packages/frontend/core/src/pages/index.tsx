@@ -73,22 +73,30 @@ export const Component = () => {
   }, [jumpToPage, openPage, workspacesService]);
 
   useLayoutEffect(() => {
+    if (!navigating) {
+      return;
+    }
+
     if (listIsLoading) {
       return;
     }
 
     // check is user logged in && has cloud workspace
-    if (loggedIn) {
-      if (list.every(w => w.flavour !== WorkspaceFlavour.AFFINE_CLOUD)) {
-        setCreating(true);
-        createCloudWorkspace();
+    if (searchParams.get('initCloud') === 'true') {
+      if (loggedIn) {
+        if (list.every(w => w.flavour !== WorkspaceFlavour.AFFINE_CLOUD)) {
+          createCloudWorkspace();
+          return;
+        }
+
+        // open first cloud workspace
+        const openWorkspace =
+          list.find(w => w.flavour === WorkspaceFlavour.AFFINE_CLOUD) ??
+          list[0];
+        openPage(openWorkspace.id, WorkspaceSubPath.ALL);
+      } else {
         return;
       }
-
-      // open first cloud workspace
-      const openWorkspace =
-        list.find(w => w.flavour === WorkspaceFlavour.AFFINE_CLOUD) ?? list[0];
-      openPage(openWorkspace.id, WorkspaceSubPath.ALL);
     } else {
       if (list.length === 0) {
         setNavigating(false);
