@@ -1,13 +1,17 @@
 const { parseSync, printSync } = require('@swc/core');
 
 const ReplaceVisitor =
-  require('./../../../../tools/cli/src/webpack/loader/ts-replace-loader.cjs').default;
+  require('./../../../../tools/cli/src/webpack/loader/ts-replace-loader.mjs').default;
 
 module.exports = function (fileInfo, api, options) {
   // 跳过.d.ts结尾的文件
-  if (fileInfo.path.endsWith('.d.ts')) {
+  if (fileInfo.path.endsWith('.d.ts') || fileInfo.path.endsWith('.gen.ts')) {
     return fileInfo.source;
   }
+
+  // if (!fileInfo.path.includes('fundamentals/mailer/template.js')) {
+  //   return fileInfo.source;
+  // }
 
   const source = fileInfo.source;
   const ast = parseSync(source, {

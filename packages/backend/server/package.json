@@ -9,7 +9,7 @@
   },
   "scripts": {
     "build": "tsc",
-    "jscodeshift": "jscodeshift -t scripts/transform.cjs dist/",
+    "jscodeshift": "jscodeshift --run-in-band -t scripts/transform.cjs dist/",
     "start": "node --loader ts-node/esm/transpile-only.mjs ./src/index.ts",
     "dev": "nodemon ./src/index.ts",
     "test": "ava --concurrency 1 --serial",

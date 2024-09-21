@@ -6,80 +6,74 @@ const matchAffinePro = url => {
 };
 
 class ReplaceVisitor {
+  constructor() {
+    this.includesKeywords = [
+      'AFFiNE',
+      'AFFINE',
+      'Toeverything',
+      'support@toeverything.info',
+      'affine.pro',
+    ];
+    this.replaceMap = {
+      AFFiNE: 'Wemem',
+      AFFINE: 'Wemem',
+      Toeverything: 'Wemem',
+      'support@toeverything.info': 'ai.wemem@gmail.com',
+      'affine.pro': 'wemem.ai',
+    };
+  }
+
+  includesAnyKeyword(text) {
+    return this.includesKeywords.some(keyword => text.includes(keyword));
+  }
+
+  replaceAllKeywords(text) {
+    return Object.entries(this.replaceMap).reduce((acc, [key, value]) => {
+      return acc.replace(new RegExp(key, 'g'), value);
+    }, text);
+  }
+
   visitJSXText(n) {
-    if (n.value.includes('AFFiNE')) {
-      // console.log(`Replacements made in JSXText`);
-      n.value = n.value.replace(/AFFiNE/g, 'Wemem');
+    if (this.includesAnyKeyword(n.value)) {
+      n.value = this.replaceAllKeywords(n.value);
     }
     return n;
   }
-  /**
-   * 替换模板字面量中的内容
-   * 例如 const str = `https://affine.pro/`;
-   * 或 react 组件中的字符串字面量 return <div>AFFiNE AI</div>;
-   * @param n
-   * @returns
-   */
+
   visitTemplateLiteral(n) {
     n.expressions = n.expressions.map(expr => this.visitExpression(expr));
     n.quasis = n.quasis.map(quasi => {
-      var _a;
-      if (matchAffinePro(quasi.raw) || quasi.raw.includes('AFFiNE')) {
+      if (this.includesAnyKeyword(quasi.raw) || matchAffinePro(quasi.raw)) {
         console.log(`模板字符串替换: ${quasi.raw}`);
-        quasi.raw = quasi.raw
-          .replace(/affine\.pro/g, 'wemem.ai')
-          .replace(/AFFiNE/g, 'Wemem');
-        quasi.cooked =
-          (_a = quasi.cooked) === null || _a === void 0
-            ? void 0
-            : _a
-                .replace(/affine\.pro/g, 'wemem.ai')
-                .replace(/AFFiNE/g, 'Wemem');
+        quasi.raw = this.replaceAllKeywords(quasi.raw);
+        quasi.cooked = quasi.cooked
+          ? this.replaceAllKeywords(quasi.cooked)
+          : quasi.cooked;
       }
-
       return quasi;
     });
     return n;
   }
-  /**
-   * 替换字符串字面量中的内容
-   * 例如 const str = 'AFFiNE AI';
-   * 或 react 组件中的字符串字面量 return <div>AFFiNE AI</div>;
-   * @param n
-   * @returns
-   */
+
   visitStringLiteral(n, parent) {
-    var _a, _b;
     if (matchAffinePro(n.value)) {
       console.log(`域名替换: ${n.value}`);
-      n.value = n.value.replace(/affine.pro/g, 'wemem.ai');
-      n.raw =
-        (_a = n.raw) === null || _a === void 0
-          ? void 0
-          : _a.replace(/affine.pro/g, 'wemem.ai');
+      n.value = this.replaceAllKeywords(n.value);
+      n.raw = n.raw ? this.replaceAllKeywords(n.raw) : n.raw;
     }
-    if (n.value.includes('AFFiNE') || n.value.includes('AFFINE')) {
-      // <div>AFFiNE AI</div>;
+    if (this.includesAnyKeyword(n.value)) {
       const isChildrenHas =
         parent &&
         parent.type === 'KeyValueProperty' &&
         parent.key.value === 'children';
-      // const some= { stable: 'AFFiNE'}
       const isObjValue =
         parent &&
         parent.type === 'KeyValueProperty' &&
         parent.key.type === 'Identifier';
-      // export const CloudPlanLayout = ({
-      //    title = 'AFFiNE Cloud',
-      // }: PlanCardProps) => {
-      //    return <div/>;
-      // }
-      //
       const isCompoentProperty =
         parent &&
         parent.type === 'AssignmentPatternProperty' &&
         parent.key.type === 'Identifier';
-      // <div>{condition ? 'AFFiNE AI' : 'AFFiNE AI'}</div>
       const isConditionalExpression =
         parent && parent.type === 'ConditionalExpression';
       if (
@@ -89,59 +83,30 @@ class ReplaceVisitor {
         isCompoentProperty
       ) {
         console.log(`字符串替换: ${n.value}`);
-        n.value = n.value
-          .replace(/AFFiNE/g, 'Wemem')
-          .replace(/AFFINE/g, 'Wemem')
-          .replace(/support@toeverything\.info/g, 'ai.wemem@gmail.com');
-        n.raw =
-          (_b = n.raw) === null || _b === void 0
-            ? void 0
-            : _b
-                .replace(/AFFiNE/g, 'Wemem')
-                .replace(/AFFINE/g, 'Wemem')
-                .replace(/support@toeverything\.info/g, 'ai.wemem@gmail.com');
+        n.value = this.replaceAllKeywords(n.value);
+        n.raw = n.raw ? this.replaceAllKeywords(n.raw) : n.raw;
       }
     }
     return n;
   }
-  /**
-   * 替换模板放在中的内容
-   * 例如 html`<div>AFFINE AI</div>`
-   * 通常是 lit 组件中使用
-   * 例如  affine/packages/frontend/core/src/blocksuite/presets/ai/chat-panel/index.ts 中的 render 方法
-   * @param n
-   * @returns
-   */
+
   visitTemplateElement(n) {
-    var _a;
-    if (n.raw.includes('AFFiNE') || n.raw.includes('AFFINE')) {
+    if (this.includesAnyKeyword(n.raw)) {
       console.log(`模板替换: ${n.raw}`);
-      n.raw = n.raw
-        .replace(/AFFiNE/g, 'Wemem')
-        .replace(/AFFINE/g, 'Wemem')
-        .replace(/support@toeverything\.info/g, 'ai.wemem@gmail.com');
-      n.cooked =
-        (_a = n.cooked) === null || _a === void 0
-          ? void 0
-          : _a
-              .replace(/AFFiNE/g, 'Wemem')
-              .replace(/AFFINE/g, 'Wemem')
-              .replace(/support@toeverything\.info/g, 'ai.wemem@gmail.com');
+      n.raw = this.replaceAllKeywords(n.raw);
+      n.cooked = n.cooked ? this.replaceAllKeywords(n.cooked) : n.cooked;
     }
     return n;
   }
+
   visitJSXAttribute(n) {
     const value = n.value;
     if (
       value &&
       value.type === 'StringLiteral' &&
-      (value.value.includes('AFFiNE') ||
-        value.value.includes('support@toeverything.info'))
+      this.includesAnyKeyword(value.value)
     ) {
-      // console.log(`Replacements made in JSXAttribute: ${value.value}`);
-      value.value = value.value
-        .replace(/AFFiNE/g, 'Wemem')
-        .replace(/support@toeverything\.info/g, 'ai.wemem@gmail.com');
+      value.value = this.replaceAllKeywords(value.value);
     }
     return n;
   }
