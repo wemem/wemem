@@ -28,33 +28,37 @@ import * as styles from './styles.css';
 // FIXME:
 // 2. Refactor the code to improve readability
 const CloudWorkspaceStatus = () => {
+  const t = useI18n();
   return (
     <>
       <CloudWorkspaceIcon />
-      Cloud
+      {t['ai.wemem.workspaceInfo.cloudWorkspaceStatus']()}
     </>
   );
 };
 
 const SyncingWorkspaceStatus = ({ progress }: { progress?: number }) => {
+  const t = useI18n();
   return (
     <>
       <Loading progress={progress} speed={progress ? 0 : undefined} />
-      Syncing...
+      {t['ai.wemem.workspaceInfo.syncingWorkspaceStatus']()}
     </>
   );
 };
 
 const UnSyncWorkspaceStatus = () => {
+  const t = useI18n();
   return (
     <>
       <UnsyncIcon />
-      Wait for upload
+      {t['ai.wemem.workspaceInfo.unSyncWorkspaceStatus']()}
     </>
   );
 };
 
 const LocalWorkspaceStatus = () => {
+  const t = useI18n();
   return (
     <>
       {!environment.isDesktop ? (
@@ -62,16 +66,17 @@ const LocalWorkspaceStatus = () => {
       ) : (
         <LocalWorkspaceIcon />
       )}
-      Local
+      {t['ai.wemem.workspaceInfo.localWorkspaceStatus']()}
     </>
   );
 };
 
 const OfflineStatus = () => {
+  const t = useI18n();
   return (
     <>
       <NoNetworkIcon />
-      Offline
+      {t['ai.wemem.workspaceInfo.offlineStatus']()}
     </>
   );
 };
