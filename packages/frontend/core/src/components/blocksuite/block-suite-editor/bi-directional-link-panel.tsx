@@ -1,4 +1,5 @@
 import { DocLinksService } from '@affine/core/modules/doc-link';
+import { useI18n } from '@affine/i18n';
 import {
   useLiveData,
   useServices,
@@ -10,6 +11,7 @@ import { AffinePageReference } from '../../affine/reference-link';
 import * as styles from './bi-directional-link-panel.css';
 
 export const BiDirectionalLinkPanel = () => {
+  const t = useI18n();
   const [show, setShow] = useState(false);
   const { docLinksService, workspaceService } = useServices({
     DocLinksService,
@@ -32,9 +34,13 @@ export const BiDirectionalLinkPanel = () => {
       )}
 
       <div className={styles.titleLine}>
-        <div className={styles.title}>Bi-Directional Links</div>
+        <div className={styles.title}>
+          {t['ai.wemem.editor.bi-directional-link.title']()}
+        </div>
         <div className={styles.showButton} onClick={handleClickShow}>
-          {show ? 'Hide' : 'Show'}
+          {show
+            ? t['ai.wemem.editor.bi-directional-link.hide']()
+            : t['ai.wemem.editor.bi-directional-link.show']()}
         </div>
       </div>
 
@@ -45,7 +51,8 @@ export const BiDirectionalLinkPanel = () => {
           </div>
           <div className={styles.linksContainer}>
             <div className={styles.linksTitles}>
-              Backlinks · {backlinks.length}
+              {t['ai.wemem.editor.bi-directional-link.backlinks']()} ·{' '}
+              {backlinks.length}
             </div>
             {backlinks.map(link => (
               <div key={link.docId} className={styles.link}>
@@ -59,7 +66,8 @@ export const BiDirectionalLinkPanel = () => {
           </div>
           <div className={styles.linksContainer}>
             <div className={styles.linksTitles}>
-              Outgoing links · {links.length}
+              {t['ai.wemem.editor.bi-directional-link.outgoing-links']()} ·{' '}
+              {links.length}
             </div>
             {links.map(link => (
               <div key={link.docId} className={styles.link}>
