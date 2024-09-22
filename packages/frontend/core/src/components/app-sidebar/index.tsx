@@ -137,7 +137,7 @@ export const AppSidebarFallback = (): ReactElement | null => {
         <div className={navBodyStyle}>
           <div className={fallbackStyle}>
             <div className={fallbackHeaderStyle}>
-              {currentWorkspace && runtimeConfig.enableWorkspaceSelector ? (
+              {currentWorkspace ? (
                 <WorkspaceSelector />
               ) : (
                 <>

@@ -18,6 +18,7 @@ import { LabelsPanel } from './labels';
 import { MembersPanel } from './members';
 import { ProfilePanel } from './profile';
 import type { WorkspaceSettingDetailProps } from './types';
+import { WorkspaceFlavour } from '@affine/env/workspace';
 
 export const WorkspaceSettingDetail = ({
   workspaceMetadata,
@@ -63,10 +64,10 @@ export const WorkspaceSettingDetail = ({
           <LabelsPanel />
         </SettingRow>
       </SettingWrapper>
-      {runtimeConfig.enableWorkspaceSelector && (
+      {workspace.flavour === WorkspaceFlavour.LOCAL && (
         <SettingWrapper title={t['com.affine.brand.affineCloud']()}>
           <EnableCloudPanel />
-          <MembersPanel />
+          {/* <MembersPanel /> */}
         </SettingWrapper>
       )}
       {environment.isDesktop && (
@@ -78,7 +79,7 @@ export const WorkspaceSettingDetail = ({
         </SettingWrapper>
       )}
       <SettingWrapper>
-        {runtimeConfig.enableWorkspaceSelector && <DeleteLeaveWorkspace />}
+        <DeleteLeaveWorkspace />
         <SettingRow
           name={
             <span style={{ color: 'var(--affine-text-secondary-color)' }}>

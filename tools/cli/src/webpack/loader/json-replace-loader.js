@@ -7,6 +7,7 @@ function replaceAffine(obj) {
     } else if (typeof obj[key] === 'string') {
       // 替换字符串中的 "affine" 为 "wemem"
       obj[key] = obj[key]
+        .replace(/Cloud 同步/g, '云同步')
         .replace(/Cloud 服务/g, '云同步')
         .replace(/Cloud /g, '云同步')
         .replace(/AFFiNE/g, 'Wemem');

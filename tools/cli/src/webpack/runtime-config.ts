@@ -23,7 +23,6 @@ export function getRuntimeConfig(buildFlags: BuildFlags): RuntimeConfig {
           buildFlags.distribution === 'desktop' ? true : false,
         enableOrganize: true,
         enableInfoModal: true,
-        enableWorkspaceSelector: false,
         // CAUTION(@forehalo): product not ready, do not enable it
         enableNewSettingUnstableApi: false,
         enableEnhanceShareMode: false,

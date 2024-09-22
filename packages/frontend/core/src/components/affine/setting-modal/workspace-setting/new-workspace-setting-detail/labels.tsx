@@ -3,6 +3,7 @@ import { useLiveData, useService, WorkspaceService } from '@toeverything/infra';
 import { useEffect, useMemo } from 'react';
 
 import * as style from './style.css';
+import { useI18n } from '@affine/i18n';
 
 type WorkspaceStatus =
   | 'local'
@@ -41,14 +42,15 @@ export const LabelsPanel = () => {
   useEffect(() => {
     permissionService.permission.revalidate();
   }, [permissionService]);
+  const t = useI18n();
   const labelMap: LabelMap = useMemo(
     () => ({
       local: {
-        value: 'Local',
+        value: t['ai.wemem.workspaceInfo.localWorkspaceStatus'](),
         background: 'var(--affine-tag-orange)',
       },
       syncCloud: {
-        value: 'Sync with AFFiNE Cloud',
+        value: t['com.affine.setting.sign.message'](),
         background: 'var(--affine-tag-blue)',
       },
       syncDocker: {

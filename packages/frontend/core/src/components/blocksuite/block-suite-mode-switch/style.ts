@@ -12,7 +12,7 @@ export const StyledEditorModeSwitch = styled('div')<{
     background: showAlone
       ? 'transparent'
       : 'var(--affine-background-secondary-color)',
-    borderRadius: '8px',
+    borderRadius: '4px',
     ...displayFlex('space-between', 'center'),
     padding: '4px 4px',
     position: 'relative',
@@ -41,7 +41,7 @@ export const StyledSwitchItem = styled('button')<{
   return {
     width: '24px',
     height: '24px',
-    borderRadius: '8px',
+    borderRadius: '4px',
     WebkitAppRegion: 'no-drag',
     boxShadow: active ? 'var(--affine-shadow-1)' : 'none',
     color: active
