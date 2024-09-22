@@ -7,14 +7,10 @@ const matchAffinePro = url => {
 
 class ReplaceVisitor {
   constructor() {
-    this.includesKeywords = [
-      'AFFiNE',
-      'AFFINE',
-      'Toeverything',
-      'support@toeverything.info',
-      'affine.pro',
-    ];
     this.replaceMap = {
+      'https://github.com/toeverything/AFFiNE':
+        'https://github.com/wemem/wemem',
+      'https://twitter.com/AffineOfficial': 'https://twitter.com/wememai',
       AFFiNE: 'Wemem',
       AFFINE: 'Wemem',
       Toeverything: 'Wemem',
@@ -24,7 +20,7 @@ class ReplaceVisitor {
   }
 
   includesAnyKeyword(text) {
-    return this.includesKeywords.some(keyword => text.includes(keyword));
+    return Object.keys(this.replaceMap).some(keyword => text.includes(keyword));
   }
 
   replaceAllKeywords(text) {

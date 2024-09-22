@@ -42,6 +42,11 @@ export const relatedLinks = [
 
 export const readeaseRelatedLinks = [
   {
+    icon: <GithubIcon />,
+    title: 'GitHub',
+    link: 'https://github.com/toeverything/AFFiNE',
+  },
+  {
     icon: <TwitterIcon />,
     title: 'X',
     link: 'https://twitter.com/AffineOfficial',
