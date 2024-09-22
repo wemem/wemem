@@ -16,7 +16,7 @@ export function getRuntimeConfig(buildFlags: BuildFlags): RuntimeConfig {
         downloadUrl: 'https://wemem.ai/download',
         imageProxyUrl: '/api/worker/image-proxy',
         linkPreviewUrl: '/api/worker/link-preview',
-        enablePreloading: true,
+        enablePreloading: false,
         enableCaptcha: true,
         enableExperimentalFeature: true,
         allowLocalWorkspace:
