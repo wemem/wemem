@@ -466,7 +466,6 @@ __metadata:
     react: "npm:18.3.1"
     react-dom: "npm:18.3.1"
     react-error-boundary: "npm:^4.0.13"
-    react-icons: "npm:^5.2.1"
     react-is: "npm:18.3.1"
     react-json-view: "npm:^1.21.3"
     react-router-dom: "npm:^6.22.3"
@@ -33814,15 +33813,6 @@ __metadata:
     react-native:
       optional: true
   checksum: 10/5f3e60250179a6e28c61396099b4a9b66f65a484415b1f1c86e538a9242a84a0bf706e5218b9909351c95c28dda423dd741c014a0b503641e1ce03994b81df19
-  languageName: node
-  linkType: hard
-
-"react-icons@npm:^5.2.1":
-  version: 5.2.1
-  resolution: "react-icons@npm:5.2.1"
-  peerDependencies:
-    react: "*"
-  checksum: 10/8cdf49a9583488f9bb58cbab21f10a5e1993dd9d4f5a62f30fbbce249e4868e8e2c34eb1888adb22014a4319633d1035079bcf5d33b1a8596d745809632699c8
   languageName: node
   linkType: hard
 

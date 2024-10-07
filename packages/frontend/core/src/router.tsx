@@ -101,6 +101,10 @@ export const topLevelRoutes = [
         lazy: () => import('./pages/subscribe'),
       },
       {
+        path: '/icons',
+        lazy: () => import('./pages/icons'),
+      },
+      {
         path: '/try-cloud',
         loader: () => {
           return redirect(
@@ -157,6 +161,10 @@ export const viewRoutes = [
   {
     path: '/trash',
     lazy: () => import('./pages/workspace/trash-page'),
+  },
+  {
+    path: '/home',
+    lazy: () => import('./pages/workspace/home'),
   },
   {
     path: '/:pageId',

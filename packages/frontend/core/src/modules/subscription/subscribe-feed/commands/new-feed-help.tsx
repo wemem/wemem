@@ -1,6 +1,6 @@
+import { WechatIcon } from '@affine/component';
 import { popupWindow } from '@affine/core/utils';
 import type { useI18n } from '@affine/i18n';
-import { PiWechatLogo } from 'react-icons/pi';
 
 import { registerNewFeedCommand } from './registry';
 
@@ -14,7 +14,7 @@ export function registerNewFeedHelpCommands({
     registerNewFeedCommand({
       id: 'affine:import-wechat',
       category: 'affine:help',
-      icon: <PiWechatLogo />,
+      icon: <WechatIcon />,
       label: t['ai.wemem.feeds.new-feed.cmd.import-from-wechat'](),
       run() {
         popupWindow(runtimeConfig.changelogUrl);

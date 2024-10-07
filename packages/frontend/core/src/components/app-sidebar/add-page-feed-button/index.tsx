@@ -1,9 +1,8 @@
-import { Button } from '@affine/component';
+import { IconButton, RssIcon } from '@affine/component';
 import type { DocCollection } from '@affine/core/shared';
 import { useI18n } from '@affine/i18n';
 import { PageIcon } from '@blocksuite/icons/rc';
 import clsx from 'clsx';
-import { PiRss } from 'react-icons/pi';
 
 import { Spotlight } from '../spolight';
 import * as styles from './index.css';
@@ -23,20 +22,20 @@ export function AddPageFeedButton({
   const t = useI18n();
   return (
     <div className={clsx(styles.root)}>
-      <Button
+      <IconButton
         className={clsx([styles.button, className])}
         icon={<PageIcon />}
         onClick={onClickNewPage}
       >
         {t['New Page']()}
-      </Button>
-      <Button
+      </IconButton>
+      <IconButton
         className={clsx([styles.button, className])}
-        icon={<PiRss />}
+        icon={<RssIcon />}
         onClick={onOpenNewFeedModal}
       >
         {t['ai.wemem.feeds.new-feed-button']()}
-      </Button>
+      </IconButton>
       <Spotlight />
     </div>
   );

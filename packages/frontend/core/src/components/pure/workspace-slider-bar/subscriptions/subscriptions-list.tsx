@@ -1,4 +1,4 @@
-import { type DropTargetOptions } from '@affine/component';
+import { type DropTargetOptions, RssIcon } from '@affine/component';
 import { IconButton } from '@affine/component/ui/button';
 import { type CollectionMeta } from '@affine/core/components/page-list';
 import { FeedAvatar } from '@affine/core/components/page-list/feed/avatar';
@@ -29,7 +29,6 @@ import {
 } from '@toeverything/infra';
 import clsx from 'clsx';
 import { useCallback, useMemo, useState } from 'react';
-import { VscInbox, VscMail } from 'react-icons/vsc';
 
 import { WorkbenchService } from '../../../../modules/workbench';
 import { MenuLinkItem as SidebarMenuLinkItem } from '../../../app-sidebar';
@@ -56,7 +55,7 @@ export const FeedSidebarReadAll = () => {
       active={
         currentPath.includes(unseenPath) || currentPath.includes(seenPath)
       }
-      icon={<VscInbox />}
+      icon={<RssIcon />}
       to={unseenPath}
       linkComponent={WorkbenchLink}
     >
@@ -167,7 +166,7 @@ export const FeedSidebarReadNewsletter = () => {
       active={
         currentPath.includes(unseenPath) || currentPath.includes(seenPath)
       }
-      icon={<VscMail />}
+      icon={<RssIcon />}
       to={unseenPath}
       linkComponent={WorkbenchLink}
     >

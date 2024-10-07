@@ -12,7 +12,11 @@ import { CMDKQuickSearchService } from '@affine/core/modules/quicksearch/service
 import { isNewTabTrigger } from '@affine/core/utils';
 import { events } from '@affine/electron-api';
 import { useI18n } from '@affine/i18n';
-import { AllDocsIcon, SettingsIcon } from '@blocksuite/icons/rc';
+import {
+  AllDocsIcon,
+  AppearanceIcon,
+  SettingsIcon,
+} from '@blocksuite/icons/rc';
 import type { Doc } from '@blocksuite/store';
 import type { Workspace } from '@toeverything/infra';
 import { useLiveData, useService, WorkspaceService } from '@toeverything/infra';
@@ -34,6 +38,7 @@ import {
   SidebarScrollableContainer,
 } from '../app-sidebar';
 import { usePageHelper } from '../blocksuite/block-suite-page-list/utils';
+import { ExplorerSubscriptions } from '../pure/workspace-slider-bar/subscriptions';
 import { WorkspaceSelector } from '../workspace-selector';
 import ImportPage from './import-page';
 import {
@@ -46,7 +51,7 @@ import { AppSidebarJournalButton } from './journal-button';
 import { TrashButton } from './trash-button';
 import { UpdaterButton } from './updater-button';
 import { UserInfo } from './user-info';
-import { ExplorerSubscriptions } from '../pure/workspace-slider-bar/subscriptions';
+import { HomeIcon } from '@affine/component';
 
 export type RootAppSidebarProps = {
   isPublicWorkspace: boolean;
@@ -82,6 +87,7 @@ export const RootAppSidebar = (): ReactElement => {
   }, [cmdkQuickSearchService]);
 
   const allPageActive = currentPath === '/all';
+  const homePageActive = currentPath === '/home';
 
   const pageHelper = usePageHelper(currentWorkspace.docCollection);
 
@@ -131,6 +137,11 @@ export const RootAppSidebar = (): ReactElement => {
           />
           <AddPageButton onClick={onClickNewPage} />
         </div>
+        <MenuLinkItem icon={<HomeIcon />} active={homePageActive} to={'/home'}>
+          <span data-testid="home">
+            {t['ai.wemem.workspaceSubPath.home']()}
+          </span>
+        </MenuLinkItem>
         <MenuLinkItem icon={<AllDocsIcon />} active={allPageActive} to={'/all'}>
           <span data-testid="all-pages">
             {t['com.affine.workspaceSubPath.all']()}

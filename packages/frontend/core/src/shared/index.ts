@@ -9,6 +9,7 @@ export enum WorkspaceSubPath {
   SHARED = 'shared',
   Later = 'later',
   Archive = 'archive',
+  Welcome = 'welcome',
 }
 
 export const WorkspaceSubPathName = {
@@ -17,6 +18,7 @@ export const WorkspaceSubPathName = {
   [WorkspaceSubPath.SHARED]: 'Shared',
   [WorkspaceSubPath.Later]: 'Later',
   [WorkspaceSubPath.Archive]: 'Archive',
+  [WorkspaceSubPath.Welcome]: 'Welcome',
 } satisfies {
   [Path in WorkspaceSubPath]: string;
 };
@@ -27,6 +29,7 @@ export const pathGenerator = {
   shared: workspaceId => `/workspace/${workspaceId}/shared`,
   later: workspaceId => `/workspace/${workspaceId}/later`,
   archive: workspaceId => `/workspace/${workspaceId}/archive`,
+  welcome: workspaceId => `/workspace/${workspaceId}/welcome`,
 } satisfies {
   [Path in WorkspaceSubPath]: (workspaceId: string) => string;
 };
