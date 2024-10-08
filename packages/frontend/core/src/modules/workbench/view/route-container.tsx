@@ -56,14 +56,11 @@ export const RouteContainer = ({ route }: Props) => {
     )
   );
 
-  const isSubscription = currentPath.includes('/subscription/');
+  const isFeed = currentPath.includes('/feed/');
 
   return (
     <div className={styles.root}>
-      <div
-        className={styles.header}
-        style={isSubscription ? { display: 'none' } : {}}
-      >
+      <div className={styles.header} style={isFeed ? { display: 'none' } : {}}>
         {viewPosition.isFirst && !environment.isDesktop && (
           <SidebarSwitch
             show={!leftSidebarOpen}

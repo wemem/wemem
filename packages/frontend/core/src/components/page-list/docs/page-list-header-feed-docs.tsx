@@ -31,9 +31,9 @@ export const FeedDocsPageListHeader = ({
   const t = useI18n();
   const params = useParams();
   const propertiesMeta = docCollection.meta.properties;
-  const { jumpToSubscriptionDocs } = useNavigateHelper();
+  const { jumpToFeedsDocs } = useNavigateHelper();
   const onStatusChange = (status: 'true' | 'false') => {
-    jumpToSubscriptionDocs(workspaceId, status);
+    jumpToFeedsDocs(workspaceId, status);
   };
 
   const [floating, setFloating] = useState(false);

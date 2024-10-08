@@ -2,7 +2,7 @@ import type { MenuItemProps } from '@affine/component';
 import { Menu, MenuIcon, MenuItem } from '@affine/component';
 import { useUnsubscribe } from '@affine/core/components/page-list';
 import { useAppSettingHelper } from '@affine/core/hooks/affine/use-app-setting-helper';
-import { SubscriptionService } from '@affine/core/modules/subscription/services/subscription-service';
+import { FeedsService } from '@affine/core/modules/feed/services/feeds-service';
 import { WorkbenchService } from '@affine/core/modules/workbench';
 import type { Collection } from '@affine/env/filter';
 import { useI18n } from '@affine/i18n';
@@ -23,13 +23,13 @@ export const FeedOperations = ({
   openRenameModal?: () => void;
 }>) => {
   const { appSettings } = useAppSettingHelper();
-  const service = useService(SubscriptionService);
+  const service = useService(FeedsService);
   const workbench = useService(WorkbenchService).workbench;
   const deleteFeed = useUnsubscribe();
   const t = useI18n();
   const { open: openEditFeedNameModal, node: editNameModal } =
     useCreateFeedModal({
-      title: t['ai.wemem.edit-subscription.editFeed'](),
+      title: t['ai.wemem.edit-feed.editFeed'](),
     });
 
   const showEditName = useCallback(() => {
@@ -39,7 +39,7 @@ export const FeedOperations = ({
     }
     openEditFeedNameModal(feed.name)
       .then(name => {
-        return service.updateSubscription(feed.id, () => ({
+        return service.updateFeed(feed.id, () => ({
           ...feed,
           name,
         }));

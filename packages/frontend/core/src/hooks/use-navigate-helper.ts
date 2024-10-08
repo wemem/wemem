@@ -90,50 +90,44 @@ export function useNavigateHelper() {
     [navigate]
   );
 
-  const jumpToManageSubscriptions = useCallback(
+  const jumpToManageFeeds = useCallback(
     (workspaceId: string, logic: RouteLogic = RouteLogic.PUSH) => {
-      return navigate(`/workspace/${workspaceId}/subscription/manage`, {
+      return navigate(`/workspace/${workspaceId}/feed/manage`, {
         replace: logic === RouteLogic.REPLACE,
       });
     },
     [navigate]
   );
 
-  const jumpToSubscriptionDocs = useCallback(
+  const jumpToFeedsDocs = useCallback(
     (
       workspaceId: string,
       status: 'seen' | 'unseen' = 'unseen',
-      subscriptionId?: string,
+      feedId?: string,
       logic: RouteLogic = RouteLogic.PUSH
     ) => {
-      if (subscriptionId) {
-        return navigate(
-          `/workspace/${workspaceId}/subscription/${subscriptionId}/${status}`,
-          {
-            replace: logic === RouteLogic.REPLACE,
-          }
-        );
+      if (feedId) {
+        return navigate(`/workspace/${workspaceId}/feed/${feedId}/${status}`, {
+          replace: logic === RouteLogic.REPLACE,
+        });
       }
 
-      return navigate(`/workspace/${workspaceId}/subscription/${status}`, {
+      return navigate(`/workspace/${workspaceId}/feed/${status}`, {
         replace: logic === RouteLogic.REPLACE,
       });
     },
     [navigate]
   );
 
-  const jumpToSubscription = useCallback(
+  const jumpToFeed = useCallback(
     (
       workspaceId: string,
-      subscriptionId: string,
+      feedId: string,
       logic: RouteLogic = RouteLogic.PUSH
     ) => {
-      return navigate(
-        `/workspace/${workspaceId}/subscription/${subscriptionId}/unseen`,
-        {
-          replace: logic === RouteLogic.REPLACE,
-        }
-      );
+      return navigate(`/workspace/${workspaceId}/feed/${feedId}/unseen`, {
+        replace: logic === RouteLogic.REPLACE,
+      });
     },
     [navigate]
   );
@@ -233,9 +227,9 @@ export function useNavigateHelper() {
       jumpToExpired,
       jumpToSignIn,
       jumpToCollection,
-      jumpToSubscription,
-      jumpToSubscriptionDocs,
-      jumpToManageSubscriptions,
+      jumpToFeed,
+      jumpToFeedsDocs,
+      jumpToManageFeeds,
       jumpToCollections,
       jumpToTags,
       jumpToTag,
@@ -251,9 +245,9 @@ export function useNavigateHelper() {
       jumpToExpired,
       jumpToSignIn,
       jumpToCollection,
-      jumpToSubscription,
-      jumpToSubscriptionDocs,
-      jumpToManageSubscriptions,
+      jumpToFeed,
+      jumpToFeedsDocs,
+      jumpToManageFeeds,
       jumpToCollections,
       jumpToTags,
       jumpToTag,

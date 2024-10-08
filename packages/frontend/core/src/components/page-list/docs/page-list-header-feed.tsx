@@ -1,7 +1,7 @@
 import { Button } from '@affine/component';
 import {
   PageDisplayMenu,
-  useEditSubscription,
+  useEditFeed,
 } from '@affine/core/components/page-list';
 import { FeedPageListOperationsMenu } from '@affine/core/components/page-list/docs/page-list-header-feed-operations-menu';
 import { FeedAvatar } from '@affine/core/components/page-list/feed/avatar';
@@ -27,13 +27,13 @@ export const FeedPageListHeader = ({
   onChangeCurrentFilters: (filters: Filter[]) => void;
 }) => {
   const t = useI18n();
-  const { jumpToManageSubscriptions } = useNavigateHelper();
+  const { jumpToManageFeeds } = useNavigateHelper();
 
   const handleJumpToFeeds = useCallback(() => {
-    jumpToManageSubscriptions(workspaceId);
-  }, [jumpToManageSubscriptions, workspaceId]);
+    jumpToManageFeeds(workspaceId);
+  }, [jumpToManageFeeds, workspaceId]);
 
-  const { node, handleEditFeed } = useEditSubscription(collection);
+  const { node, handleEditFeed } = useEditFeed(collection);
 
   return (
     <>
@@ -41,10 +41,10 @@ export const FeedPageListHeader = ({
       <div className={styles.docListHeader}>
         <div className={styles.docListHeaderTitle}>
           <div style={{ cursor: 'pointer' }} onClick={handleJumpToFeeds}>
-            {t['ai.wemem.subscription.header']()} /
+            {t['ai.wemem.feeds.header']()} /
           </div>
           <div className={styles.titleIcon}>
-            <FeedAvatar image={collection.subscription?.icon} />
+            <FeedAvatar image={collection.feed?.icon} />
           </div>
           <div className={styles.titleCollectionName}>{collection.name}</div>
           <div className={feedStyles.listRightButton}>

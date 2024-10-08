@@ -9,10 +9,10 @@ export const FeedListHeader = ({ onCreate }: { onCreate: () => void }) => {
   return (
     <div className={styles.feedListHeader}>
       <div className={styles.feedListHeaderTitle}>
-        {t['ai.wemem.subscription.header']()}
+        {t['ai.wemem.feeds.header']()}
       </div>
       <Button className={styles.newFeedButton} onClick={onCreate}>
-        {t['ai.wemem.subscription.new-feed-button']()}
+        {t['ai.wemem.feeds.new-feed-button']()}
       </Button>
     </div>
   );

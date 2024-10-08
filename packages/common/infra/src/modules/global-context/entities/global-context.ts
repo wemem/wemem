@@ -34,10 +34,10 @@ export class GlobalContext extends Entity {
   tagId = this.define<string>('tagId');
 
   /**
-   * is in subscription page
+   * is in feed page
    */
-  isSubscription = this.define<boolean>('isSubscription');
-  subscriptionId = this.define<string>('subscriptionId');
+  isFeed = this.define<boolean>('isFeed');
+  feedId = this.define<string>('feedId');
 
   /**
    * is in all docs page

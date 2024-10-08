@@ -1,4 +1,4 @@
-import { SubscriptionService } from '@affine/core/modules/subscription/services/subscription-service';
+import { FeedsService } from '@affine/core/modules/feed/services/feeds-service';
 import type { Collection } from '@affine/env/filter';
 import { useI18n } from '@affine/i18n';
 import { useService } from '@toeverything/infra';
@@ -6,11 +6,11 @@ import { useCallback } from 'react';
 
 import { useEditSubscriptionModal } from './use-edit-feed-modal';
 
-export const useEditSubscription = (collection: Collection) => {
-  const feedService = useService(SubscriptionService);
+export const useEditFeed = (collection: Collection) => {
+  const feedService = useService(FeedsService);
   const t = useI18n();
   const { node, open } = useEditSubscriptionModal({
-    title: t['ai.wemem.edit-subscription.editFeed'](),
+    title: t['ai.wemem.edit-feed.editFeed'](),
     showTips: true,
   });
 
@@ -18,7 +18,7 @@ export const useEditSubscription = (collection: Collection) => {
     // use openRenameModal if it is in the sidebar collection list
     open(collection.name)
       .then(name => {
-        return feedService.updateSubscription(collection.id, collection => ({
+        return feedService.updateFeed(collection.id, collection => ({
           ...collection,
           name,
         }));

@@ -15,7 +15,7 @@ import type {
   PageInfoCustomPropertyMeta,
   PagePropertyType,
 } from '@affine/core/modules/properties/services/schema';
-import { SubscriptionTag } from '@affine/core/modules/tag/entities/internal-tag';
+import { FeedTag } from '@affine/core/modules/tag/entities/internal-tag';
 import { i18nTime, useI18n } from '@affine/i18n';
 import { assertExists } from '@blocksuite/global/utils';
 import {
@@ -1114,9 +1114,7 @@ export const PagePropertiesTable = ({
   // if the given page is not in the current workspace, then we don't render anything
   // eg. when it is in history modal
 
-  const hasSubscriptionTag = page.meta?.tags.some(
-    tag => tag === SubscriptionTag.id
-  );
+  const hasSubscriptionTag = page.meta?.tags.some(tag => tag === FeedTag.id);
   if (!manager.page || (!hasSubscriptionTag && manager.readonly)) {
     return null;
   }

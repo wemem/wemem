@@ -33,13 +33,10 @@ function feedMetaToListItemProp(
   const itemProps: FeedListItemProps = {
     feedId: item.id,
     title: item.title,
-    description: item.subscription?.description,
-    to:
-      props.rowAsLink && !props.selectable
-        ? `/subscription/${item.id}`
-        : undefined,
+    description: item.feed?.description,
+    to: props.rowAsLink && !props.selectable ? `/feed/${item.id}` : undefined,
     onClick: toggleSelection,
-    icon: <FeedAvatar image={item.subscription?.icon} />,
+    icon: <FeedAvatar image={item.feed?.icon} />,
     operations: props.operationsRenderer?.(item),
     selectable: props.selectable,
     selected: props.selectedIds?.includes(item.id),

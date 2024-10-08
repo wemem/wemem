@@ -2,7 +2,6 @@ import { Divider, RssIcon } from '@affine/component';
 import { Button } from '@affine/component/ui/button';
 import { usePageHelper } from '@affine/core/components/blocksuite/block-suite-page-list/utils';
 import { mixpanel } from '@affine/core/mixpanel';
-import { NewSubscriptionService } from '@affine/core/modules/subscription/subscribe-feed/services/subscriptions-service';
 import { isNewTabTrigger } from '@affine/core/utils';
 import { useI18n } from '@affine/i18n';
 import { EdgelessIcon, ImportIcon, PageIcon } from '@blocksuite/icons/rc';
@@ -12,6 +11,7 @@ import { type ReactNode, useCallback, useRef } from 'react';
 
 import { ViewBody, ViewTitle } from '../../../modules/workbench';
 import * as styles from './style.css';
+import { NewFeedService } from '@affine/core/modules/feed-newly';
 
 export const HomePage = () => {
   const workspace = useService(WorkspaceService).workspace;
@@ -21,9 +21,9 @@ export const HomePage = () => {
 
   const t = useI18n();
 
-  const scrollWrapper = useRef<HTMLDivElement>(null);
+  const scrollWrapper = useRef<HTMLDivElement | null>(null);
 
-  const newSubscriptionService = useService(NewSubscriptionService);
+  const newSubscriptionService = useService(NewFeedService);
   const handleOpenNewFeedModal = useCallback(() => {
     newSubscriptionService.subscribeFeed.show();
     mixpanel.track('NewOpened', {
@@ -84,9 +84,7 @@ export const HomePage = () => {
             </ScrollArea.Scrollbar>
           </ScrollArea.Root>
           <Divider className={styles.divider} />
-          <div className={styles.header}>
-            {t['ai.wemem.home.subscription']()}
-          </div>
+          <div className={styles.header}>{t['ai.wemem.home.feeds']()}</div>
           <ScrollArea.Root>
             <ScrollArea.Viewport
               ref={scrollWrapper}
@@ -94,12 +92,10 @@ export const HomePage = () => {
             >
               <div className={styles.planCardsWrapper} ref={scrollWrapper}>
                 <ActionCard
-                  name={t['ai.wemem.home.subscription.rss']()}
-                  description={t[
-                    'ai.wemem.home.subscription.rss.description'
-                  ]()}
+                  name={t['ai.wemem.home.feeds.rss']()}
+                  description={t['ai.wemem.home.feeds.rss.description']()}
                   icon={<RssIcon size={20} />}
-                  action={t['ai.wemem.home.subscription.rss.action']()}
+                  action={t['ai.wemem.home.feeds.rss.action']()}
                   onClick={handleOpenNewFeedModal}
                 />
               </div>

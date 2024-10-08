@@ -1,10 +1,10 @@
-import { SubscriptionService } from '@affine/core/modules/subscription/services/subscription-service';
+import { FeedsService } from '@affine/core/modules/feed/services/feeds-service';
 import { TagService } from '@affine/core/modules/tag';
 import { useService } from '@toeverything/infra';
 import { useCallback } from 'react';
 
 export const useUnsubscribe = () => {
-  const subscriptionService = useService(SubscriptionService);
+  const subscriptionService = useService(FeedsService);
   const tagList = useService(TagService).tagList;
   return useCallback(
     (...ids: string[]) => {

@@ -153,6 +153,14 @@ export class Workbench extends Entity {
     this.open(`/tag/${tagId}`, options);
   }
 
+  openFeed(
+    feedId: string,
+    status: 'unseen' | 'seen',
+    options?: WorkbenchOpenOptions
+  ) {
+    this.open(`/feed/${feedId}/${status}`, options);
+  }
+
   viewAt(positionIndex: WorkbenchPosition): View | undefined {
     return this.views$.value[this.indexAt(positionIndex)];
   }

@@ -4,7 +4,7 @@ import {
   resolveGlobalLoadingEventAtom,
 } from '@affine/component/global-loading';
 import { useRegisterNewFeedCommands } from '@affine/core/hooks/use-register-new-feed-commands';
-import { NewFeedModalComponent } from '@affine/core/modules/subscription/subscribe-feed/views';
+import { NewFeedModalComponent } from '@affine/core/modules/feed-newly/views';
 import { useI18n } from '@affine/i18n';
 import { ZipTransformer } from '@blocksuite/blocks';
 import {
@@ -58,6 +58,7 @@ import {
 } from '../providers/modal-provider';
 import { SWRConfigProvider } from '../providers/swr-config-provider';
 import * as styles from './styles.css';
+import { usePullFeedItemsInterval } from '../hooks/use-pull-feed-items-interval';
 
 export const WorkspaceLayout = function WorkspaceLayout({
   children,
@@ -148,7 +149,7 @@ const WorkspaceLayoutProviders = ({ children }: PropsWithChildren) => {
   useRegisterNavigationCommands();
   useRegisterFindInPageCommands();
   useRegisterNewFeedCommands();
-  // usePullFeedItemsInterval();
+  usePullFeedItemsInterval();
 
   useEffect(() => {
     // hotfix for blockVersions

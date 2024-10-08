@@ -68,6 +68,7 @@ type FolderEvents =
   | 'deleteFolder';
 type TagEvents = 'createTag' | 'deleteTag' | 'renameTag' | 'tagDoc';
 type FavoriteEvents = 'toggleFavorite';
+type FeedsEvents = 'renameFeed';
 type OrganizeItemEvents = // doc, link, folder, collection, tag
 
     | 'createOrganizeItem'
@@ -81,6 +82,7 @@ type OrganizeEvents =
   | CollectionEvents
   | FolderEvents
   | TagEvents
+  | FeedsEvents
   | FavoriteEvents;
 // END SECTION
 
@@ -199,6 +201,7 @@ const PageEvents = {
         'toggleFavorite',
       ],
       docs: ['createDoc', 'deleteDoc', 'linkDoc'],
+      feeds: ['renameFeed'],
       collections: ['createDoc', 'addDocToCollection', 'removeOrganizeItem'],
       folders: ['createDoc'],
       tags: ['createDoc', 'tagDoc'],

@@ -15,8 +15,8 @@ import { configurePermissionsModule } from './permissions';
 import { configureWorkspacePropertiesModule } from './properties';
 import { configureQuickSearchModule } from './quicksearch';
 import { configureShareDocsModule } from './share-doc';
-import { configureFeedModule } from './subscription';
-import { configureSubscribeFeedModule } from './subscription/subscribe-feed';
+import { configureFeedModule } from './feed';
+import { configureSubscribeFeedModule } from '@affine/core/modules/feed-newly';
 import { configureTagModule } from './tag';
 import { configureTelemetryModule } from './telemetry';
 

@@ -34,7 +34,7 @@ export function AddPageFeedButton({
         icon={<RssIcon />}
         onClick={onOpenNewFeedModal}
       >
-        {t['ai.wemem.subscription.new-feed-button']()}
+        {t['ai.wemem.feeds.new-feed-button']()}
       </IconButton>
       <Spotlight />
     </div>

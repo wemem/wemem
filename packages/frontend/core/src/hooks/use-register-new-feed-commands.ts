@@ -1,4 +1,4 @@
-import { registerNewFeedHelpCommands } from '@affine/core/modules/subscription/subscribe-feed/commands';
+import { registerNewFeedHelpCommands } from '@affine/core/modules/feed-newly/commands';
 import { useI18n } from '@affine/i18n';
 import { useEffect } from 'react';
 

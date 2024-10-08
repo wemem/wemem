@@ -1,7 +1,7 @@
 import { GraphQLService } from '@affine/core/modules/cloud';
-import { SubscriptionService } from '@affine/core/modules/subscription/services/subscription-service';
+import { FeedsService } from '@affine/core/modules/feed/services/feeds-service';
 import {
-  SubscriptionTag,
+  FeedTag,
   UnseenTag,
 } from '@affine/core/modules/tag/entities/internal-tag';
 import { DebugLogger } from '@affine/debug';
@@ -27,7 +27,7 @@ const logger = new DebugLogger('usePullFeedItemsInterval');
 export const usePullFeedItemsInterval = () => {
   const currentWorkspace = useService(WorkspaceService).workspace;
   const graphQLService = useService(GraphQLService);
-  const subscriptionService = useService(SubscriptionService);
+  const subscriptionService = useService(FeedsService);
   const tagList = useService(TagService).tagList;
   const timerRef = useRef<NodeJS.Timeout | null>(null);
   const isRunning = useRef(false);
@@ -56,7 +56,7 @@ export const usePullFeedItemsInterval = () => {
 
       isRunning.current = true;
       try {
-        if (subscriptionService.subscriptions$.getValue().length === 0) {
+        if (subscriptionService.feeds$.getValue().length === 0) {
           return;
         }
 
@@ -110,7 +110,7 @@ export const usePullFeedItemsInterval = () => {
               jobMiddleware
             );
 
-            const tags = [SubscriptionTag.id, UnseenTag.id];
+            const tags = [FeedTag.id, UnseenTag.id];
             if (libraryItem.subscription) {
               tags.push(libraryItem.subscription);
             }

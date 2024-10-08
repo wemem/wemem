@@ -7,9 +7,9 @@ export const InternalTagPrefix = 'ai.wemem.internal-tags.';
 
 export const RefPageTagPrefix = `${InternalTagPrefix}ref-page.`;
 
-export const SubscriptionTag: Tag = {
-  id: 'Subscription',
-  value: `${InternalTagPrefix}subscription`,
+export const FeedTag: Tag = {
+  id: 'Feed',
+  value: `${InternalTagPrefix}feed`,
   color: tagColors[5][0],
   ghost: true,
   createDate: Date.now(),
@@ -71,7 +71,7 @@ export const useTagI18N = () => {
   );
 };
 
-export const InternalTags = [SubscriptionTag, SeenTag, UnseenTag];
+export const InternalTags = [FeedTag, SeenTag, UnseenTag];
 
 export const isGhostTag = (tagId: string) => {
   return (

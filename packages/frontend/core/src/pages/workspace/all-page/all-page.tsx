@@ -4,7 +4,7 @@ import {
   VirtualizedPageList,
 } from '@affine/core/components/page-list';
 import { useBlockSuiteDocMeta } from '@affine/core/hooks/use-block-suite-page-meta';
-import { SubscriptionTag } from '@affine/core/modules/tag/entities/internal-tag';
+import { FeedTag } from '@affine/core/modules/tag/entities/internal-tag';
 import { performanceRenderLogger } from '@affine/core/shared';
 import type { Filter } from '@affine/env/filter';
 import { useI18n } from '@affine/i18n';
@@ -27,7 +27,7 @@ import * as styles from './all-page.css';
 import { FilterContainer } from './all-page-filter';
 import { AllPageHeader } from './all-page-header';
 
-const SubscriptionFilter: Filter = {
+const FeedFilter: Filter = {
   type: 'filter',
   left: {
     type: 'ref',
@@ -37,7 +37,7 @@ const SubscriptionFilter: Filter = {
   args: [
     {
       type: 'literal',
-      value: [SubscriptionTag.id],
+      value: [FeedTag.id],
     },
   ],
 };
@@ -50,7 +50,7 @@ export const AllPage = () => {
 
   const [filters, setFilters] = useState<Filter[]>([]);
   const mergedFilters = useMemo(() => {
-    return [...filters, SubscriptionFilter];
+    return [...filters, FeedFilter];
   }, [filters]);
   const filteredPageMetas = useFilteredPageMetas(pageMetas, {
     filters: mergedFilters,

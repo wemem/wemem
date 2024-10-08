@@ -1,3 +1,4 @@
+import { HomeIcon } from '@affine/component';
 import { openSettingModalAtom } from '@affine/core/atoms';
 import { useAsyncCallback } from '@affine/core/hooks/affine-async-hooks';
 import { track } from '@affine/core/mixpanel';
@@ -7,16 +8,13 @@ import {
   ExplorerMigrationFavorites,
   ExplorerOrganize,
 } from '@affine/core/modules/explorer';
+import { ExplorerFeeds } from '@affine/core/modules/explorer/views/sections/feeds';
 import { ExplorerTags } from '@affine/core/modules/explorer/views/sections/tags';
 import { CMDKQuickSearchService } from '@affine/core/modules/quicksearch/services/cmdk';
 import { isNewTabTrigger } from '@affine/core/utils';
 import { events } from '@affine/electron-api';
 import { useI18n } from '@affine/i18n';
-import {
-  AllDocsIcon,
-  AppearanceIcon,
-  SettingsIcon,
-} from '@blocksuite/icons/rc';
+import { AllDocsIcon, SettingsIcon } from '@blocksuite/icons/rc';
 import type { Doc } from '@blocksuite/store';
 import type { Workspace } from '@toeverything/infra';
 import { useLiveData, useService, WorkspaceService } from '@toeverything/infra';
@@ -38,7 +36,6 @@ import {
   SidebarScrollableContainer,
 } from '../app-sidebar';
 import { usePageHelper } from '../blocksuite/block-suite-page-list/utils';
-import { ExplorerSubscriptions } from '../pure/workspace-slider-bar/subscriptions';
 import { WorkspaceSelector } from '../workspace-selector';
 import ImportPage from './import-page';
 import {
@@ -51,7 +48,6 @@ import { AppSidebarJournalButton } from './journal-button';
 import { TrashButton } from './trash-button';
 import { UpdaterButton } from './updater-button';
 import { UserInfo } from './user-info';
-import { HomeIcon } from '@affine/component';
 
 export type RootAppSidebarProps = {
   isPublicWorkspace: boolean;
@@ -166,7 +162,7 @@ export const RootAppSidebar = (): ReactElement => {
         <ExplorerMigrationFavorites />
         <ExplorerCollections />
         <ExplorerTags />
-        <ExplorerSubscriptions />
+        <ExplorerFeeds />
         <CategoryDivider label={t['com.affine.rootAppSidebar.others']()} />
         <div style={{ padding: '0 8px' }}>
           <TrashButton />

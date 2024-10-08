@@ -7,7 +7,7 @@ import {
   Tooltip,
 } from '@affine/component';
 import { useUnsubscribe } from '@affine/core/components/page-list/feed';
-import { useEditSubscription } from '@affine/core/components/page-list/feed/use-edit-feed';
+import { useEditFeed } from '@affine/core/components/page-list/feed/use-edit-feed';
 import { CompatibleFavoriteItemsAdapter } from '@affine/core/modules/properties';
 import type { Collection } from '@affine/env/filter';
 import { useI18n } from '@affine/i18n';
@@ -31,8 +31,7 @@ export const FeedOperationCell = ({ collection }: FeedOperationCellProps) => {
     favAdapter.isFavorite$(collection.id, 'collection')
   );
 
-  const { handleEditFeed, node: editNameModal } =
-    useEditSubscription(collection);
+  const { handleEditFeed, node: editNameModal } = useEditFeed(collection);
 
   const deleteFeed = useUnsubscribe();
 
@@ -78,7 +77,7 @@ export const FeedOperationCell = ({ collection }: FeedOperationCellProps) => {
               }
               type="danger"
             >
-              {t['ai.wemem.subscriptions.unsubscribe']()}
+              {t['ai.wemem.feeds.unsubscribe']()}
             </MenuItem>
           }
           contentOptions={{

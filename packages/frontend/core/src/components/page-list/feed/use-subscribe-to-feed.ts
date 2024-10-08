@@ -1,8 +1,8 @@
 import { tagColors } from '@affine/core/components/affine/page-properties/common';
 import { createEmptyCollection } from '@affine/core/components/page-list';
 import { useNavigateHelper } from '@affine/core/hooks/use-navigate-helper';
-import { SubscriptionService } from '@affine/core/modules/subscription/services/subscription-service';
-import type { SubscriptionRecord } from '@affine/core/modules/subscription/subscribe-feed/views/data-hooks';
+import { FeedsService } from '@affine/core/modules/feed/services/feeds-service';
+import type { SubscriptionRecord } from '@affine/core/modules/feed-newly/views/data-hooks';
 import { TagService } from '@affine/core/modules/tag';
 import type { DocCollection } from '@blocksuite/store';
 import { useService } from '@toeverything/infra';
@@ -12,7 +12,7 @@ export const FeedFilterTagPrefix = 'feed-filter-tag-';
 
 export const useSubscribeToFeed = (docCollection: DocCollection) => {
   const navigateHelper = useNavigateHelper();
-  const subscriptionService = useService(SubscriptionService);
+  const subscriptionService = useService(FeedsService);
   const tagList = useService(TagService).tagList;
 
   return useCallback(
@@ -52,7 +52,7 @@ export const useSubscribeToFeed = (docCollection: DocCollection) => {
         `${FeedFilterTagPrefix}${id}`,
         tagColors[0][1]
       );
-      navigateHelper.jumpToSubscription(docCollection.id, id);
+      navigateHelper.jumpToFeed(docCollection.id, id);
     },
     [docCollection.id, subscriptionService, navigateHelper, tagList]
   );

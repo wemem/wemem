@@ -5,7 +5,7 @@ import {
   Scrollable,
 } from '@affine/component';
 import { DocsSearchService } from '@affine/core/modules/docs-search';
-import { SubscriptionTag } from '@affine/core/modules/tag/entities/internal-tag';
+import { FeedTag } from '@affine/core/modules/tag/entities/internal-tag';
 import {
   LiveData,
   useLiveData,
@@ -54,9 +54,7 @@ export const InfoModal = ({
     )
   );
 
-  const hasSubscriptionTag = page?.meta?.tags.some(
-    tag => tag === SubscriptionTag.id
-  );
+  const hasSubscriptionTag = page?.meta?.tags.some(tag => tag === FeedTag.id);
   if (!manager.page || (!hasSubscriptionTag && manager.readonly)) {
     return null;
   }

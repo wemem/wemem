@@ -1,6 +1,6 @@
 import type { DocCollection } from '@blocksuite/store';
 import { z } from 'zod';
-import { subscriptionSchema } from '@affine/env/subscription';
+import { feedSchema } from '@affine/env/feed';
 
 export const literalValueSchema: z.ZodType<LiteralValue, z.ZodTypeDef> =
   z.union([
@@ -56,7 +56,7 @@ export const collectionSchema = z.object({
   allowList: z.array(z.string()),
   createDate: z.union([z.date(), z.number()]).optional(),
   updateDate: z.union([z.date(), z.number()]).optional(),
-  subscription: subscriptionSchema.optional(),
+  feed: feedSchema.optional(),
 });
 export const deletedCollectionSchema = z.object({
   userId: z.string().optional(),
