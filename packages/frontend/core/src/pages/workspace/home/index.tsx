@@ -25,7 +25,7 @@ export const TrashPage = () => {
       <ViewTitle title={t['ai.wemem.workspaceSubPath.home']()} />
       <ViewBody>
         <div className={styles.body}>
-          <div className={styles.header}>{t['ai.wemem.welcome.doc']()}</div>
+          <div className={styles.header}>{t['ai.wemem.home.doc']()}</div>
           <ScrollArea.Root>
             <ScrollArea.Viewport
               ref={scrollWrapper}
@@ -33,32 +33,30 @@ export const TrashPage = () => {
             >
               <div className={styles.planCardsWrapper} ref={scrollWrapper}>
                 <ActionCard
-                  name={t['ai.wemem.welcome.doc.create-page']()}
-                  description={t[
-                    'ai.wemem.welcome.doc.create-page.description'
-                  ]()}
+                  name={t['ai.wemem.home.doc.create-page']()}
+                  description={t['ai.wemem.home.doc.create-page.description']()}
                   icon={<PageIcon width={20} height={20} />}
-                  action={t['ai.wemem.welcome.doc.create-page.action']()}
+                  action={t['ai.wemem.home.doc.create-page.action']()}
                   onClick={e =>
                     createPage(isNewTabTrigger(e) ? 'new-tab' : true)
                   }
                 />
                 <ActionCard
-                  name={t['ai.wemem.welcome.doc.create-edgeless']()}
+                  name={t['ai.wemem.home.doc.create-edgeless']()}
                   description={t[
-                    'ai.wemem.welcome.doc.create-edgeless.description'
+                    'ai.wemem.home.doc.create-edgeless.description'
                   ]()}
                   icon={<EdgelessIcon width={20} height={20} />}
-                  action={t['ai.wemem.welcome.doc.create-edgeless.action']()}
+                  action={t['ai.wemem.home.doc.create-edgeless.action']()}
                   onClick={e =>
                     createEdgeless(isNewTabTrigger(e) ? 'new-tab' : true)
                   }
                 />
                 <ActionCard
-                  name={t['ai.wemem.welcome.doc.import']()}
-                  description={t['ai.wemem.welcome.doc.import.description']()}
+                  name={t['ai.wemem.home.doc.import']()}
+                  description={t['ai.wemem.home.doc.import.description']()}
                   icon={<ImportIcon width={20} height={20} />}
-                  action={t['ai.wemem.welcome.doc.import.action']()}
+                  action={t['ai.wemem.home.doc.import.action']()}
                   onClick={() => void importFile()}
                 />
               </div>
@@ -75,7 +73,7 @@ export const TrashPage = () => {
           </ScrollArea.Root>
           <Divider className={styles.divider} />
           <div className={styles.header}>
-            {t['ai.wemem.welcome.subscription']()}
+            {t['ai.wemem.home.subscription']()}
           </div>
           <ScrollArea.Root>
             <ScrollArea.Viewport
@@ -84,12 +82,12 @@ export const TrashPage = () => {
             >
               <div className={styles.planCardsWrapper} ref={scrollWrapper}>
                 <ActionCard
-                  name={t['ai.wemem.welcome.subscription.rss']()}
+                  name={t['ai.wemem.home.subscription.rss']()}
                   description={t[
-                    'ai.wemem.welcome.subscription.rss.description'
+                    'ai.wemem.home.subscription.rss.description'
                   ]()}
                   icon={<RssIcon size={20} />}
-                  action={t['ai.wemem.welcome.subscription.rss.action']()}
+                  action={t['ai.wemem.home.subscription.rss.action']()}
                   onClick={e =>
                     createPage(isNewTabTrigger(e) ? 'new-tab' : true)
                   }

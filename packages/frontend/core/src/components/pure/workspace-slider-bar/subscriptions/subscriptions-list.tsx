@@ -214,13 +214,15 @@ export const ExplorerSubscriptions = () => {
           data-testid="explorer-bar-add-favorite-button"
           onClick={handleOpenNewFeedModal}
           size="16"
-          tooltip={t['ai.wemem.feeds.empty.new-feed-button']()}
+          tooltip={t['ai.wemem.subscription.empty.new-feed-button']()}
         >
           <PlusIcon />
         </IconButton>
       }
     >
-      <ExplorerTreeRoot placeholder={<RootEmpty />}>
+      <ExplorerTreeRoot
+        placeholder={<RootEmpty onActionClick={handleOpenNewFeedModal} />}
+      >
         {subscriptionsMetas.length > 0 && !collapsed && (
           <div data-testid="subscriptions" className={styles.wrapper}>
             <FeedSidebarReadFeeds />

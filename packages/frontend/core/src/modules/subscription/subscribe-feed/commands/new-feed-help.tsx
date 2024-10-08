@@ -15,7 +15,7 @@ export function registerNewFeedHelpCommands({
       id: 'affine:import-wechat',
       category: 'affine:help',
       icon: <WechatIcon />,
-      label: t['ai.wemem.feeds.new-feed.cmd.import-from-wechat'](),
+      label: t['ai.wemem.subscription.new-feed.cmd.import-from-wechat'](),
       run() {
         popupWindow(runtimeConfig.changelogUrl);
       },

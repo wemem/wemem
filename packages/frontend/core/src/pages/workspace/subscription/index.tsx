@@ -113,7 +113,7 @@ const Placeholder = ({ collection }: { collection: Collection }) => {
               style={{ color: 'var(--affine-icon-color)' }}
               fontSize={14}
             />
-            {t['ai.wemem.feeds.allFeeds']()}
+            {t['ai.wemem.subscription.allFeeds']()}
             <div>/</div>
           </div>
           <div
