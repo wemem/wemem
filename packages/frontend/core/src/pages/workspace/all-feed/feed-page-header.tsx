@@ -1,4 +1,4 @@
-import { Button, IconButton, Tooltip } from '@affine/component';
+import { Button, EarthIcon, IconButton, Tooltip } from '@affine/component';
 import { openInfoModalAtom } from '@affine/core/atoms';
 import {
   InfoModal,
@@ -19,7 +19,6 @@ import { getRefPageId } from '@affine/core/modules/tag/entities/internal-tag';
 import { WorkbenchService } from '@affine/core/modules/workbench';
 import { ToggleButton } from '@affine/core/modules/workbench/view/route-container';
 import { useI18n } from '@affine/i18n';
-import { LinkIcon } from '@blocksuite/icons/rc';
 import type { DocCollection, DocMeta } from '@blocksuite/store';
 import {
   type Doc,
@@ -92,7 +91,7 @@ export function FeedPageHeader({
           // eslint-disable-next-line @typescript-eslint/no-misused-promises
           onClick={toggleFavoritePage}
         />
-        {originalUrl && <OpenOriginal originalUrl={originalUrl} />}
+        {originalUrl && <ViewSource originalUrl={originalUrl} />}
         <PageOperationCell page={pageMeta} />
       </div>
       <div className={styles.spacer} />
@@ -123,7 +122,7 @@ export function FeedPageHeader({
   );
 }
 
-export const OpenOriginal = ({ originalUrl }: { originalUrl: string }) => {
+export const ViewSource = ({ originalUrl }: { originalUrl: string }) => {
   const t = useI18n();
   const handleClick = useCallback(
     (e: React.MouseEvent<HTMLButtonElement>) => {
@@ -134,9 +133,12 @@ export const OpenOriginal = ({ originalUrl }: { originalUrl: string }) => {
     [originalUrl]
   );
   return (
-    <Tooltip content={t['ai.wemem.feeds.detail.open-original']()} side="top">
+    <Tooltip
+      content={t['ai.wemem.feeds.detail.view-source-content']()}
+      side="top"
+    >
       <IconButton onClick={handleClick}>
-        <LinkIcon />
+        <EarthIcon />
       </IconButton>
     </Tooltip>
   );

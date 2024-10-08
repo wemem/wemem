@@ -16,6 +16,7 @@
   "ai.wemem.feeds.empty.message": "订阅为空",
   "ai.wemem.feeds.empty.new-feed-button": "添加订阅",
   "ai.wemem.feeds.header": "订阅",
+  "ai.wemem.feeds.detail.view-source-content": "查看原文",
   "ai.wemem.internal-tags.rss": "RSS",
   "ai.wemem.internal-tags.seen": "已读",
   "ai.wemem.internal-tags.feed": "订阅",
