@@ -66,7 +66,7 @@ export const Component = () => {
         if (defaultDocId) {
           jumpToPage(meta.id, defaultDocId);
         } else {
-          openPage(meta.id, WorkspaceSubPath.ALL);
+          openPage(meta.id, WorkspaceSubPath.Home);
         }
       })
       .catch(err => console.error('Failed to create cloud workspace', err));
@@ -93,7 +93,7 @@ export const Component = () => {
         const openWorkspace =
           list.find(w => w.flavour === WorkspaceFlavour.AFFINE_CLOUD) ??
           list[0];
-        openPage(openWorkspace.id, WorkspaceSubPath.ALL);
+        openPage(openWorkspace.id, WorkspaceSubPath.Home);
       } else {
         return;
       }
@@ -106,7 +106,7 @@ export const Component = () => {
       const lastId = localStorage.getItem('last_workspace_id');
 
       const openWorkspace = list.find(w => w.id === lastId) ?? list[0];
-      openPage(openWorkspace.id, WorkspaceSubPath.ALL);
+      openPage(openWorkspace.id, WorkspaceSubPath.Home);
     }
   }, [
     createCloudWorkspace,
@@ -133,7 +133,7 @@ export const Component = () => {
               createdWorkspace.defaultPageId
             );
           } else {
-            openPage(createdWorkspace.meta.id, WorkspaceSubPath.ALL);
+            openPage(createdWorkspace.meta.id, WorkspaceSubPath.Home);
           }
         }
       })

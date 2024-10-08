@@ -31,7 +31,7 @@ export const WorkspaceUpgrade = function WorkspaceUpgrade() {
     try {
       const newWorkspace = await currentWorkspace.upgrade.upgrade();
       if (newWorkspace) {
-        openPage(newWorkspace.id, WorkspaceSubPath.ALL);
+        openPage(newWorkspace.id, WorkspaceSubPath.Home);
       } else {
         // blocksuite may enter an incorrect state, reload to reset it.
         location.reload();

@@ -46,7 +46,7 @@ export const useEnableCloud = () => {
           ws,
           account.id
         );
-        openPage(newId, options?.openPageId || WorkspaceSubPath.ALL);
+        openPage(newId, options?.openPageId || WorkspaceSubPath.Home);
         options?.onSuccess?.();
       } catch (e) {
         console.error(e);

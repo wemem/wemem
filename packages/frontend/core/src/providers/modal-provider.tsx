@@ -204,7 +204,7 @@ export const SignOutConfirmModal = () => {
         w => w.flavour === WorkspaceFlavour.LOCAL
       );
       if (localWorkspace) {
-        openPage(localWorkspace.id, WorkspaceSubPath.ALL);
+        openPage(localWorkspace.id, WorkspaceSubPath.Home);
       }
     }
   }, [authService, currentWorkspace, openPage, setOpen, workspaces]);
@@ -235,7 +235,7 @@ export const AllWorkspaceModals = (): ReactElement => {
             // not sure why yet .. here is a workaround
             setTimeout(() => {
               if (!defaultDocId) {
-                jumpToSubPath(id, WorkspaceSubPath.ALL);
+                jumpToSubPath(id, WorkspaceSubPath.Home);
               } else {
                 jumpToPage(id, defaultDocId);
               }

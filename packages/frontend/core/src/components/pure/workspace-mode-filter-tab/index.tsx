@@ -19,12 +19,7 @@ export const WorkspaceModeFilterTab = ({
   const t = useI18n();
   const [value, setValue] = useState(activeFilter);
   const [filterMode, setFilterMode] = useAtom(allPageFilterSelectAtom);
-  const {
-    jumpToCollections,
-    jumpToTags,
-    jumpToSubPath,
-    jumpToSubscriptionDocs,
-  } = useNavigateHelper();
+  const { jumpToCollections, jumpToTags, jumpToSubPath } = useNavigateHelper();
   const handleValueChange = useCallback(
     (value: AllPageFilterOption) => {
       switch (value) {
@@ -37,18 +32,9 @@ export const WorkspaceModeFilterTab = ({
         case 'docs':
           jumpToSubPath(workspace.id, WorkspaceSubPath.ALL);
           break;
-        case 'subscriptions':
-          jumpToSubscriptionDocs(workspace.id);
-          break;
       }
     },
-    [
-      jumpToCollections,
-      jumpToSubPath,
-      jumpToTags,
-      jumpToSubscriptionDocs,
-      workspace,
-    ]
+    [jumpToCollections, jumpToSubPath, jumpToTags, workspace]
   );
 
   useEffect(() => {

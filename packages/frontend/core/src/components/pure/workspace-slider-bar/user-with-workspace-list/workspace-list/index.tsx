@@ -185,14 +185,14 @@ export const AFFiNEWorkspaceList = ({
     (workspaceMetadata: WorkspaceMetadata) => {
       if (document.startViewTransition) {
         document.startViewTransition(() => {
-          jumpToSubPath(workspaceMetadata.id, WorkspaceSubPath.ALL);
+          jumpToSubPath(workspaceMetadata.id, WorkspaceSubPath.Home);
           onEventEnd?.();
           return new Promise(resolve =>
             setTimeout(resolve, 150)
           ); /* start transition after 150ms */
         });
       } else {
-        jumpToSubPath(workspaceMetadata.id, WorkspaceSubPath.ALL);
+        jumpToSubPath(workspaceMetadata.id, WorkspaceSubPath.Home);
         onEventEnd?.();
       }
     },

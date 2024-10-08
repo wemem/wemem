@@ -67,7 +67,7 @@ export const Component = () => {
   const openWorkspace = useCallback(() => {
     jumpToSubPath(
       inviteInfo.workspace.id,
-      WorkspaceSubPath.ALL,
+      WorkspaceSubPath.Home,
       RouteLogic.REPLACE
     );
   }, [inviteInfo.workspace.id, jumpToSubPath]);
