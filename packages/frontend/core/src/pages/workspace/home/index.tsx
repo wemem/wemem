@@ -1,17 +1,19 @@
 import { Divider, RssIcon } from '@affine/component';
 import { Button } from '@affine/component/ui/button';
 import { usePageHelper } from '@affine/core/components/blocksuite/block-suite-page-list/utils';
+import { mixpanel } from '@affine/core/mixpanel';
+import { NewSubscriptionService } from '@affine/core/modules/subscription/subscribe-feed/services/subscriptions-service';
 import { isNewTabTrigger } from '@affine/core/utils';
 import { useI18n } from '@affine/i18n';
 import { EdgelessIcon, ImportIcon, PageIcon } from '@blocksuite/icons/rc';
 import * as ScrollArea from '@radix-ui/react-scroll-area';
 import { useService, WorkspaceService } from '@toeverything/infra';
-import { type ReactNode, useRef } from 'react';
+import { type ReactNode, useCallback, useRef } from 'react';
 
 import { ViewBody, ViewTitle } from '../../../modules/workbench';
 import * as styles from './style.css';
 
-export const TrashPage = () => {
+export const HomePage = () => {
   const workspace = useService(WorkspaceService).workspace;
   const { importFile, createEdgeless, createPage } = usePageHelper(
     workspace.docCollection
@@ -20,6 +22,16 @@ export const TrashPage = () => {
   const t = useI18n();
 
   const scrollWrapper = useRef<HTMLDivElement>(null);
+
+  const newSubscriptionService = useService(NewSubscriptionService);
+  const handleOpenNewFeedModal = useCallback(() => {
+    newSubscriptionService.subscribeFeed.show();
+    mixpanel.track('NewOpened', {
+      segment: 'navigation panel',
+      control: 'new feeds button',
+    });
+  }, [newSubscriptionService]);
+
   return (
     <>
       <ViewTitle title={t['ai.wemem.workspaceSubPath.home']()} />
@@ -88,9 +100,7 @@ export const TrashPage = () => {
                   ]()}
                   icon={<RssIcon size={20} />}
                   action={t['ai.wemem.home.subscription.rss.action']()}
-                  onClick={e =>
-                    createPage(isNewTabTrigger(e) ? 'new-tab' : true)
-                  }
+                  onClick={handleOpenNewFeedModal}
                 />
               </div>
             </ScrollArea.Viewport>
@@ -161,5 +171,5 @@ const ActionButton = ({
 };
 
 export const Component = () => {
-  return <TrashPage />;
+  return <HomePage />;
 };
