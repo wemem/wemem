@@ -1,3 +1,4 @@
+import { PageDetailSkeleton } from '@affine/component/page-detail-skeleton';
 import { ResizePanel } from '@affine/component/resize-panel';
 import { FeedsFilterContainer } from '@affine/core/components/page-list/feeds-page-list/feeds-page-filter';
 import { FeedsPageList } from '@affine/core/components/page-list/feeds-page-list/feeds-page-list';
@@ -16,9 +17,11 @@ import {
 } from '@toeverything/infra';
 import { useAtom } from 'jotai';
 import { atomWithStorage } from 'jotai/utils';
-import { useEffect, useMemo, useState } from 'react';
+import { memo, useEffect, useMemo, useState } from 'react';
 import { useParams } from 'react-router-dom';
 
+import { PageNotFound } from '../../404';
+import { DetailPageWrapper } from '../detail-page/detail-page-wrapper';
 import { FeedDetailPage } from './feed-detail-page';
 import { FeedPageEmpty } from './feed-page-empty';
 import { feedSidebarOpen } from './feed-sidebar-switch';
@@ -62,7 +65,7 @@ export const subscriptionSidebarWidthAtom = atomWithStorage(
   480 /* px */
 );
 
-export const AllFeedsPage = () => {
+export const AllFeedsPage = memo(() => {
   const params = useParams();
   const pageId = params.pageId;
   const feedId = params.feedId;
@@ -151,7 +154,14 @@ export const AllFeedsPage = () => {
 
           {pageId ? (
             <div className={styles.subcriptionDocDetail}>
-              <FeedDetailPage docId={pageId} key={pageId}></FeedDetailPage>
+              {/* <FeedDetailPage docId={pageId} key={pageId}></FeedDetailPage> */}
+              <DetailPageWrapper
+                pageId={pageId}
+                skeleton={<PageDetailSkeleton />}
+                notFound={<PageNotFound noPermission />}
+              >
+                <FeedDetailPage />
+              </DetailPageWrapper>
             </div>
           ) : (
             <FeedPageEmpty />
@@ -160,4 +170,4 @@ export const AllFeedsPage = () => {
       </ViewBody>
     </>
   );
-};
+});

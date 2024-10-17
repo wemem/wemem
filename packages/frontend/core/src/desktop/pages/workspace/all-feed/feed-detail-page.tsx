@@ -1,197 +1,255 @@
-import { Scrollable } from '@affine/component';
-import { PageDetailSkeleton } from '@affine/component/page-detail-skeleton';
-import { useActiveBlocksuiteEditor } from '@affine/core/components/hooks/use-block-suite-editor';
-import { usePageDocumentTitle } from '@affine/core/components/hooks/use-global-state';
-import { PageDetailEditor } from '@affine/core/components/page-detail-editor';
-import { AIIsland } from '@affine/core/components/pure/ai-island';
-import { SharePageNotFoundError } from '@affine/core/components/share-page-not-found-error';
-import type { DocMode } from '@blocksuite/affine/blocks';
-import { noop } from '@blocksuite/global/utils';
-import type { AffineEditorContainer } from '@blocksuite/presets';
-import type { Doc } from '@toeverything/infra';
+import { notify, Scrollable, useHasScrollTop } from '@affine/component';
+import type { ChatPanel } from '@affine/core/blocksuite/presets/ai';
+import { AIProvider } from '@affine/core/blocksuite/presets/ai';
+import { PageAIOnboarding } from '@affine/core/components/affine/ai-onboarding';
+import { EditorOutlineViewer } from '@affine/core/components/blocksuite/outline-viewer';
+import { useAppSettingHelper } from '@affine/core/components/hooks/affine/use-app-setting-helper';
+import { useDocMetaHelper } from '@affine/core/components/hooks/use-block-suite-page-meta';
+import { EditorService } from '@affine/core/modules/editor';
+import { ViewService } from '@affine/core/modules/workbench/services/view';
+import { useI18n } from '@affine/i18n';
+import { RefNodeSlotsProvider } from '@blocksuite/affine/blocks';
+import { DisposableGroup } from '@blocksuite/affine/global/utils';
+import { type AffineEditorContainer } from '@blocksuite/affine/presets';
 import {
-  DocsService,
+  DocService,
   FrameworkScope,
+  GlobalContextService,
   useLiveData,
-  useService,
+  useServices,
   WorkspaceService,
 } from '@toeverything/infra';
 import clsx from 'clsx';
-import { useCallback, useLayoutEffect, useRef, useState } from 'react';
-import type { LoaderFunction } from 'react-router-dom';
-import {
-  isRouteErrorResponse,
-  redirect,
-  useRouteError,
-} from 'react-router-dom';
+import { memo, useCallback, useEffect, useRef } from 'react';
 
-import { PageNotFound } from '../../404';
+import { AffineErrorBoundary } from '../../../../components/affine/affine-error-boundary';
+import { GlobalPageHistoryModal } from '../../../../components/affine/page-history-modal';
+import { useRegisterBlocksuiteEditorCommands } from '../../../../components/hooks/affine/use-register-blocksuite-editor-commands';
+import { useActiveBlocksuiteEditor } from '../../../../components/hooks/use-block-suite-editor';
+import { usePageDocumentTitle } from '../../../../components/hooks/use-global-state';
+import { useNavigateHelper } from '../../../../components/hooks/use-navigate-helper';
+import { PageDetailEditor } from '../../../../components/page-detail-editor';
+import { TopTip } from '../../../../components/top-tip';
+import {
+  useIsActiveView,
+  WorkbenchService,
+} from '../../../../modules/workbench';
 import * as styles from './feed-detail-page.css';
 import { FeedPageHeader } from './feed-page-header';
 
-type DocPublishMode = 'edgeless' | 'page';
+export const FeedDetailPage = memo(function DetailPageImpl() {
+  const {
+    workbenchService,
+    viewService,
+    editorService,
+    docService,
+    workspaceService,
+    globalContextService,
+  } = useServices({
+    WorkbenchService,
+    ViewService,
+    EditorService,
+    DocService,
+    WorkspaceService,
+    GlobalContextService,
+  });
+  const workbench = workbenchService.workbench;
+  const editor = editorService.editor;
+  const view = viewService.view;
+  const workspace = workspaceService.workspace;
+  const docCollection = workspace.docCollection;
+  const globalContext = globalContextService.globalContext;
+  const doc = docService.doc;
 
-export type CloudDoc = {
-  arrayBuffer: ArrayBuffer;
-  publishMode: DocPublishMode;
-};
+  const mode = useLiveData(editor.mode$);
+  const activeSidebarTab = useLiveData(view.activeSidebarTab$);
 
-export async function downloadBinaryFromCloud(
-  rootGuid: string,
-  pageGuid: string
-): Promise<CloudDoc | null> {
-  const response = await fetch(`/api/workspaces/${rootGuid}/docs/${pageGuid}`);
-  if (response.ok) {
-    const publishMode = (response.headers.get('publish-mode') ||
-      'page') as DocPublishMode;
-    const arrayBuffer = await response.arrayBuffer();
+  const isInTrash = useLiveData(doc.meta$.map(meta => meta.trash));
+  const { openPage, jumpToPageBlock } = useNavigateHelper();
+  const editorContainer = useLiveData(editor.editorContainer$);
 
-    // return both arrayBuffer and publish mode
-    return { arrayBuffer, publishMode };
-  }
+  const isSideBarOpen = useLiveData(workbench.sidebarOpen$);
+  const { appSettings } = useAppSettingHelper();
+  const chatPanelRef = useRef<ChatPanel | null>(null);
+  const { setDocReadonly } = useDocMetaHelper();
 
-  return null;
-}
+  const isActiveView = useIsActiveView();
+  // TODO(@eyhn): remove jotai here
+  const [_, setActiveBlockSuiteEditor] = useActiveBlocksuiteEditor();
 
-type LoaderData = {
-  pageId: string;
-  workspaceId: string;
-  publishMode: DocMode;
-  pageArrayBuffer: ArrayBuffer;
-  workspaceArrayBuffer: ArrayBuffer;
-};
+  const t = useI18n();
 
-function assertDownloadResponse(
-  value: CloudDoc | null
-): asserts value is CloudDoc {
-  if (
-    !value ||
-    !((value as CloudDoc).arrayBuffer instanceof ArrayBuffer) ||
-    typeof (value as CloudDoc).publishMode !== 'string'
-  ) {
-    throw new Error('value is not a valid download response');
-  }
-}
-
-export const loader: LoaderFunction = async ({ params }) => {
-  const workspaceId = params?.workspaceId;
-  const pageId = params?.pageId;
-  if (!workspaceId || !pageId) {
-    return redirect('/404');
-  }
-
-  const [workspaceResponse, pageResponse] = await Promise.all([
-    downloadBinaryFromCloud(workspaceId, workspaceId),
-    downloadBinaryFromCloud(workspaceId, pageId),
-  ]);
-  assertDownloadResponse(workspaceResponse);
-  const { arrayBuffer: workspaceArrayBuffer } = workspaceResponse;
-  assertDownloadResponse(pageResponse);
-  const { arrayBuffer: pageArrayBuffer, publishMode } = pageResponse;
-
-  return {
-    workspaceId,
-    pageId,
-    publishMode,
-    workspaceArrayBuffer,
-    pageArrayBuffer,
-  } satisfies LoaderData;
-};
-
-interface IDetailPageProps {
-  docId: string;
-}
-
-export const FeedDetailPage = ({ docId }: IDetailPageProps) => {
-  const [page, setPage] = useState<Doc | null>(null);
-  const [_, setActiveBlocksuiteEditor] = useActiveBlocksuiteEditor();
-  const workspace = useService(WorkspaceService).workspace;
-  const docsService = useService(DocsService);
-  const docRecordList = docsService.list;
-  const docListReady = useLiveData(docRecordList.isReady$);
-  const docRecord = docRecordList.doc$(docId).value;
-  // 使用 useRef 保存上一次的 release 函数
-  const previousReleaseRef = useRef<(() => void) | undefined>(undefined);
-
-  useLayoutEffect(() => {
-    if (!docRecord) {
-      return;
+  useEffect(() => {
+    if (isActiveView) {
+      setActiveBlockSuiteEditor(editorContainer);
     }
+  }, [editorContainer, isActiveView, setActiveBlockSuiteEditor]);
 
-    // 执行上一次的 release 函数
-    const previousRelease = previousReleaseRef.current;
-    if (previousRelease) {
-      // previousRelease();
+  useEffect(() => {
+    const disposable = AIProvider.slots.requestOpenWithChat.on(params => {
+      workbench.openSidebar();
+      view.activeSidebarTab('chat');
+
+      if (chatPanelRef.current) {
+        const chatCards = chatPanelRef.current.querySelector('chat-cards');
+        if (chatCards) chatCards.temporaryParams = params;
+      }
+    });
+    return () => disposable.dispose();
+  }, [activeSidebarTab, view, workbench]);
+
+  useEffect(() => {
+    if (isActiveView) {
+      globalContext.docId.set(doc.id);
+      globalContext.isDoc.set(true);
+
+      return () => {
+        globalContext.docId.set(null);
+        globalContext.isDoc.set(false);
+      };
     }
+    return;
+  }, [doc, globalContext, isActiveView]);
 
-    const { doc, release } = docsService.open(docId);
-    workspace.docCollection.awarenessStore.setReadonly(
-      doc.blockSuiteDoc.blockCollection,
-      true
-    );
+  useEffect(() => {
+    if (isActiveView) {
+      globalContext.docMode.set(mode);
 
-    setPage(doc);
+      return () => {
+        globalContext.docMode.set(null);
+      };
+    }
+    return;
+  }, [doc, globalContext, isActiveView, mode]);
 
-    // 保存本次的 release 函数，以备下次使用
-    previousReleaseRef.current = release;
-    return () => {
-      release();
-      previousReleaseRef.current = undefined;
-    };
-  }, [docRecord, docsService, docId, workspace.docCollection.awarenessStore]);
+  useEffect(() => {
+    setDocReadonly(doc.id, true);
+  }, [doc.id, setDocReadonly]);
 
-  const pageTitle = useLiveData(page?.title$);
+  useEffect(() => {
+    if (isActiveView) {
+      globalContext.isTrashDoc.set(!!isInTrash);
 
-  usePageDocumentTitle(pageTitle);
+      return () => {
+        globalContext.isTrashDoc.set(null);
+      };
+    }
+    return;
+  }, [globalContext, isActiveView, isInTrash]);
 
-  const onEditorLoad = useCallback(
-    (editor: AffineEditorContainer) => {
-      setActiveBlocksuiteEditor(editor);
-      return noop;
+  useRegisterBlocksuiteEditorCommands(editor);
+  const title = useLiveData(doc.title$);
+  usePageDocumentTitle(title);
+
+  const onLoad = useCallback(
+    (editorContainer: AffineEditorContainer) => {
+      // blocksuite editor host
+      const editorHost = editorContainer.host;
+
+      const std = editorHost?.std;
+      const disposable = new DisposableGroup();
+      if (std) {
+        const refNodeSlots = std.getOptional(RefNodeSlotsProvider);
+        if (refNodeSlots) {
+          disposable.add(
+            refNodeSlots.docLinkClicked.on(({ pageId, params }) => {
+              if (params) {
+                const { mode, blockIds, elementIds } = params;
+                jumpToPageBlock(
+                  docCollection.id,
+                  pageId,
+                  mode,
+                  blockIds,
+                  elementIds
+                );
+                return;
+              }
+
+              if (editor.doc.id === pageId) {
+                return;
+              }
+
+              openPage(docCollection.id, pageId);
+            })
+          );
+        }
+      }
+
+      disposable.add(
+        AIProvider.slots.requestRunInEdgeless.on(({ host }) => {
+          if (host === editorHost) {
+            notify.warning({
+              title: t['com.affine.ai.action.edgeless-only.dialog-title'](),
+              action: {
+                label: t['Switch'](),
+                onClick: () => {
+                  editor.setMode('edgeless');
+                },
+              },
+            });
+          }
+        })
+      );
+
+      editor.setEditorContainer(editorContainer);
+      const unbind = editor.bindEditorContainer(
+        editorContainer,
+        (editorContainer as any).docTitle // set from proxy
+      );
+
+      return () => {
+        unbind();
+        editor.setEditorContainer(null);
+        disposable.dispose();
+      };
     },
-    [setActiveBlocksuiteEditor]
+    [editor, openPage, docCollection.id, jumpToPageBlock, t]
   );
 
-  if (docListReady && !page) {
-    return <PageNotFound noPermission />;
-  }
+  const [refCallback, hasScrollTop] = useHasScrollTop();
 
-  if (!page) {
-    return <PageDetailSkeleton key="current-page-is-null" />;
-  }
+  const openOutlinePanel = useCallback(() => {
+    workbench.openSidebar();
+    view.activeSidebarTab('outline');
+  }, [workbench, view]);
 
   return (
-    <FrameworkScope scope={workspace.scope}>
-      <FrameworkScope scope={page.scope}>
-        <div className={styles.root}>
-          <div className={styles.mainContainer}>
-            <AIIsland />
-            <FeedPageHeader page={page} />
-            <Scrollable.Root>
-              <Scrollable.Viewport
-                className={clsx('affine-page-viewport', styles.editorContainer)}
-              >
-                <PageDetailEditor
-                  docCollection={page.blockSuiteDoc.collection}
-                  onLoad={onEditorLoad}
-                />
-              </Scrollable.Viewport>
-              <Scrollable.Scrollbar />
-            </Scrollable.Root>
-          </div>
-        </div>
-      </FrameworkScope>
+    <FrameworkScope scope={editor.scope}>
+      <FeedPageHeader page={doc} />
+      <div
+        className={styles.mainContainer}
+        data-dynamic-top-border={BUILD_CONFIG.isElectron}
+        data-has-scroll-top={hasScrollTop}
+      >
+        {/* Add a key to force rerender when page changed, to avoid error boundary persisting. */}
+        <AffineErrorBoundary key={doc.id}>
+          <TopTip pageId={doc.id} workspace={workspace} />
+          <Scrollable.Root>
+            <Scrollable.Viewport
+              ref={refCallback}
+              className={clsx(
+                'affine-page-viewport',
+                styles.affineDocViewport,
+                styles.editorContainer
+              )}
+            >
+              <PageDetailEditor onLoad={onLoad} />
+            </Scrollable.Viewport>
+            <Scrollable.Scrollbar
+              className={clsx({
+                [styles.scrollbar]: !appSettings.clientBorder,
+              })}
+            />
+          </Scrollable.Root>
+          <EditorOutlineViewer
+            editor={editorContainer}
+            show={mode === 'page' && !isSideBarOpen}
+            openOutlinePanel={openOutlinePanel}
+          />
+        </AffineErrorBoundary>
+      </div>
+      <GlobalPageHistoryModal />
+      <PageAIOnboarding />
     </FrameworkScope>
   );
-};
-
-export function ErrorBoundary() {
-  const error = useRouteError();
-  return isRouteErrorResponse(error) ? (
-    <h1>
-      {error.status} {error.statusText}
-    </h1>
-  ) : (
-    <SharePageNotFoundError />
-  );
-}
+});

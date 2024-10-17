@@ -1,12 +1,13 @@
 import { Empty } from '@affine/component';
 import { useI18n } from '@affine/i18n';
 import { useAtomValue } from 'jotai';
+import { memo } from 'react';
 
 import * as styles from './feed-page-empty.css';
 import * as headerStyles from './feed-page-header.css';
 import { feedSidebarOpen, FeedSidebarSwitch } from './feed-sidebar-switch';
 
-export const FeedPageEmpty = () => {
+const FeedPageEmptyBase = () => {
   const t = useI18n();
   const leftSidebarOpen = useAtomValue(feedSidebarOpen);
   return (
@@ -19,3 +20,5 @@ export const FeedPageEmpty = () => {
     </div>
   );
 };
+
+export const FeedPageEmpty = memo(FeedPageEmptyBase);
