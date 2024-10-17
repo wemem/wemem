@@ -43,7 +43,6 @@ import { AppContainer } from '../affine/app-container';
 import { SyncAwareness } from '../affine/awareness';
 import { useRegisterFindInPageCommands } from '../hooks/affine/use-register-find-in-page-commands';
 import { useSubscriptionNotifyReader } from '../hooks/affine/use-subscription-notify';
-import { usePullFeedItemsInterval } from '../hooks/use-pull-feed-items-interval';
 import { useRegisterNewFeedCommands } from '../hooks/use-register-new-feed-commands';
 import { useRegisterWorkspaceCommands } from '../hooks/use-register-workspace-commands';
 import { OverCapacityNotification } from '../over-capacity';
@@ -148,7 +147,6 @@ export const WorkspaceLayoutProviders = ({ children }: PropsWithChildren) => {
   useRegisterNavigationCommands();
   useRegisterFindInPageCommands();
   useRegisterNewFeedCommands();
-  usePullFeedItemsInterval();
 
   useEffect(() => {
     // hotfix for blockVersions
