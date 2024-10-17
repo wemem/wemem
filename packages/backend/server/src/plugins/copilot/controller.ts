@@ -27,8 +27,7 @@ import {
   toArray,
 } from 'rxjs';
 
-import { Public } from '../../core/auth';
-import { CurrentUser } from '../../core/auth/current-user';
+import { CurrentUser, Public } from '../../core/auth';
 import {
   BlobNotFound,
   Config,
@@ -336,7 +335,10 @@ export class CopilotController {
               concatMap(values => {
                 session.push({
                   role: 'assistant',
-                  content: values.join(''),
+                  content: values
+                    .filter(v => v.status === GraphExecutorState.EmitContent)
+                    .map(v => v.content)
+                    .join(''),
                   createdAt: new Date(),
                 });
                 return from(session.save());
@@ -472,7 +474,7 @@ export class CopilotController {
 
     if (!body) {
       throw new BlobNotFound({
-        workspaceId,
+        spaceId: workspaceId,
         blobId: key,
       });
     }

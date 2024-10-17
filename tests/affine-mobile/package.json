@@ -1,0 +1,12 @@
+{
+  "name": "@affine-test/affine-mobile",
+  "private": true,
+  "scripts": {
+    "e2e": "yarn playwright test"
+  },
+  "devDependencies": {
+    "@affine-test/kit": "workspace:*",
+    "@playwright/test": "=1.47.2"
+  },
+  "version": "0.17.0"
+}

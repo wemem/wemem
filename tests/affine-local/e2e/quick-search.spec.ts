@@ -336,19 +336,6 @@ test('assert the recent browse pages are on the recent list', async ({
   }
 });
 
-test('can use cmdk to export pdf', async ({ page }) => {
-  await openHomePage(page);
-  await waitForEditorLoad(page);
-  await clickNewPageButton(page);
-  await getBlockSuiteEditorTitle(page).click();
-  await getBlockSuiteEditorTitle(page).fill('this is a new page to export');
-  await openQuickSearchByShortcut(page);
-  const [download] = await Promise.all([
-    page.waitForEvent('download'),
-    keyboardDownAndSelect(page, 'Export to PDF'),
-  ]);
-  expect(download.suggestedFilename()).toBe('this is a new page to export.pdf');
-});
 test('can use cmdk to export png', async ({ page }) => {
   await openHomePage(page);
   await waitForEditorLoad(page);
@@ -370,16 +357,16 @@ test('can use cmdk to delete page and restore it', async ({ page }) => {
   await getBlockSuiteEditorTitle(page).click();
   await getBlockSuiteEditorTitle(page).fill('this is a new page to delete');
   await openQuickSearchByShortcut(page);
-  await keyboardDownAndSelect(page, 'Move to Trash');
+  await keyboardDownAndSelect(page, 'Move to trash');
   await page.getByTestId('confirm-delete-page').click();
   const restoreButton = page.getByTestId('page-restore-button');
   await expect(restoreButton).toBeVisible();
   await page.waitForTimeout(100);
   await openQuickSearchByShortcut(page);
-  expect(await commandsIsVisible(page, 'Move to Trash')).toBe(false);
+  expect(await commandsIsVisible(page, 'Move to trash')).toBe(false);
   expect(await commandsIsVisible(page, 'Export to PDF')).toBe(false);
-  expect(await commandsIsVisible(page, 'Restore from Trash')).toBe(true);
-  await keyboardDownAndSelect(page, 'Restore from Trash');
+  expect(await commandsIsVisible(page, 'Restore from trash')).toBe(true);
+  await keyboardDownAndSelect(page, 'Restore from trash');
   await expect(restoreButton).not.toBeVisible();
 });
 
@@ -417,7 +404,7 @@ test('can use cmdk to search page content and scroll to it, then the block will 
   );
   expect(isVisitable).toBe(true);
   const selectionElement = page.locator(
-    'affine-block-selection[style*="display: block;"]'
+    'affine-scroll-anchoring-widget div.highlight'
   );
   await expect(selectionElement).toBeVisible();
 });
@@ -494,17 +481,23 @@ test('can use @ to open quick search to search for doc and insert into canvas', 
 
   // press enter to insert the page to canvas
   await page.keyboard.press('Enter');
-  await expect(page.locator('affine-embed-linked-doc-block')).toBeVisible();
+  await expect(
+    page.locator('affine-embed-edgeless-linked-doc-block')
+  ).toBeVisible();
   await expect(
     page.locator('.affine-embed-linked-doc-content-title')
   ).toContainText('Write, Draw, Plan all at Once');
 
   // focus on the note block
   await page.waitForTimeout(500);
-  await page.locator('affine-embed-linked-doc-block').click({ force: true });
+  await page
+    .locator('affine-embed-edgeless-linked-doc-block')
+    .click({ force: true });
   await page.waitForTimeout(500);
   // double clock to show peek view
-  await page.locator('affine-embed-linked-doc-block').dblclick({ force: true });
+  await page
+    .locator('affine-embed-edgeless-linked-doc-block')
+    .dblclick({ force: true });
   await expect(page.getByTestId('peek-view-modal')).toBeVisible();
 });
 
@@ -578,4 +571,35 @@ test('can use slash menu to insert a newly created doc card', async ({
   await expect(
     page.locator('.affine-embed-linked-doc-content-title')
   ).toContainText(testTitle);
+});
+
+test('can use slash menu to insert an external link', async ({ page }) => {
+  await openHomePage(page);
+  await clickNewPageButton(page);
+
+  // goto main content
+  await page.keyboard.press('Enter');
+
+  // open slash menu
+  await page.keyboard.type('/link', {
+    delay: 50,
+  });
+  await page.keyboard.press('Enter');
+  await expect(page.getByTestId('cmdk-quick-search')).toBeVisible();
+
+  const link = 'affine.pro';
+  await page.locator('[cmdk-input]').fill(link);
+
+  const insertLinkBtn = page.locator(
+    '[cmdk-item] [data-value="external-link:affine.pro"]'
+  );
+
+  await expect(insertLinkBtn).toBeVisible();
+
+  await insertLinkBtn.click();
+
+  await expect(page.locator('affine-bookmark')).toBeVisible();
+  await expect(page.locator('.affine-bookmark-content-url')).toContainText(
+    link
+  );
 });

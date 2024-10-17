@@ -2,15 +2,24 @@ import './config';
 
 import { Module } from '@nestjs/common';
 
+import { PermissionModule } from '../permission';
 import { QuotaModule } from '../quota';
-import { DocHistoryManager } from './history';
-import { DocManager } from './manager';
+import { PgUserspaceDocStorageAdapter } from './adapters/userspace';
+import { PgWorkspaceDocStorageAdapter } from './adapters/workspace';
+import { DocStorageCronJob } from './job';
+import { DocStorageOptions } from './options';
 
 @Module({
-  imports: [QuotaModule],
-  providers: [DocManager, DocHistoryManager],
-  exports: [DocManager, DocHistoryManager],
+  imports: [QuotaModule, PermissionModule],
+  providers: [
+    DocStorageOptions,
+    PgWorkspaceDocStorageAdapter,
+    PgUserspaceDocStorageAdapter,
+    DocStorageCronJob,
+  ],
+  exports: [PgWorkspaceDocStorageAdapter, PgUserspaceDocStorageAdapter],
 })
-export class DocModule {}
+export class DocStorageModule {}
+export { PgUserspaceDocStorageAdapter, PgWorkspaceDocStorageAdapter };
 
-export { DocHistoryManager, DocManager };
+export { DocStorageAdapter, type Editor } from './storage';

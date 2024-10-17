@@ -1,5 +1,6 @@
 import { Button, RadioButton, RadioButtonGroup } from '@affine/component';
-import { useNavigateHelper } from '@affine/core/hooks/use-navigate-helper';
+import { AppSidebarService } from '@affine/core/modules/app-sidebar';
+import { SidebarSwitch } from '@affine/core/modules/app-sidebar/views';
 import {
   SeenTag,
   UnseenTag,
@@ -7,11 +8,11 @@ import {
 import type { Filter } from '@affine/env/filter';
 import { useI18n } from '@affine/i18n';
 import type { DocCollection, DocMeta } from '@blocksuite/store';
-import { useAtomValue } from 'jotai';
+import { useLiveData, useService } from '@toeverything/infra';
 import { useCallback, useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
 
-import { appSidebarOpenAtom, SidebarSwitch } from '../../app-sidebar';
+import { useNavigateHelper } from '../../hooks/use-navigate-helper';
 import { FeedsPageListDisplayMenu } from './feeds-page-list-display-menu';
 import * as styles from './feeds-page-list-header.css';
 import { FeedsPageListHeaderOperationsMenu } from './feeds-page-list-header-operations-menu';
@@ -36,9 +37,11 @@ export const FeedsDocsPageListHeader = ({
   const onStatusChange = (status: 'seen' | 'unseen') => {
     jumpToFeedsDocs(workspaceId, status, params.feedId);
   };
-  const leftSidebarOpen = useAtomValue(appSidebarOpenAtom);
 
-  const [floating, setFloating] = useState(false);
+  const appSidebarService = useService(AppSidebarService).sidebar;
+  const leftSidebarOpen = useLiveData(appSidebarService.open$);
+
+  const [_floating, setFloating] = useState(false);
   useEffect(() => {
     const onResize = () => setFloating(!!(window.innerWidth < 768));
     onResize();

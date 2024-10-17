@@ -1,9 +1,6 @@
 import '../../_common/components/ask-ai-button';
 
-import type {
-  AffineImageToolbarWidget,
-  ImageBlockComponent,
-} from '@blocksuite/blocks';
+import type { AffineImageToolbarWidget } from '@blocksuite/affine/blocks';
 import { html } from 'lit';
 
 import type { AskAIButtonOptions } from '../../_common/components/ask-ai-button';
@@ -16,37 +13,36 @@ const buttonOptions: AskAIButtonOptions = {
   panelWidth: 300,
 };
 
-export function setupImageToolbarEntry(imageToolbar: AffineImageToolbarWidget) {
-  const onAskAIClick = () => {
-    const { host } = imageToolbar;
-    const { selection } = host;
-    const imageBlock = imageToolbar.block;
-    selection.setGroup('note', [
-      selection.create('image', { blockId: imageBlock.blockId }),
-    ]);
-  };
-  imageToolbar.buildDefaultConfig();
-  // Wemem的定位是有倾向性的,希望用户重阅读,轻笔记
-  return;
-  imageToolbar.addConfigItems(
+export function setupImageToolbarAIEntry(
+  imageToolbar: AffineImageToolbarWidget
+) {
+  imageToolbar.addPrimaryItems(
     [
       {
-        type: 'custom',
-        render(imageBlock: ImageBlockComponent, onClick?: () => void) {
-          return html`<ask-ai-button
-            class="image-toolbar-button ask-ai"
-            .host=${imageBlock.host}
-            .actionGroups=${AIImageItemGroups}
-            .toggleType=${'click'}
-            .options=${buttonOptions}
-            @click=${(e: MouseEvent) => {
-              e.stopPropagation();
-              onAskAIClick();
-              onClick?.();
-            }}
-          ></ask-ai-button>`;
+        type: 'ask-ai',
+        when: ({ doc }) => !doc.readonly,
+        generate: ({ host, blockComponent }) => {
+          return {
+            action: () => {
+              const { selection } = host;
+              selection.setGroup('note', [
+                selection.create('image', { blockId: blockComponent.blockId }),
+              ]);
+            },
+            render: item =>
+              html`<ask-ai-button
+                class="image-toolbar-button ask-ai"
+                .host=${host}
+                .actionGroups=${AIImageItemGroups}
+                .toggleType=${'click'}
+                .options=${buttonOptions}
+                @click=${(e: MouseEvent) => {
+                  e.stopPropagation();
+                  item.action();
+                }}
+              ></ask-ai-button>`,
+          };
         },
-        showWhen: imageBlockComponent => !imageBlockComponent.doc.readonly,
       },
     ],
     0

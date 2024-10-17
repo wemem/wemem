@@ -11,14 +11,8 @@ import {
 import type { Workspace } from '@prisma/client';
 import { SafeIntResolver } from 'graphql-scalars';
 
+import { Permission } from '../permission';
 import { UserType } from '../user/types';
-
-export enum Permission {
-  Read = 0,
-  Write = 1,
-  Admin = 10,
-  Owner = 99,
-}
 
 registerEnumType(Permission, {
   name: 'Permission',
@@ -51,6 +45,9 @@ export class WorkspaceType implements Partial<Workspace> {
 
   @Field({ description: 'is Public workspace' })
   public!: boolean;
+
+  @Field({ description: 'Enable url previous when sharing' })
+  enableUrlPreview!: boolean;
 
   @Field({ description: 'Workspace created date' })
   createdAt!: Date;
@@ -95,7 +92,7 @@ export class InvitationType {
 @InputType()
 export class UpdateWorkspaceInput extends PickType(
   PartialType(WorkspaceType),
-  ['public'],
+  ['public', 'enableUrlPreview'],
   InputType
 ) {
   @Field(() => ID)

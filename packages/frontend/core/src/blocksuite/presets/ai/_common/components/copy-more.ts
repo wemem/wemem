@@ -2,12 +2,15 @@ import type {
   BlockSelection,
   EditorHost,
   TextSelection,
-} from '@blocksuite/block-std';
-import { WithDisposable } from '@blocksuite/block-std';
-import { createButtonPopper, Tooltip } from '@blocksuite/blocks';
-import { noop } from '@blocksuite/global/utils';
+} from '@blocksuite/affine/block-std';
+import {
+  createButtonPopper,
+  NotificationProvider,
+  Tooltip,
+} from '@blocksuite/affine/blocks';
+import { noop, WithDisposable } from '@blocksuite/affine/global/utils';
 import { css, html, LitElement, nothing, type PropertyValues } from 'lit';
-import { customElement, property, query, state } from 'lit/decorators.js';
+import { property, query, state } from 'lit/decorators.js';
 import { repeat } from 'lit/directives/repeat.js';
 
 import { type ChatAction } from '../../_common/chat-actions-handle';
@@ -16,7 +19,6 @@ import { copyText } from '../../utils/editor-actions';
 
 noop(Tooltip);
 
-@customElement('chat-copy-more')
 export class ChatCopyMore extends WithDisposable(LitElement) {
   static override styles = css`
     .copy-more {
@@ -73,7 +75,7 @@ export class ChatCopyMore extends WithDisposable(LitElement) {
   `;
 
   private get _rootService() {
-    return this.host.spec.getService('affine:page');
+    return this.host.std.getService('affine:page');
   }
 
   private get _selectionValue() {
@@ -128,7 +130,8 @@ export class ChatCopyMore extends WithDisposable(LitElement) {
   }
 
   private readonly _notifySuccess = (title: string) => {
-    const { notificationService } = this._rootService;
+    if (!this._rootService) return;
+    const notificationService = this.host.std.getOptional(NotificationProvider);
     notificationService?.notify({
       title: title,
       accent: 'success',

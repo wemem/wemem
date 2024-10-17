@@ -1,18 +1,18 @@
-import { type EditorHost, WithDisposable } from '@blocksuite/block-std';
+import { type EditorHost } from '@blocksuite/affine/block-std';
 import {
   type AIError,
   PaymentRequiredError,
   UnauthorizedError,
-} from '@blocksuite/blocks';
+} from '@blocksuite/affine/blocks';
+import { WithDisposable } from '@blocksuite/affine/global/utils';
 import { html, LitElement, nothing, type TemplateResult } from 'lit';
-import { customElement, property } from 'lit/decorators.js';
+import { property } from 'lit/decorators.js';
 import { styleMap } from 'lit/directives/style-map.js';
 
 import { ErrorTipIcon } from '../_common/icons';
 import { AIProvider } from '../provider';
 
-@customElement('ai-error-wrapper')
-class AIErrorWrapper extends WithDisposable(LitElement) {
+export class AIErrorWrapper extends WithDisposable(LitElement) {
   @property({ attribute: false })
   accessor text!: TemplateResult<1>;
 
@@ -152,26 +152,18 @@ export function AIChatErrorRenderer(host: EditorHost, error: AIError) {
   } else {
     const tip = error.message;
     return GeneralErrorRenderer({
-      error: html`<style>
+      error: html` <style>
           .tip {
-            position: relative;
-            cursor: pointer;
-          }
-
-          .tip:hover::after {
-            content: attr(data-tip);
-            position: absolute;
-            left: 0;
-            top: 20px;
-            background-color: black;
-            color: white;
-            padding: 5px 10px;
-            border-radius: 5px;
-            z-index: 1000;
-            white-space: pre;
+            text-decoration: underline;
           }
         </style>
-        <a class="tip" href="#" data-tip="${tip}">An error occurred</a>`,
+        <span class="tip"
+          >An error occurred<affine-tooltip
+            tip-position="bottom-start"
+            .arrow=${false}
+            >${tip}</affine-tooltip
+          ></span
+        >`,
     });
   }
 }

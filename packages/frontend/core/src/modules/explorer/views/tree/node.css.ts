@@ -36,6 +36,14 @@ export const itemRoot = style({
     },
   },
 });
+export const itemMain = style({
+  display: 'flex',
+  alignItems: 'center',
+  width: 0,
+  flex: 1,
+  position: 'relative',
+  gap: 12,
+});
 export const itemRenameAnchor = style({
   pointerEvents: 'none',
   position: 'absolute',
@@ -51,26 +59,31 @@ export const itemContent = style({
   alignItems: 'center',
   flex: 1,
   color: cssVarV2('text/primary'),
+  lineHeight: cssVar('lineHeight'),
 });
 export const postfix = style({
   display: 'flex',
   alignItems: 'center',
-  right: '4px',
+  right: 0,
   position: 'absolute',
   opacity: 0,
   pointerEvents: 'none',
   selectors: {
     [`${itemRoot}:hover &`]: {
-      justifySelf: 'flex-end',
-      position: 'initial',
       opacity: 1,
-      pointerEvents: 'all',
+      pointerEvents: 'initial',
+      position: 'initial',
     },
   },
 });
-export const icon = style({
+export const iconContainer = style({
+  display: 'flex',
+  justifyContent: 'center',
+  alignItems: 'center',
+  width: 20,
+  height: 20,
   color: cssVarV2('icon/primary'),
-  fontSize: '20px',
+  fontSize: 20,
 });
 export const collapsedIconContainer = style({
   width: '16px',
@@ -93,13 +106,6 @@ export const collapsedIconContainer = style({
       background: cssVar('hoverColor'),
     },
   },
-});
-export const iconsContainer = style({
-  display: 'flex',
-  alignItems: 'center',
-  justifyContent: 'flex-start',
-  width: '44px',
-  flexShrink: 0,
 });
 export const collapsedIcon = style({
   transition: 'transform 0.2s ease-in-out',
@@ -173,3 +179,67 @@ export const draggedOverEffect = style({
       },
   },
 });
+
+// ---------- mobile ----------
+export const mobileItemRoot = style([
+  itemRoot,
+  {
+    padding: '8px',
+    borderRadius: 0,
+    flexDirection: 'row-reverse',
+    gap: 12,
+    selectors: {
+      '&:hover': {
+        background: 'none',
+      },
+      '&:active': {
+        background: cssVar('hoverColor'),
+      },
+      '&[data-active="true"]': {
+        background: 'transparent',
+      },
+    },
+
+    ':after': {
+      content: '',
+      width: `calc(100% + ${levelIndent})`,
+      height: 0.5,
+      background: cssVar('borderColor'),
+      bottom: 0,
+      position: 'absolute',
+      right: 0,
+    },
+  },
+]);
+export const mobileItemMain = style([itemMain, {}]);
+
+export const mobileIconContainer = style([
+  iconContainer,
+  {
+    width: 32,
+    height: 32,
+    fontSize: 24,
+  },
+]);
+
+export const mobileCollapsedIconContainer = style([
+  collapsedIconContainer,
+  {
+    fontSize: 16,
+  },
+]);
+export const mobileItemContent = style([
+  itemContent,
+  {
+    fontSize: 17,
+    lineHeight: '22px',
+    letterSpacing: -0.43,
+    fontWeight: 400,
+  },
+]);
+export const mobileContentContainer = style([
+  contentContainer,
+  {
+    marginTop: 0,
+  },
+]);

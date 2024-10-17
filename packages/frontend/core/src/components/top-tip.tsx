@@ -5,26 +5,22 @@ import { useLiveData, useService, type Workspace } from '@toeverything/infra';
 import { useSetAtom } from 'jotai';
 import { useCallback, useState } from 'react';
 
-import { authAtom } from '../atoms';
-import { useEnableCloud } from '../hooks/affine/use-enable-cloud';
+import { useEnableCloud } from '../components/hooks/affine/use-enable-cloud';
 import { AuthService } from '../modules/cloud';
+import { authAtom } from './atoms';
 
 const minimumChromeVersion = 106;
 
 const shouldShowWarning = (() => {
-  if (environment.isDesktop) {
+  if (BUILD_CONFIG.isElectron) {
     // even though desktop has compatibility issues,
     //  we don't want to show the warning
     return false;
   }
-  if (!environment.isBrowser) {
-    // disable in SSR
-    return false;
-  }
-  if (environment.isMobile) {
+  if (BUILD_CONFIG.isMobileEdition) {
     return true;
   }
-  if (environment.isChrome) {
+  if (environment.isChrome && environment.chromeVersion) {
     return environment.chromeVersion < minimumChromeVersion;
   }
   return false;
@@ -32,14 +28,14 @@ const shouldShowWarning = (() => {
 
 const OSWarningMessage = () => {
   const t = useI18n();
-  const notChrome = environment.isBrowser && !environment.isChrome;
+  const notChrome = !environment.isChrome;
   const notGoodVersion =
-    environment.isBrowser &&
     environment.isChrome &&
+    environment.chromeVersion &&
     environment.chromeVersion < minimumChromeVersion;
 
   // TODO(@L-Sun): remove this message when mobile version is able to edit.
-  if ('isMobile' in environment && environment.isMobile) {
+  if (environment.isMobile) {
     return <span>{t['com.affine.top-tip.mobile']()}</span>;
   }
 
@@ -79,8 +75,8 @@ export const TopTip = ({
   }, [setAuthModal]);
 
   if (
+    !BUILD_CONFIG.isElectron &&
     showLocalDemoTips &&
-    !environment.isDesktop &&
     workspace.flavour === WorkspaceFlavour.LOCAL
   ) {
     return (

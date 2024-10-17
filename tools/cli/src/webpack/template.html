@@ -4,33 +4,42 @@
     <meta charset="utf-8" />
     <meta
       name="viewport"
-      content="width=device-width, initial-scale=1, maximum-scale=1"
+      content="width=device-width, initial-scale=1, maximum-scale=1, viewport-fit=<%= VIEWPORT_FIT %>"
     />
+
+    <meta name="mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta
+      name="apple-mobile-web-app-status-bar-style"
+      content="black-translucent"
+    />
+
     <title>Wemem</title>
     <meta name="theme-color" content="#fafafa" />
+    <link rel="preconnect" href="<%= PUBLIC_PATH %>" />
     <link rel="manifest" href="/manifest.json" />
     <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png" />
     <link rel="icon" sizes="192x192" href="/favicon-192.png" />
+    <link rel="shortcut icon" href="/favicon.ico" />
     <meta name="emotion-insertion-point" content="" />
     <meta property="description" content="<%= DESCRIPTION %>" />
     <meta name="twitter:card" content="summary_large_image" />
     <meta name="twitter:url" content="https://app.wemem.ai/" />
     <meta
       name="twitter:title"
-      content="Wemem: Use AI to enhance reading ease without replacing it."
+      content="Wemem: There can be more than Notion and Miro."
     />
     <meta name="twitter:description" content="<%= DESCRIPTION %>" />
     <meta name="twitter:site" content="@wemem" />
     <meta name="twitter:image" content="https://wemem.ai/og.jpeg" />
     <meta
       property="og:title"
-      content="Wemem: Use AI to enhance reading ease without replacing it."
+      content="Wemem: There can be more than Notion and Miro."
     />
     <meta property="og:type" content="website" />
     <meta property="og:description" content="<%= DESCRIPTION %>" />
     <meta property="og:url" content="https://app.wemem.ai/" />
     <meta property="og:image" content="https://wemem.ai/og.jpeg" />
-    <link data-react-helmet="true" rel="shortcut icon" href="/favicon.ico" />
   </head>
 
   <body>

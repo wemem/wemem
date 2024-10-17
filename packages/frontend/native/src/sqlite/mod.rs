@@ -48,12 +48,12 @@ pub enum ValidationResult {
 
 #[napi]
 impl SqliteConnection {
-  #[napi(constructor)]
+  #[napi(constructor, async_runtime)]
   pub fn new(path: String) -> napi::Result<Self> {
     let sqlite_options = SqliteConnectOptions::new()
       .filename(&path)
       .foreign_keys(false)
-      .journal_mode(sqlx::sqlite::SqliteJournalMode::Off);
+      .journal_mode(sqlx::sqlite::SqliteJournalMode::Wal);
     let pool = SqlitePoolOptions::new()
       .max_connections(4)
       .connect_lazy_with(sqlite_options);
@@ -166,7 +166,7 @@ impl SqliteConnection {
   }
 
   #[napi]
-  pub async fn get_updates_count(&self, doc_id: Option<String>) -> napi::Result<i32> {
+  pub async fn get_updates_count(&self, doc_id: Option<String>) -> napi::Result<i64> {
     let count = match doc_id {
       Some(doc_id) => {
         sqlx::query!(
@@ -394,7 +394,7 @@ impl SqliteConnection {
   }
 
   #[napi]
-  pub async fn get_max_version(&self) -> napi::Result<i32> {
+  pub async fn get_max_version(&self) -> napi::Result<i64> {
     // 4 is the current version
     let version = sqlx::query!("SELECT COALESCE(MAX(version), 4) AS max_version FROM version_info")
       .fetch_one(&self.pool)
@@ -488,6 +488,19 @@ impl SqliteConnection {
         }
       }
     }
+  }
+
+  /**
+   * Flush the WAL file to the database file.
+   * See https://www.sqlite.org/pragma.html#pragma_wal_checkpoint:~:text=PRAGMA%20schema.wal_checkpoint%3B
+   */
+  #[napi]
+  pub async fn checkpoint(&self) -> napi::Result<()> {
+    sqlx::query("PRAGMA wal_checkpoint(FULL);")
+      .execute(&self.pool)
+      .await
+      .map_err(anyhow::Error::from)?;
+    Ok(())
   }
 
   pub async fn migrate_add_doc_id_index(&self) -> napi::Result<()> {

@@ -1,16 +1,13 @@
 import { notify } from '@affine/component';
 import { AuthInput, ModalHeader } from '@affine/component/auth-components';
 import { Button } from '@affine/component/ui/button';
-import { authAtom } from '@affine/core/atoms';
-import { useAsyncCallback } from '@affine/core/hooks/affine-async-hooks';
-import { track } from '@affine/core/mixpanel';
+import { useAsyncCallback } from '@affine/core/components/hooks/affine-async-hooks';
 import { Trans, useI18n } from '@affine/i18n';
 import { ArrowRightBigIcon } from '@blocksuite/icons/rc';
-import { useLiveData, useService } from '@toeverything/infra';
+import { useService } from '@toeverything/infra';
 import { cssVar } from '@toeverything/theme';
-import { useAtomValue } from 'jotai';
 import type { FC } from 'react';
-import { useCallback, useEffect, useState } from 'react';
+import { useState } from 'react';
 import { useSearchParams } from 'react-router-dom';
 
 import { AuthService } from '../../../modules/cloud';
@@ -24,34 +21,19 @@ function validateEmail(email: string) {
   return emailRegex.test(email);
 }
 
-export const SignIn: FC<AuthPanelProps> = ({
-  setAuthState,
-  setAuthEmail,
-  email,
-  onSignedIn,
+export const SignIn: FC<AuthPanelProps<'signIn'>> = ({
+  setAuthData: setAuthState,
+  onSkip,
 }) => {
   const t = useI18n();
   const authService = useService(AuthService);
   const [searchParams] = useSearchParams();
   const [isMutating, setIsMutating] = useState(false);
   const [verifyToken, challenge] = useCaptcha();
+  const [email, setEmail] = useState('');
 
   const [isValidEmail, setIsValidEmail] = useState(true);
-  const { openModal } = useAtomValue(authAtom);
-
-  useEffect(() => {
-    const timeout = setInterval(() => {
-      // revalidate session to get the latest status
-      authService.session.revalidate();
-    }, 3000);
-    return () => {
-      clearInterval(timeout);
-    };
-  }, [authService]);
-  const loginStatus = useLiveData(authService.session.status$);
-  if (loginStatus === 'authenticated' && openModal) {
-    onSignedIn?.();
-  }
+  const errorMsg = searchParams.get('error');
 
   const onContinue = useAsyncCallback(async () => {
     if (!validateEmail(email)) {
@@ -60,39 +42,34 @@ export const SignIn: FC<AuthPanelProps> = ({
     }
 
     setIsValidEmail(true);
-
     setIsMutating(true);
 
-    setAuthEmail(email);
     try {
-      const { hasPassword, isExist: isUserExist } =
+      const { hasPassword, registered } =
         await authService.checkUserByEmail(email);
 
       if (verifyToken) {
-        if (isUserExist) {
+        if (registered) {
           // provider password sign-in if user has by default
           //  If with payment, onl support email sign in to avoid redirect to affine app
           if (hasPassword) {
-            setAuthState('signInWithPassword');
-          } else {
-            track.$.$.auth.signIn();
-            await authService.sendEmailMagicLink(
+            setAuthState({
+              state: 'signInWithPassword',
               email,
-              verifyToken,
-              challenge,
-              searchParams.get('redirect_uri')
-            );
-            setAuthState('afterSignInSendEmail');
+            });
+          } else {
+            await authService.sendEmailMagicLink(email, verifyToken, challenge);
+            setAuthState({
+              state: 'afterSignInSendEmail',
+              email,
+            });
           }
         } else {
-          await authService.sendEmailMagicLink(
+          await authService.sendEmailMagicLink(email, verifyToken, challenge);
+          setAuthState({
+            state: 'afterSignUpSendEmail',
             email,
-            verifyToken,
-            challenge,
-            searchParams.get('redirect_uri')
-          );
-          track.$.$.auth.signUp();
-          setAuthState('afterSignUpSendEmail');
+          });
         }
       }
     } catch (err) {
@@ -105,15 +82,7 @@ export const SignIn: FC<AuthPanelProps> = ({
     }
 
     setIsMutating(false);
-  }, [
-    authService,
-    challenge,
-    email,
-    searchParams,
-    setAuthEmail,
-    setAuthState,
-    verifyToken,
-  ]);
+  }, [authService, challenge, email, setAuthState, verifyToken]);
 
   return (
     <>
@@ -122,27 +91,19 @@ export const SignIn: FC<AuthPanelProps> = ({
         subTitle={t['com.affine.brand.affineCloud']()}
       />
 
-      <OAuth redirectUri={searchParams.get('redirect_uri')} />
+      <OAuth />
 
       <div className={style.authModalContent}>
         <AuthInput
           label={t['com.affine.settings.email']()}
           placeholder={t['com.affine.auth.sign.email.placeholder']()}
-          value={email}
-          onChange={useCallback(
-            (value: string) => {
-              setAuthEmail(value);
-            },
-            [setAuthEmail]
-          )}
+          onChange={setEmail}
           error={!isValidEmail}
           errorHint={
             isValidEmail ? '' : t['com.affine.auth.sign.email.error']()
           }
           onEnter={onContinue}
         />
-
-        {verifyToken ? null : <Captcha />}
 
         {verifyToken ? (
           <Button
@@ -157,7 +118,11 @@ export const SignIn: FC<AuthPanelProps> = ({
           >
             {t['com.affine.auth.sign.email.continue']()}
           </Button>
-        ) : null}
+        ) : (
+          <Captcha />
+        )}
+
+        {errorMsg && <div className={style.errorMessage}>{errorMsg}</div>}
 
         <div className={style.authMessage}>
           {/*prettier-ignore*/}
@@ -167,6 +132,29 @@ export const SignIn: FC<AuthPanelProps> = ({
           </Trans>
         </div>
       </div>
+
+      {onSkip ? (
+        <>
+          <div className={style.skipDivider}>
+            <div className={style.skipDividerLine} />
+            <span className={style.skipDividerText}>or</span>
+            <div className={style.skipDividerLine} />
+          </div>
+          <div className={style.skipSection}>
+            <div className={style.skipText}>
+              {t['com.affine.mobile.sign-in.skip.hint']()}
+            </div>
+            <Button
+              variant="plain"
+              onClick={onSkip}
+              className={style.skipLink}
+              suffix={<ArrowRightBigIcon className={style.skipLinkIcon} />}
+            >
+              {t['com.affine.mobile.sign-in.skip.link']()}
+            </Button>
+          </div>
+        </>
+      ) : null}
     </>
   );
 };

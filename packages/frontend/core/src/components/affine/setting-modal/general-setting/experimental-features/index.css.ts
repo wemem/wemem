@@ -54,13 +54,41 @@ export const switchRow = style({
   display: 'flex',
   alignItems: 'center',
   justifyContent: 'space-between',
-});
-export const switchDisabled = style({
-  opacity: 0.5,
-  pointerEvents: 'none',
+  width: '100%',
 });
 export const subHeader = style({
   fontWeight: '600',
   color: cssVar('textSecondaryColor'),
   marginBottom: 8,
+});
+
+export const rowContainer = style({
+  display: 'flex',
+  flexDirection: 'column',
+  alignItems: 'center',
+  gap: 10,
+});
+export const description = style({
+  color: cssVar('textSecondaryColor'),
+  fontSize: cssVar('fontXs'),
+  // 2 lines
+  overflow: 'hidden',
+  textOverflow: 'ellipsis',
+  display: '-webkit-box',
+  WebkitLineClamp: 2,
+  WebkitBoxOrient: 'vertical',
+  width: '100%',
+});
+export const feedback = style({
+  width: '100%',
+  display: 'flex',
+  alignItems: 'center',
+  fontSize: cssVar('fontXs'),
+  color: cssVar('textSecondaryColor'),
+  gap: 8,
+});
+
+export const arrowRightIcon = style({
+  marginLeft: 'auto',
+  marginRight: 0,
 });

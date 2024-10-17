@@ -1,13 +1,14 @@
 import { IconButton } from '@affine/component';
-import { useNavigateHelper } from '@affine/core/hooks/use-navigate-helper';
 import { useI18n } from '@affine/i18n';
+import type { DocMode } from '@blocksuite/affine/blocks';
 import {
   CloseIcon,
-  DualLinkIcon,
   ExpandFullIcon,
+  InformationIcon,
+  OpenInNewIcon,
   SplitViewIcon,
 } from '@blocksuite/icons/rc';
-import { type DocMode, useService } from '@toeverything/infra';
+import { useService } from '@toeverything/infra';
 import { clsx } from 'clsx';
 import {
   type HTMLAttributes,
@@ -17,10 +18,10 @@ import {
   useMemo,
 } from 'react';
 
+import { DocInfoService } from '../../doc-info';
 import { WorkbenchService } from '../../workbench';
 import { PeekViewService } from '../services/peek-view';
 import * as styles from './peek-view-controls.css';
-import { useDoc } from './utils';
 
 type ControlButtonProps = {
   nameKey: string;
@@ -60,8 +61,9 @@ export const ControlButton = ({
 
 type DocPeekViewControlsProps = HTMLAttributes<HTMLDivElement> & {
   docId: string;
-  blockId?: string;
   mode?: DocMode;
+  blockIds?: string[];
+  elementIds?: string[];
 };
 
 export const DefaultPeekViewControls = ({
@@ -91,16 +93,16 @@ export const DefaultPeekViewControls = ({
 
 export const DocPeekViewControls = ({
   docId,
-  blockId,
   mode,
+  blockIds,
+  elementIds,
   className,
   ...rest
 }: DocPeekViewControlsProps) => {
   const peekView = useService(PeekViewService).peekView;
   const workbench = useService(WorkbenchService).workbench;
-  const { jumpToPageBlock } = useNavigateHelper();
   const t = useI18n();
-  const { doc, workspace } = useDoc(docId);
+  const docInfoService = useService(DocInfoService);
   const controls = useMemo(() => {
     return [
       {
@@ -114,48 +116,49 @@ export const DocPeekViewControls = ({
         name: t['com.affine.peek-view-controls.open-doc'](),
         nameKey: 'open',
         onClick: () => {
-          // TODO(@Peng): for frame blocks, we should mimic "view in edgeless" button behavior
-          blockId
-            ? jumpToPageBlock(workspace.id, docId, blockId)
-            : workbench.openDoc(docId);
-          if (mode) {
-            doc?.setMode(mode);
-          }
+          workbench.openDoc({ docId, mode, blockIds, elementIds });
           peekView.close('none');
         },
       },
-      environment.isDesktop && {
-        icon: <SplitViewIcon />,
-        nameKey: 'split-view',
-        name: t['com.affine.peek-view-controls.open-doc-in-split-view'](),
-        onClick: () => {
-          workbench.openDoc(docId, { at: 'beside' });
-          peekView.close('none');
-        },
-      },
-      !environment.isDesktop && {
-        icon: <DualLinkIcon />,
+      {
+        icon: <OpenInNewIcon />,
         nameKey: 'new-tab',
         name: t['com.affine.peek-view-controls.open-doc-in-new-tab'](),
         onClick: () => {
-          window.open(
-            `/workspace/${workspace.id}/${docId}#${blockId ?? ''}`,
-            '_blank'
+          workbench.openDoc(
+            { docId, mode, blockIds, elementIds },
+            { at: 'new-tab' }
           );
           peekView.close('none');
         },
       },
+      BUILD_CONFIG.isElectron && {
+        icon: <SplitViewIcon />,
+        nameKey: 'split-view',
+        name: t['com.affine.peek-view-controls.open-doc-in-split-view'](),
+        onClick: () => {
+          workbench.openDoc({ docId, mode }, { at: 'beside' });
+          peekView.close('none');
+        },
+      },
+      {
+        icon: <InformationIcon />,
+        nameKey: 'info',
+        name: t['com.affine.peek-view-controls.open-info'](),
+        onClick: () => {
+          docInfoService.modal.open(docId);
+        },
+      },
     ].filter((opt): opt is ControlButtonProps => Boolean(opt));
   }, [
-    blockId,
-    doc,
-    docId,
-    jumpToPageBlock,
-    mode,
-    peekView,
     t,
+    peekView,
     workbench,
-    workspace.id,
+    docId,
+    mode,
+    blockIds,
+    elementIds,
+    docInfoService.modal,
   ]);
   return (
     <div {...rest} className={clsx(styles.root, className)}>

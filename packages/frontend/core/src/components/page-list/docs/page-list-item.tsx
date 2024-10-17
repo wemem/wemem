@@ -2,7 +2,6 @@ import { Checkbox, Tooltip, useDraggable } from '@affine/component';
 import { TagService } from '@affine/core/modules/tag';
 import type { AffineDNDData } from '@affine/core/types/dnd';
 import { stopPropagation } from '@affine/core/utils';
-import { UnseenTag } from '@affine/core/modules/tag/entities/internal-tag';
 import { i18nTime } from '@affine/i18n';
 import { useLiveData, useService } from '@toeverything/infra';
 import type { ForwardedRef, PropsWithChildren } from 'react';

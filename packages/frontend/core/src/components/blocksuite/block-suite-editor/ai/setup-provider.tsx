@@ -1,16 +1,14 @@
-import { notify } from '@affine/component';
-import { authAtom, openSettingModalAtom } from '@affine/core/atoms';
 import { AIProvider } from '@affine/core/blocksuite/presets/ai';
 import { toggleGeneralAIOnboarding } from '@affine/core/components/affine/ai-onboarding/apis';
-import { track } from '@affine/core/mixpanel';
+import { authAtom, openSettingModalAtom } from '@affine/core/components/atoms';
 import {
   getBaseUrl,
   type getCopilotHistoriesQuery,
   type RequestOptions,
 } from '@affine/graphql';
-import { Trans } from '@affine/i18n';
-import { UnauthorizedError } from '@blocksuite/blocks';
-import { assertExists } from '@blocksuite/global/utils';
+import { track } from '@affine/track';
+import { UnauthorizedError } from '@blocksuite/affine/blocks';
+import { assertExists } from '@blocksuite/affine/global/utils';
 import { getCurrentStore } from '@toeverything/infra';
 import { z } from 'zod';
 
@@ -42,7 +40,7 @@ const processTypeToPromptName = new Map(
   })
 );
 
-function setupAIProvider() {
+export function setupAIProvider() {
   // a single workspace should have only a single chat session
   // user-id:workspace-id:doc-id -> chat session id
   const chatSessions = new Map<string, Promise<string>>();
@@ -480,15 +478,5 @@ Could you make a new website based on these notes and send back just the html fi
     }));
   });
 
-  AIProvider.slots.requestRunInEdgeless.on(() => {
-    notify.warning({
-      title: (
-        <Trans i18nKey="com.affine.ai.action.edgeless-only.dialog-title" />
-      ),
-    });
-  });
-
   setupTracker();
 }
-
-setupAIProvider();

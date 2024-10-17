@@ -2,23 +2,22 @@ import { Loading, Scrollable } from '@affine/component';
 import { EditorLoading } from '@affine/component/page-detail-skeleton';
 import { Button, IconButton } from '@affine/component/ui/button';
 import { Modal, useConfirmModal } from '@affine/component/ui/modal';
-import { openSettingModalAtom } from '@affine/core/atoms';
-import { useDocCollectionPageTitle } from '@affine/core/hooks/use-block-suite-workspace-page-title';
-import { track } from '@affine/core/mixpanel';
+import { openSettingModalAtom } from '@affine/core/components/atoms';
+import { useDocCollectionPageTitle } from '@affine/core/components/hooks/use-block-suite-workspace-page-title';
+import { EditorService } from '@affine/core/modules/editor';
 import { WorkspacePermissionService } from '@affine/core/modules/permissions';
 import { WorkspaceQuotaService } from '@affine/core/modules/quota';
 import { i18nTime, Trans, useI18n } from '@affine/i18n';
+import { track } from '@affine/track';
+import type { DocMode } from '@blocksuite/affine/blocks';
+import type {
+  Doc as BlockSuiteDoc,
+  DocCollection,
+} from '@blocksuite/affine/store';
 import { CloseIcon, ToggleCollapseIcon } from '@blocksuite/icons/rc';
-import type { Doc as BlockSuiteDoc, DocCollection } from '@blocksuite/store';
 import * as Collapsible from '@radix-ui/react-collapsible';
 import type { DialogContentProps } from '@radix-ui/react-dialog';
-import {
-  type DocMode,
-  DocService,
-  useLiveData,
-  useService,
-  WorkspaceService,
-} from '@toeverything/infra';
+import { useLiveData, useService, WorkspaceService } from '@toeverything/infra';
 import { atom, useAtom, useSetAtom } from 'jotai';
 import type { PropsWithChildren } from 'react';
 import {
@@ -32,13 +31,9 @@ import {
 } from 'react';
 import { encodeStateAsUpdate } from 'yjs';
 
-import { pageHistoryModalAtom } from '../../../atoms/page-history';
+import { pageHistoryModalAtom } from '../../atoms/page-history';
 import { BlockSuiteEditor } from '../../blocksuite/block-suite-editor';
-import { StyledEditorModeSwitch } from '../../blocksuite/block-suite-mode-switch/style';
-import {
-  EdgelessSwitchItem,
-  PageSwitchItem,
-} from '../../blocksuite/block-suite-mode-switch/switch-items';
+import { PureEditorModeSwitch } from '../../blocksuite/block-suite-mode-switch';
 import { AffineErrorBoundary } from '../affine-error-boundary';
 import {
   historyListGroupByDay,
@@ -108,15 +103,11 @@ const HistoryEditorPreview = ({
   mode,
   title,
 }: HistoryEditorPreviewProps) => {
-  const { onSwitchToPageMode, onSwitchToEdgelessMode } = useMemo(
-    () => ({
-      onSwitchToPageMode: () => {
-        onModeChange('page');
-      },
-      onSwitchToEdgelessMode: () => {
-        onModeChange('edgeless');
-      },
-    }),
+  const onModeChangeWithTrack = useCallback(
+    (mode: DocMode) => {
+      track.$.docHistory.$.switchPageMode({ mode });
+      onModeChange(mode);
+    },
     [onModeChange]
   );
 
@@ -124,22 +115,7 @@ const HistoryEditorPreview = ({
     return (
       <div className={styles.previewContent}>
         <div className={styles.previewHeader}>
-          <StyledEditorModeSwitch switchLeft={mode === 'page'}>
-            <PageSwitchItem
-              data-testid="switch-page-mode-button"
-              active={mode === 'page'}
-              data-event-props="$.docHistory.$.switchPageMode"
-              data-event-args-type="page"
-              onClick={onSwitchToPageMode}
-            />
-            <EdgelessSwitchItem
-              data-testid="switch-edgeless-mode-button"
-              active={mode === 'edgeless'}
-              data-event-props="$.docHistory.$.switchPageMode"
-              data-event-args-type="edgeless"
-              onClick={onSwitchToEdgelessMode}
-            />
-          </StyledEditorModeSwitch>
+          <PureEditorModeSwitch mode={mode} setMode={onModeChangeWithTrack} />
           <div className={styles.previewHeaderTitle}>{title}</div>
           <div className={styles.previewHeaderTimestamp}>
             {ts
@@ -170,14 +146,7 @@ const HistoryEditorPreview = ({
         )}
       </div>
     );
-  }, [
-    mode,
-    onSwitchToEdgelessMode,
-    onSwitchToPageMode,
-    snapshotPage,
-    title,
-    ts,
-  ]);
+  }, [mode, onModeChangeWithTrack, snapshotPage, title, ts]);
 
   return (
     <div className={styles.previewWrapper}>
@@ -463,8 +432,8 @@ const PageHistoryManager = ({
     [activeVersion, onClose, onRestore, snapshotPage]
   );
 
-  const doc = useService(DocService).doc;
-  const [mode, setMode] = useState<DocMode>(doc.mode$.value);
+  const editor = useService(EditorService).editor;
+  const [mode, setMode] = useState<DocMode>(editor.mode$.value);
 
   const title = useDocCollectionPageTitle(docCollection, pageId);
 

@@ -1,0 +1,28 @@
+{
+  "name": "@affine/web",
+  "version": "0.17.0",
+  "description": "AFFiNE Desktop Web application",
+  "private": true,
+  "browser": "src/index.tsx",
+  "scripts": {
+    "build": "cross-env DISTRIBUTION=web yarn workspace @affine/cli bundle",
+    "dev": "yarn workspace @affine/cli dev",
+    "static-server": "yarn workspace @affine/cli dev --static"
+  },
+  "dependencies": {
+    "@affine/component": "workspace:*",
+    "@affine/core": "workspace:*",
+    "@affine/i18n": "workspace:*",
+    "@emotion/react": "^11.11.4",
+    "@sentry/react": "^8.0.0",
+    "react": "^18.2.0",
+    "react-dom": "^18.2.0",
+    "react-router-dom": "^6.22.3"
+  },
+  "devDependencies": {
+    "@types/react": "^18.2.75",
+    "@types/react-dom": "^18.2.24",
+    "cross-env": "^7.0.3",
+    "typescript": "^5.4.5"
+  }
+}

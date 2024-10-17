@@ -6,7 +6,7 @@ import {
   ModalHeader,
 } from '@affine/component/auth-components';
 import { Button } from '@affine/component/ui/button';
-import { useAsyncCallback } from '@affine/core/hooks/affine-async-hooks';
+import { useAsyncCallback } from '@affine/core/components/hooks/affine-async-hooks';
 import {
   sendChangeEmailMutation,
   sendChangePasswordEmailMutation,
@@ -17,11 +17,11 @@ import { useI18n } from '@affine/i18n';
 import { useLiveData, useService } from '@toeverything/infra';
 import { useCallback, useState } from 'react';
 
-import { useMutation } from '../../../hooks/use-mutation';
+import { useMutation } from '../../../components/hooks/use-mutation';
 import { ServerConfigService } from '../../../modules/cloud';
 import type { AuthPanelProps } from './index';
 
-const useEmailTitle = (emailType: AuthPanelProps['emailType']) => {
+const useEmailTitle = (emailType: AuthPanelProps<'sendEmail'>['emailType']) => {
   const t = useI18n();
 
   switch (emailType) {
@@ -36,7 +36,9 @@ const useEmailTitle = (emailType: AuthPanelProps['emailType']) => {
   }
 };
 
-const useNotificationHint = (emailType: AuthPanelProps['emailType']) => {
+const useNotificationHint = (
+  emailType: AuthPanelProps<'sendEmail'>['emailType']
+) => {
   const t = useI18n();
 
   switch (emailType) {
@@ -49,7 +51,9 @@ const useNotificationHint = (emailType: AuthPanelProps['emailType']) => {
       return t['com.affine.auth.sent.verify.email.hint']();
   }
 };
-const useButtonContent = (emailType: AuthPanelProps['emailType']) => {
+const useButtonContent = (
+  emailType: AuthPanelProps<'sendEmail'>['emailType']
+) => {
   const t = useI18n();
 
   switch (emailType) {
@@ -63,7 +67,7 @@ const useButtonContent = (emailType: AuthPanelProps['emailType']) => {
   }
 };
 
-const useSendEmail = (emailType: AuthPanelProps['emailType']) => {
+const useSendEmail = (emailType: AuthPanelProps<'sendEmail'>['emailType']) => {
   const {
     trigger: sendChangePasswordEmail,
     isMutating: isChangePasswordMutating,
@@ -118,7 +122,7 @@ const useSendEmail = (emailType: AuthPanelProps['emailType']) => {
         return trigger({
           email,
           callbackUrl: `/auth/${callbackUrl}?isClient=${
-            environment.isDesktop ? 'true' : 'false'
+            BUILD_CONFIG.isElectron ? 'true' : 'false'
           }`,
         });
       },
@@ -134,10 +138,10 @@ const useSendEmail = (emailType: AuthPanelProps['emailType']) => {
 };
 
 export const SendEmail = ({
-  setAuthState,
+  setAuthData,
   email,
   emailType,
-}: AuthPanelProps) => {
+}: AuthPanelProps<'sendEmail'>) => {
   const t = useI18n();
   const serverConfig = useService(ServerConfigService).serverConfig;
 
@@ -160,8 +164,8 @@ export const SendEmail = ({
   }, [email, hint, sendEmail]);
 
   const onBack = useCallback(() => {
-    setAuthState('signIn');
-  }, [setAuthState]);
+    setAuthData({ state: 'signIn' });
+  }, [setAuthData]);
 
   if (!passwordLimits) {
     // TODO(@eyhn): loading & error UI

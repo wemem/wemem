@@ -1,5 +1,5 @@
 import type { WorkspaceFlavour } from '@affine/env/workspace';
-import type { DocCollection } from '@blocksuite/store';
+import type { DocCollection } from '@blocksuite/affine/store';
 
 import { createIdentifier } from '../../../framework';
 import type { LiveData } from '../../../livedata';
@@ -38,7 +38,7 @@ export interface WorkspaceFlavourProvider {
   /**
    * means the workspace list is loading. if it's true, the workspace page will show loading spinner.
    */
-  isLoading$?: LiveData<boolean>;
+  isRevalidating$?: LiveData<boolean>;
 
   /**
    * revalidate the workspace list.

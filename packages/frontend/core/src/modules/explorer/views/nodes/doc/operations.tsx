@@ -1,28 +1,34 @@
 import {
   IconButton,
-  MenuIcon,
   MenuItem,
   MenuSeparator,
   toast,
   useConfirmModal,
 } from '@affine/component';
-import { useAppSettingHelper } from '@affine/core/hooks/affine/use-app-setting-helper';
-import { useAsyncCallback } from '@affine/core/hooks/affine-async-hooks';
-import { track } from '@affine/core/mixpanel';
+import { usePageHelper } from '@affine/core/components/blocksuite/block-suite-page-list/utils';
+import { useBlockSuiteMetaHelper } from '@affine/core/components/hooks/affine/use-block-suite-meta-helper';
+import { useAsyncCallback } from '@affine/core/components/hooks/affine-async-hooks';
+import { IsFavoriteIcon } from '@affine/core/components/pure/icons';
 import { CompatibleFavoriteItemsAdapter } from '@affine/core/modules/properties';
 import { WorkbenchService } from '@affine/core/modules/workbench';
 import { useI18n } from '@affine/i18n';
+import { track } from '@affine/track';
 import {
   DeleteIcon,
-  FavoritedIcon,
-  FavoriteIcon,
+  DuplicateIcon,
   InformationIcon,
   LinkedPageIcon,
   OpenInNewIcon,
   PlusIcon,
   SplitViewIcon,
 } from '@blocksuite/icons/rc';
-import { DocsService, useLiveData, useServices } from '@toeverything/infra';
+import {
+  DocsService,
+  FeatureFlagService,
+  useLiveData,
+  useServices,
+  WorkspaceService,
+} from '@toeverything/infra';
 import { useCallback, useMemo } from 'react';
 
 import type { NodeOperation } from '../../tree/types';
@@ -35,16 +41,29 @@ export const useExplorerDocNodeOperations = (
   }
 ): NodeOperation[] => {
   const t = useI18n();
-  const { appSettings } = useAppSettingHelper();
-  const { workbenchService, docsService, compatibleFavoriteItemsAdapter } =
-    useServices({
-      DocsService,
-      WorkbenchService,
-      CompatibleFavoriteItemsAdapter,
-    });
+  const {
+    workbenchService,
+    workspaceService,
+    docsService,
+    compatibleFavoriteItemsAdapter,
+    featureFlagService,
+  } = useServices({
+    DocsService,
+    WorkbenchService,
+    WorkspaceService,
+    CompatibleFavoriteItemsAdapter,
+    FeatureFlagService,
+  });
+  const enableMultiView = useLiveData(
+    featureFlagService.flags.enable_multi_view.$
+  );
   const { openConfirmModal } = useConfirmModal();
 
   const docRecord = useLiveData(docsService.list.doc$(docId));
+
+  const { createPage } = usePageHelper(
+    workspaceService.workspace.docCollection
+  );
 
   const favorite = useLiveData(
     useMemo(() => {
@@ -52,6 +71,11 @@ export const useExplorerDocNodeOperations = (
     }, [docId, compatibleFavoriteItemsAdapter])
   );
 
+  const { duplicate } = useBlockSuiteMetaHelper();
+  const handleDuplicate = useCallback(() => {
+    duplicate(docId, true);
+    track.$.navigationPanel.docs.createDoc();
+  }, [docId, duplicate]);
   const handleOpenInfoModal = useCallback(() => {
     track.$.docInfoPanel.$.open();
     options.openInfoModal();
@@ -100,14 +124,14 @@ export const useExplorerDocNodeOperations = (
   }, [docId, workbenchService.workbench]);
 
   const handleAddLinkedPage = useAsyncCallback(async () => {
-    const newDoc = docsService.createDoc();
+    const newDoc = createPage();
     // TODO: handle timeout & error
     await docsService.addLinkedDoc(docId, newDoc.id);
     track.$.navigationPanel.docs.createDoc({ control: 'linkDoc' });
     track.$.navigationPanel.docs.linkDoc({ control: 'createDoc' });
     workbenchService.workbench.openDoc(newDoc.id);
     options.openNodeCollapsed();
-  }, [docsService, docId, workbenchService.workbench, options]);
+  }, [createPage, docsService, docId, workbenchService.workbench, options]);
 
   const handleToggleFavoriteDoc = useCallback(() => {
     compatibleFavoriteItemsAdapter.toggle(docId, 'doc');
@@ -130,34 +154,22 @@ export const useExplorerDocNodeOperations = (
           />
         ),
       },
-      ...(runtimeConfig.enableInfoModal
-        ? [
-            {
-              index: 50,
-              view: (
-                <MenuItem
-                  preFix={
-                    <MenuIcon>
-                      <InformationIcon />
-                    </MenuIcon>
-                  }
-                  onClick={handleOpenInfoModal}
-                >
-                  {t['com.affine.page-properties.page-info.view']()}
-                </MenuItem>
-              ),
-            },
-          ]
-        : []),
+      {
+        index: 50,
+        view: (
+          <MenuItem
+            prefixIcon={<InformationIcon />}
+            onClick={handleOpenInfoModal}
+          >
+            {t['com.affine.page-properties.page-info.view']()}
+          </MenuItem>
+        ),
+      },
       {
         index: 99,
         view: (
           <MenuItem
-            preFix={
-              <MenuIcon>
-                <LinkedPageIcon />
-              </MenuIcon>
-            }
+            prefixIcon={<LinkedPageIcon />}
             onClick={handleAddLinkedPage}
           >
             {t['com.affine.page-operation.add-linked-page']()}
@@ -167,29 +179,26 @@ export const useExplorerDocNodeOperations = (
       {
         index: 99,
         view: (
-          <MenuItem
-            preFix={
-              <MenuIcon>
-                <OpenInNewIcon />
-              </MenuIcon>
-            }
-            onClick={handleOpenInNewTab}
-          >
+          <MenuItem prefixIcon={<DuplicateIcon />} onClick={handleDuplicate}>
+            {t['com.affine.header.option.duplicate']()}
+          </MenuItem>
+        ),
+      },
+      {
+        index: 99,
+        view: (
+          <MenuItem prefixIcon={<OpenInNewIcon />} onClick={handleOpenInNewTab}>
             {t['com.affine.workbench.tab.page-menu-open']()}
           </MenuItem>
         ),
       },
-      ...(appSettings.enableMultiView
+      ...(BUILD_CONFIG.isElectron && enableMultiView
         ? [
             {
               index: 100,
               view: (
                 <MenuItem
-                  preFix={
-                    <MenuIcon>
-                      <SplitViewIcon />
-                    </MenuIcon>
-                  }
+                  prefixIcon={<SplitViewIcon />}
                   onClick={handleOpenInSplitView}
                 >
                   {t['com.affine.workbench.split-view.page-menu-open']()}
@@ -202,17 +211,7 @@ export const useExplorerDocNodeOperations = (
         index: 199,
         view: (
           <MenuItem
-            preFix={
-              <MenuIcon>
-                {favorite ? (
-                  <FavoritedIcon
-                    style={{ color: 'var(--affine-primary-color)' }}
-                  />
-                ) : (
-                  <FavoriteIcon />
-                )}
-              </MenuIcon>
-            }
+            prefixIcon={<IsFavoriteIcon favorite={favorite} />}
             onClick={handleToggleFavoriteDoc}
           >
             {favorite
@@ -230,11 +229,7 @@ export const useExplorerDocNodeOperations = (
         view: (
           <MenuItem
             type={'danger'}
-            preFix={
-              <MenuIcon>
-                <DeleteIcon />
-              </MenuIcon>
-            }
+            prefixIcon={<DeleteIcon />}
             onClick={handleMoveToTrash}
           >
             {t['com.affine.moveToTrash.title']()}
@@ -243,9 +238,10 @@ export const useExplorerDocNodeOperations = (
       },
     ],
     [
-      appSettings.enableMultiView,
+      enableMultiView,
       favorite,
       handleAddLinkedPage,
+      handleDuplicate,
       handleMoveToTrash,
       handleOpenInNewTab,
       handleOpenInSplitView,

@@ -1,15 +1,15 @@
 import './action-wrapper';
 
-import type { EditorHost } from '@blocksuite/block-std';
-import { ShadowlessElement, WithDisposable } from '@blocksuite/block-std';
+import type { EditorHost } from '@blocksuite/affine/block-std';
+import { ShadowlessElement } from '@blocksuite/affine/block-std';
+import { WithDisposable } from '@blocksuite/affine/global/utils';
 import { html, nothing } from 'lit';
-import { customElement, property } from 'lit/decorators.js';
+import { property } from 'lit/decorators.js';
 import { styleMap } from 'lit/directives/style-map.js';
 
 import type { ChatAction } from '../chat-context';
 import { renderImages } from '../components/images';
 
-@customElement('action-image-to-text')
 export class ActionImageToText extends WithDisposable(ShadowlessElement) {
   @property({ attribute: false })
   accessor item!: ChatAction;

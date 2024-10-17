@@ -64,7 +64,7 @@ test('create new tab', async ({ views }) => {
   page = await views.getActive();
   // page content should be at all docs page
   await expect(page.getByTestId('virtualized-page-list')).toContainText(
-    'All Docs'
+    'All docs'
   );
 });
 
@@ -92,6 +92,7 @@ test('Collapse Sidebar', async ({ page }) => {
   await page
     .locator('[data-testid=app-sidebar-arrow-button-collapse][data-show=true]')
     .click();
+  await page.mouse.move(500, 500);
   const sliderBarArea = page.getByTestId('app-sidebar');
   await expect(sliderBarArea).not.toBeInViewport();
 });
@@ -100,6 +101,7 @@ test('Expand Sidebar', async ({ page }) => {
   await page
     .locator('[data-testid=app-sidebar-arrow-button-collapse][data-show=true]')
     .click();
+  await page.mouse.move(500, 500);
   const sliderBarArea = page.getByTestId('sliderBar-inner');
   await expect(sliderBarArea).not.toBeInViewport();
 
@@ -132,33 +134,7 @@ test('tab title will change when navigating', async ({ page }) => {
   }
 });
 
-// temporary way to enable split view
-async function enableSplitView(page: Page) {
-  await page.evaluate(() => {
-    const settingKey = 'affine-settings';
-    window.localStorage.setItem(
-      settingKey,
-      JSON.stringify({
-        clientBorder: false,
-        fullWidthLayout: false,
-        windowFrameStyle: 'frameless',
-        fontStyle: 'Serif',
-        dateFormat: 'MM/dd/YYYY',
-        startWeekOnMonday: false,
-        enableBlurBackground: true,
-        enableNoisyBackground: true,
-        autoCheckUpdate: true,
-        autoDownloadUpdate: true,
-        enableMultiView: true,
-        editorFlags: {},
-      })
-    );
-  });
-  await page.reload();
-}
-
 test('open new tab via cmd+click page link', async ({ page }) => {
-  await enableSplitView(page);
   await clickNewPageButton(page);
   await page.waitForTimeout(500);
   await page.keyboard.press('Enter');
@@ -175,7 +151,6 @@ test('open new tab via cmd+click page link', async ({ page }) => {
 });
 
 test('open split view', async ({ page }) => {
-  await enableSplitView(page);
   await clickNewPageButton(page);
   await page.waitForTimeout(500);
   await page.keyboard.press('Enter');
@@ -227,10 +202,10 @@ test('reorder tabs', async ({ page }) => {
   await createLinkedPage(page, titles[0]);
   await createLinkedPage(page, titles[1]);
   await page.locator(`.affine-reference-title:has-text("${titles[0]}")`).click({
-    modifiers: ['ControlOrMeta', 'Alt'],
+    modifiers: ['ControlOrMeta'],
   });
   await page.locator(`.affine-reference-title:has-text("${titles[1]}")`).click({
-    modifiers: ['ControlOrMeta', 'Alt'],
+    modifiers: ['ControlOrMeta'],
   });
 
   await expectTabTitle(page, 0, 'Untitled');

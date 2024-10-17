@@ -3,7 +3,6 @@ import {
   type GraphQLQuery,
   type QueryOptions,
   type QueryResponse,
-  UserFriendlyError,
 } from '@affine/graphql';
 import { fromPromise, Service } from '@toeverything/infra';
 import type { Observable } from 'rxjs';
@@ -18,7 +17,10 @@ export class GraphQLService extends Service {
   }
 
   private readonly rawGql = gqlFetcherFactory('/graphql', this.fetcher.fetch);
-  private readonly rawGqlV2 = gqlFetcherFactory('/api/v1/graphql', this.fetcher.fetch);
+  private readonly rawGqlV2 = gqlFetcherFactory(
+    '/api/v1/graphql',
+    this.fetcher.fetch
+  );
 
   rxGql = <Query extends GraphQLQuery>(
     options: QueryOptions<Query>
@@ -40,13 +42,11 @@ export class GraphQLService extends Service {
     try {
       return await this.rawGql(options);
     } catch (err) {
-      const standardError = UserFriendlyError.fromAnyError(err);
-
-      if (standardError.status === 403) {
+      if (err instanceof BackendError && err.status === 403) {
         this.framework.get(AuthService).session.revalidate();
       }
 
-      throw new BackendError(standardError);
+      throw err;
     }
   };
 

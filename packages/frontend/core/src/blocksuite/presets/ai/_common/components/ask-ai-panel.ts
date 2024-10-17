@@ -1,16 +1,16 @@
-import { type EditorHost, WithDisposable } from '@blocksuite/block-std';
+import { type EditorHost } from '@blocksuite/affine/block-std';
 import {
   type AIItemGroupConfig,
   EdgelessRootService,
   scrollbarStyle,
-} from '@blocksuite/blocks';
+} from '@blocksuite/affine/blocks';
+import { WithDisposable } from '@blocksuite/affine/global/utils';
 import { css, html, LitElement } from 'lit';
-import { customElement, property } from 'lit/decorators.js';
+import { property } from 'lit/decorators.js';
 import { styleMap } from 'lit/directives/style-map.js';
 
 import { getRootService } from '../../utils/selection-utils';
 
-@customElement('ask-ai-panel')
 export class AskAIPanel extends WithDisposable(LitElement) {
   static override styles = css`
     :host {

@@ -6,7 +6,7 @@ type SimpleRadioItem = string;
 export interface RadioProps extends RadioGroupItemProps {
   items: RadioItem[] | SimpleRadioItem[];
   value: any;
-  onChange: (value: any) => void;
+  onChange?: (value: any) => void;
 
   /**
    * Total width of the radio group, items will be evenly distributed
@@ -47,6 +47,14 @@ export interface RadioProps extends RadioGroupItemProps {
   activeItemClassName?: string;
   /** Customize active item's style */
   activeItemStyle?: CSSProperties;
+  /** Customize indicator's className */
+  indicatorClassName?: string;
+  /** Customize indicator's style */
+  indicatorStyle?: CSSProperties;
+  /**
+   * This prop is used to use a different color scheme
+   */
+  iconMode?: boolean;
 }
 
 export interface RadioItem {

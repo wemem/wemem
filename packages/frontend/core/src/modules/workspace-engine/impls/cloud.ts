@@ -6,7 +6,7 @@ import {
   getIsOwnerQuery,
   getWorkspacesQuery,
 } from '@affine/graphql';
-import { DocCollection } from '@blocksuite/store';
+import { DocCollection } from '@blocksuite/affine/store';
 import {
   ApplicationStarted,
   type BlobStorage,
@@ -24,7 +24,7 @@ import {
   type WorkspaceMetadata,
   type WorkspaceProfileInfo,
 } from '@toeverything/infra';
-import { effect, globalBlockSuiteSchema, Service } from '@toeverything/infra';
+import { effect, getAFFiNEWorkspaceSchema, Service } from '@toeverything/infra';
 import { isEqual } from 'lodash-es';
 import { nanoid } from 'nanoid';
 import { EMPTY, map, mergeMap } from 'rxjs';
@@ -96,12 +96,10 @@ export class CloudWorkspaceFlavourProviderService
     const docCollection = new DocCollection({
       id: workspaceId,
       idGenerator: () => nanoid(),
-      schema: globalBlockSuiteSchema,
+      schema: getAFFiNEWorkspaceSchema(),
       blobSources: {
         main: blobStorage,
       },
-      disableBacklinkIndex: true,
-      disableSearchIndex: true,
     });
 
     // apply initial state
@@ -119,7 +117,10 @@ export class CloudWorkspaceFlavourProviderService
     this.revalidate();
     await this.waitForLoaded();
 
-    return { id: workspaceId, flavour: WorkspaceFlavour.AFFINE_CLOUD };
+    return {
+      id: workspaceId,
+      flavour: WorkspaceFlavour.AFFINE_CLOUD,
+    };
   }
   revalidate = effect(
     map(() => {
@@ -140,12 +141,16 @@ export class CloudWorkspaceFlavourProviderService
             },
           });
 
-          const ids = workspaces.map(({ id }) => id);
+          const ids = workspaces.map(({ id, initialized }) => ({
+            id,
+            initialized,
+          }));
           return {
             accountId,
-            workspaces: ids.map(id => ({
+            workspaces: ids.map(({ id, initialized }) => ({
               id,
               flavour: WorkspaceFlavour.AFFINE_CLOUD,
+              initialized,
             })),
           };
         }).pipe(
@@ -170,8 +175,8 @@ export class CloudWorkspaceFlavourProviderService
           catchErrorInto(this.error$, err => {
             logger.error('error to revalidate cloud workspaces', err);
           }),
-          onStart(() => this.isLoading$.next(true)),
-          onComplete(() => this.isLoading$.next(false))
+          onStart(() => this.isRevalidating$.next(true)),
+          onComplete(() => this.isRevalidating$.next(false))
         );
       },
       ({ accountId }) => {
@@ -186,7 +191,7 @@ export class CloudWorkspaceFlavourProviderService
     )
   );
   error$ = new LiveData<any>(null);
-  isLoading$ = new LiveData(false);
+  isRevalidating$ = new LiveData(false);
   workspaces$ = new LiveData<WorkspaceMetadata[]>([]);
   async getWorkspaceProfile(
     id: string,
@@ -211,9 +216,7 @@ export class CloudWorkspaceFlavourProviderService
 
     const bs = new DocCollection({
       id,
-      schema: globalBlockSuiteSchema,
-      disableBacklinkIndex: true,
-      disableSearchIndex: true,
+      schema: getAFFiNEWorkspaceSchema(),
     });
 
     if (localData) applyUpdate(bs.doc, localData);
@@ -240,17 +243,11 @@ export class CloudWorkspaceFlavourProviderService
       getAwarenessConnections: () => {
         return [
           new BroadcastChannelAwarenessConnection(workspaceId),
-          new CloudAwarenessConnection(
-            workspaceId,
-            this.webSocketService.newSocket()
-          ),
+          new CloudAwarenessConnection(workspaceId, this.webSocketService),
         ];
       },
       getDocServer: () => {
-        return new CloudDocEngineServer(
-          workspaceId,
-          this.webSocketService.newSocket()
-        );
+        return new CloudDocEngineServer(workspaceId, this.webSocketService);
       },
       getDocStorage: () => {
         return this.storageProvider.getDocStorage(workspaceId);
@@ -277,6 +274,6 @@ export class CloudWorkspaceFlavourProviderService
   }
 
   private waitForLoaded() {
-    return this.isLoading$.waitFor(loading => !loading);
+    return this.isRevalidating$.waitFor(loading => !loading);
   }
 }

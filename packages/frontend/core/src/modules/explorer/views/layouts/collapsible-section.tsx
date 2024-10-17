@@ -1,4 +1,4 @@
-import { CategoryDivider } from '@affine/core/components/app-sidebar';
+import { CategoryDivider } from '@affine/core/modules/app-sidebar/views';
 import * as Collapsible from '@radix-ui/react-collapsible';
 import { useLiveData, useService } from '@toeverything/infra';
 import clsx from 'clsx';
@@ -7,11 +7,18 @@ import {
   type ReactNode,
   type RefObject,
   useCallback,
+  useContext,
 } from 'react';
 
 import { ExplorerService } from '../../services/explorer';
 import type { CollapsibleSectionName } from '../../types';
-import { content, header, root } from './collapsible-section.css';
+import { ExplorerMobileContext } from '../mobile.context';
+import {
+  content,
+  header,
+  mobileContent,
+  root,
+} from './collapsible-section.css';
 
 interface CollapsibleSectionProps extends PropsWithChildren {
   name: CollapsibleSectionName;
@@ -43,6 +50,7 @@ export const CollapsibleSection = ({
 
   contentClassName,
 }: CollapsibleSectionProps) => {
+  const mobile = useContext(ExplorerMobileContext);
   const section = useService(ExplorerService).sections[name];
 
   const collapsed = useLiveData(section.collapsed$);
@@ -62,6 +70,7 @@ export const CollapsibleSection = ({
       data-testid={testId}
     >
       <CategoryDivider
+        mobile={mobile}
         data-testid={headerTestId}
         label={title}
         setCollapsed={setCollapsed}
@@ -71,7 +80,10 @@ export const CollapsibleSection = ({
       >
         {actions}
       </CategoryDivider>
-      <Collapsible.Content className={clsx(content, contentClassName)}>
+      <Collapsible.Content
+        data-testid="collapsible-section-content"
+        className={clsx(mobile ? mobileContent : content, contentClassName)}
+      >
         {children}
       </Collapsible.Content>
     </Collapsible.Root>

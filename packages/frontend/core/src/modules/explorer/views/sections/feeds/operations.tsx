@@ -1,11 +1,14 @@
-import { MenuIcon, MenuItem, MenuSeparator, toast } from '@affine/component';
-import { useAppSettingHelper } from '@affine/core/hooks/affine/use-app-setting-helper';
-import { track } from '@affine/core/mixpanel';
+import { MenuItem, MenuSeparator, toast } from '@affine/component';
 import { FeedsService } from '@affine/core/modules/feed/services/feeds-service';
 import { WorkbenchService } from '@affine/core/modules/workbench';
 import { useI18n } from '@affine/i18n';
+import { track } from '@affine/track';
 import { DeleteIcon, OpenInNewIcon, SplitViewIcon } from '@blocksuite/icons/rc';
-import { useServices } from '@toeverything/infra';
+import {
+  FeatureFlagService,
+  useLiveData,
+  useServices,
+} from '@toeverything/infra';
 import { useCallback, useMemo } from 'react';
 
 import type { NodeOperation } from '../../tree/types';
@@ -14,11 +17,15 @@ export const useExplorerFeedNodeOperations = (
   feedId: string
 ): NodeOperation[] => {
   const t = useI18n();
-  const { appSettings } = useAppSettingHelper();
-  const { workbenchService, feedsService } = useServices({
+  const { workbenchService, feedsService, featureFlagService } = useServices({
     WorkbenchService,
     FeedsService,
+    FeatureFlagService,
   });
+
+  const enableMultiView = useLiveData(
+    featureFlagService.flags.enable_multi_view.$
+  );
 
   const handleMoveToTrash = useCallback(() => {
     feedsService.unsubscribe(feedId);
@@ -45,29 +52,18 @@ export const useExplorerFeedNodeOperations = (
       {
         index: 50,
         view: (
-          <MenuItem
-            preFix={
-              <MenuIcon>
-                <OpenInNewIcon />
-              </MenuIcon>
-            }
-            onClick={handleOpenInNewTab}
-          >
+          <MenuItem prefixIcon={<OpenInNewIcon />} onClick={handleOpenInNewTab}>
             {t['com.affine.workbench.tab.page-menu-open']()}
           </MenuItem>
         ),
       },
-      ...(appSettings.enableMultiView
+      ...(BUILD_CONFIG.isElectron && enableMultiView
         ? [
             {
               index: 100,
               view: (
                 <MenuItem
-                  preFix={
-                    <MenuIcon>
-                      <SplitViewIcon />
-                    </MenuIcon>
-                  }
+                  prefixIcon={<SplitViewIcon />}
                   onClick={handleOpenInSplitView}
                 >
                   {t['com.affine.workbench.split-view.page-menu-open']()}
@@ -85,11 +81,7 @@ export const useExplorerFeedNodeOperations = (
         view: (
           <MenuItem
             type={'danger'}
-            preFix={
-              <MenuIcon>
-                <DeleteIcon />
-              </MenuIcon>
-            }
+            prefixIcon={<DeleteIcon />}
             onClick={handleMoveToTrash}
           >
             {t['Delete']()}
@@ -98,7 +90,7 @@ export const useExplorerFeedNodeOperations = (
       },
     ],
     [
-      appSettings.enableMultiView,
+      enableMultiView,
       handleMoveToTrash,
       handleOpenInNewTab,
       handleOpenInSplitView,

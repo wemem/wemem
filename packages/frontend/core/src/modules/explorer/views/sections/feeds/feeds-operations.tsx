@@ -1,5 +1,5 @@
 import type { MenuItemProps } from '@affine/component';
-import { Menu, MenuIcon, MenuItem } from '@affine/component';
+import { Menu, MenuItem } from '@affine/component';
 import {
   type CollectionMeta,
   useUnsubscribe,
@@ -38,11 +38,7 @@ export const FeedsOperations = ({
   >(
     () => [
       {
-        icon: (
-          <MenuIcon>
-            <EditIcon />
-          </MenuIcon>
-        ),
+        icon: <EditIcon />,
         name: t['Rename'](),
         click: openRenameModal,
       },
@@ -50,11 +46,7 @@ export const FeedsOperations = ({
         element: <div key="divider" className={styles.divider}></div>,
       },
       {
-        icon: (
-          <MenuIcon>
-            <DeleteIcon />
-          </MenuIcon>
-        ),
+        icon: <DeleteIcon />,
         name: t['ai.wemem.feeds.unsubscribe'](),
         click: () => {
           unsubscribe(feedMeta.id);
@@ -77,7 +69,7 @@ export const FeedsOperations = ({
                 data-testid="feed-option"
                 key={action.name}
                 type={action.type}
-                preFix={action.icon}
+                prefixIcon={action.icon}
                 onClick={action.click}
               >
                 {action.name}

@@ -1,7 +1,14 @@
 import * as RadixRadioGroup from '@radix-ui/react-radio-group';
 import { assignInlineVars } from '@vanilla-extract/dynamic';
 import clsx from 'clsx';
-import { createRef, memo, useCallback, useMemo, useRef } from 'react';
+import {
+  createRef,
+  memo,
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+} from 'react';
 
 import { withUnit } from '../../utils/with-unit';
 import * as styles from './styles.css';
@@ -62,6 +69,7 @@ export const RadioGroup = memo(function RadioGroup({
   items,
   value,
   width,
+  className,
   style,
   padding = 2,
   gap = 4,
@@ -71,6 +79,9 @@ export const RadioGroup = memo(function RadioGroup({
   animationEasing = 'cubic-bezier(.18,.22,0,1)',
   activeItemClassName,
   activeItemStyle,
+  indicatorClassName,
+  indicatorStyle,
+  iconMode,
   onChange,
 }: RadioProps) {
   const animationTImerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -128,23 +139,25 @@ export const RadioGroup = memo(function RadioGroup({
     [animationDuration, animationEasing, finalItems]
   );
 
-  const onValueChange = useCallback(
-    (newValue: string) => {
-      const oldValue = value;
-      if (oldValue !== newValue) {
-        onChange(newValue);
-        animate(oldValue, newValue);
-      }
-    },
-    [animate, onChange, value]
-  );
+  // animate on value change
+  // useEffect: in case that value is changed from outside
+  const prevValue = useRef(value);
+  useEffect(() => {
+    const currentValue = value;
+    const previousValue = prevValue.current;
+    if (currentValue !== previousValue) {
+      animate(previousValue, currentValue);
+      prevValue.current = currentValue;
+    }
+  }, [animate, value]);
 
   return (
     <RadixRadioGroup.Root
       value={value}
-      onValueChange={onValueChange}
-      className={styles.radioButtonGroup}
+      onValueChange={onChange}
+      className={clsx(styles.radioButtonGroup, className)}
       style={finalStyle}
+      data-icon-mode={iconMode}
     >
       {finalItems.map(({ customRender, ...item }, index) => {
         const testId = item.testId ? { 'data-testid': item.testId } : {};
@@ -169,13 +182,12 @@ export const RadioGroup = memo(function RadioGroup({
           >
             <RadixRadioGroup.Indicator
               forceMount
-              className={styles.indicator}
+              className={clsx(styles.indicator, indicatorClassName)}
               ref={item.indicatorRef}
+              style={indicatorStyle}
             />
             <span className={styles.radioButtonContent}>
-              {customRender
-                ? customRender(item, index)
-                : item.label ?? item.value}
+              {customRender?.(item, index) ?? item.label ?? item.value}
             </span>
           </RadixRadioGroup.Item>
         );

@@ -1,5 +1,8 @@
 import { cssVar, lightCssVariables } from '@toeverything/theme';
-import { globalStyle, style } from '@vanilla-extract/css';
+import { createVar, globalStyle, style } from '@vanilla-extract/css';
+
+export const panelWidthVar = createVar('panel-width');
+
 export const appStyle = style({
   width: '100%',
   position: 'relative',
@@ -8,9 +11,6 @@ export const appStyle = style({
   display: 'flex',
   backgroundColor: cssVar('backgroundPrimaryColor'),
   selectors: {
-    '&[data-is-resizing="true"]': {
-      cursor: 'col-resize',
-    },
     '&.blur-background': {
       backgroundColor: 'transparent',
     },
@@ -50,7 +50,7 @@ export const mainContainerStyle = style({
   flex: 1,
   overflow: 'clip',
   maxWidth: '100%',
-  transition: 'margin-left 0.2s ease',
+
   selectors: {
     '&[data-client-border="true"]': {
       borderRadius: 6,
@@ -97,4 +97,12 @@ export const toolStyle = style({
       bottom: '78px',
     },
   },
+});
+
+export const fallbackRootStyle = style({
+  paddingTop: 52,
+  display: 'flex',
+  flex: 1,
+  width: '100%',
+  height: '100%',
 });

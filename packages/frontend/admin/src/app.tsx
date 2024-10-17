@@ -1,15 +1,19 @@
 import { Toaster } from '@affine/admin/components/ui/sonner';
-import { Telemetry } from '@affine/core/telemetry';
 import { wrapCreateBrowserRouter } from '@sentry/react';
 import { useEffect } from 'react';
 import {
   createBrowserRouter as reactRouterCreateBrowserRouter,
+  Navigate,
+  Outlet,
   RouterProvider,
   useLocation,
-  useNavigate,
 } from 'react-router-dom';
+import { toast } from 'sonner';
+import { SWRConfig } from 'swr';
 
 import { TooltipProvider } from './components/ui/tooltip';
+import { isAdmin, useCurrentUser, useServerConfig } from './modules/common';
+import { Layout } from './modules/layout';
 
 const createBrowserRouter = wrapCreateBrowserRouter(
   reactRouterCreateBrowserRouter
@@ -19,37 +23,81 @@ const _createBrowserRouter = window.SENTRY_RELEASE
   ? createBrowserRouter
   : reactRouterCreateBrowserRouter;
 
-const Redirect = function Redirect() {
-  const location = useLocation();
-  const navigate = useNavigate();
+function AuthenticatedRoutes() {
+  const user = useCurrentUser();
+
   useEffect(() => {
-    if (!location.pathname.startsWith('/admin')) {
-      navigate('/admin', { replace: true });
+    if (user && !isAdmin(user)) {
+      toast.error('You are not an admin, please login the admin account.');
     }
-  }, [location, navigate]);
-  return null;
-};
+  }, [user]);
+
+  if (!user || !isAdmin(user)) {
+    return <Navigate to="/admin/auth" />;
+  }
+
+  return (
+    <Layout>
+      <Outlet />
+    </Layout>
+  );
+}
+
+function RootRoutes() {
+  const config = useServerConfig();
+  const location = useLocation();
+
+  if (!config.initialized && location.pathname !== '/admin/setup') {
+    return <Navigate to="/admin/setup" />;
+  }
+
+  if (/^\/admin\/?$/.test(location.pathname)) {
+    return <Navigate to="/admin/accounts" />;
+  }
+
+  return <Outlet />;
+}
 
 export const router = _createBrowserRouter(
   [
     {
-      path: '/',
-      element: <Redirect />,
-    },
-    {
       path: '/admin',
+      element: <RootRoutes />,
       children: [
-        {
-          path: '',
-          lazy: () => import('./modules/home'),
-        },
         {
           path: '/admin/auth',
           lazy: () => import('./modules/auth'),
         },
         {
-          path: '/admin/users',
-          lazy: () => import('./modules/users'),
+          path: '/admin/setup',
+          lazy: () => import('./modules/setup'),
+        },
+        {
+          path: '/admin/*',
+          element: <AuthenticatedRoutes />,
+          children: [
+            {
+              path: 'accounts',
+              lazy: () => import('./modules/accounts'),
+            },
+            // {
+            //   path: 'ai',
+            //   lazy: () => import('./modules/ai'),
+            // },
+            {
+              path: 'config',
+              lazy: () => import('./modules/config'),
+            },
+            {
+              path: 'settings',
+              children: [
+                {
+                  path: '*',
+                  lazy: () => import('./modules/settings'),
+                },
+              ],
+            },
+          ],
         },
       ],
     },
@@ -64,8 +112,14 @@ export const router = _createBrowserRouter(
 export const App = () => {
   return (
     <TooltipProvider>
-      <Telemetry />
-      <RouterProvider router={router} />
+      <SWRConfig
+        value={{
+          revalidateOnFocus: false,
+          revalidateOnMount: false,
+        }}
+      >
+        <RouterProvider router={router} />
+      </SWRConfig>
       <Toaster />
     </TooltipProvider>
   );

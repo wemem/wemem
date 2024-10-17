@@ -13,7 +13,7 @@ export class DesktopStateSynchronizer extends Service {
   }
 
   startSync = () => {
-    if (!environment.isDesktop) {
+    if (!BUILD_CONFIG.isElectron) {
       return;
     }
 

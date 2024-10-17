@@ -1,17 +1,14 @@
 import { toast } from '@affine/component';
-import { FeedPageListHeader } from '@affine/core/components/page-list/docs/page-list-header-feed';
-import { FeedDocsPageListHeader } from '@affine/core/components/page-list/docs/page-list-header-feed-docs';
-import { useTrashModalHelper } from '@affine/core/hooks/affine/use-trash-modal-helper';
-import { useBlockSuiteDocMeta } from '@affine/core/hooks/use-block-suite-page-meta';
 import { CollectionService } from '@affine/core/modules/collection';
 import type { Tag } from '@affine/core/modules/tag';
 import type { Collection, Filter } from '@affine/env/filter';
 import { Trans, useI18n } from '@affine/i18n';
-import type { DocMeta } from '@blocksuite/store';
+import type { DocMeta } from '@blocksuite/affine/store';
 import { useService, WorkspaceService } from '@toeverything/infra';
-import { type ReactNode, useCallback, useMemo, useRef, useState } from 'react';
+import { useCallback, useMemo, useRef, useState } from 'react';
 
-import { usePageHelper } from '../../blocksuite/block-suite-page-list/utils';
+import { useTrashModalHelper } from '../../hooks/affine/use-trash-modal-helper';
+import { useBlockSuiteDocMeta } from '../../hooks/use-block-suite-page-meta';
 import { ListFloatingToolbar } from '../components/list-floating-toolbar';
 import { usePageItemGroupDefinitions } from '../group-definitions';
 import { usePageHeaderColsDef } from '../header-col-def';
@@ -55,25 +52,16 @@ const usePageOperationsRenderer = () => {
 export const VirtualizedPageList = ({
   tag,
   collection,
-  feed,
-  feedDocs,
   filters,
   listItem,
   setHideHeaderCreateNewPage,
-  currentFilters,
-  onChangeCurrentFilters,
   wrapTo,
 }: {
   tag?: Tag;
   collection?: Collection;
-  feed?: Collection;
-  feedDocs?: boolean;
   filters?: Filter[];
   listItem?: DocMeta[];
   setHideHeaderCreateNewPage?: (hide: boolean) => void;
-  emptyComponent?: ReactNode;
-  currentFilters?: Filter[];
-  onChangeCurrentFilters?: (filters: Filter[]) => void;
   wrapTo?: (to: string) => string;
 }) => {
   const listRef = useRef<ItemListHandle>(null);
@@ -82,7 +70,6 @@ export const VirtualizedPageList = ({
   const currentWorkspace = useService(WorkspaceService).workspace;
   const pageMetas = useBlockSuiteDocMeta(currentWorkspace.docCollection);
   const pageOperations = usePageOperationsRenderer();
-  const { isPreferredEdgeless } = usePageHelper(currentWorkspace.docCollection);
   const pageHeaderColsDef = usePageHeaderColsDef();
 
   const filteredPageMetas = useFilteredPageMetas(pageMetas, {
@@ -134,39 +121,10 @@ export const VirtualizedPageList = ({
         />
       );
     }
-    if (feed) {
-      return (
-        <FeedPageListHeader
-          workspaceId={currentWorkspace.id}
-          collection={feed}
-          propertiesMeta={currentWorkspace.docCollection.meta.properties}
-          // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-          currentFilters={currentFilters!}
-          // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-          onChangeCurrentFilters={onChangeCurrentFilters!}
-        />
-      );
-    }
+    return <PageListHeader />;
+  }, [collection, currentWorkspace.id, tag]);
 
-    return (
-      <PageListHeader
-        // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-        currentFilters={currentFilters!}
-        // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-        onChangeCurrentFilters={onChangeCurrentFilters!}
-      />
-    );
-  }, [
-    collection,
-    currentFilters,
-    currentWorkspace.docCollection,
-    currentWorkspace.id,
-    feed,
-    onChangeCurrentFilters,
-    tag,
-  ]);
-
-  const { setTrashModal } = useTrashModalHelper(currentWorkspace.docCollection);
+  const { setTrashModal } = useTrashModalHelper();
 
   const handleMultiDelete = useCallback(() => {
     if (filteredSelectedPageIds.length === 0) {
@@ -205,7 +163,6 @@ export const VirtualizedPageList = ({
         items={pageMetasToRender}
         rowAsLink
         wrapTo={wrapTo}
-        isPreferredEdgeless={isPreferredEdgeless}
         docCollection={currentWorkspace.docCollection}
         operationsRenderer={pageOperationRenderer}
         itemRenderer={pageItemRenderer}

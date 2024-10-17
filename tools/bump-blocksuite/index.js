@@ -11,25 +11,28 @@ import {
   Sort,
 } from '@napi-rs/simple-git';
 import chalk from 'chalk';
+import { ProxyAgent, setGlobalDispatcher } from 'undici';
 
 import corePackage from '../../packages/frontend/core/package.json' assert { type: 'json' };
 
 const clipboard = new Clipboard();
 
-const oldHash = corePackage.dependencies['@blocksuite/block-std']
-  .split('-')
-  .pop();
+const oldHash = corePackage.dependencies['@blocksuite/affine'].split('-').pop();
 
-const info = await fetch(
-  'https://registry.npmjs.org/@blocksuite/block-std'
-).then(res => res.json());
+const info = await fetch('https://registry.npmjs.org/@blocksuite/affine').then(
+  res => res.json()
+);
 
-const latestVersion = info['dist-tags'].canary;
+const latestVersion = info['dist-tags'].latest;
 const latestHash = latestVersion.split('-').pop();
 
 if (oldHash === latestHash) {
   console.info(chalk.greenBright('Already updated'));
   process.exit(0);
+}
+
+if (process.env.http_proxy) {
+  setGlobalDispatcher(new ProxyAgent(process.env.http_proxy));
 }
 
 console.info(`Upgrade blocksuite from ${oldHash} -> ${latestHash}`);

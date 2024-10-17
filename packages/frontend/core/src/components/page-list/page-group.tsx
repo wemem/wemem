@@ -1,17 +1,11 @@
-import { useJournalInfoHelper } from '@affine/core/hooks/use-journal';
+import { DocDisplayMetaService } from '@affine/core/modules/doc-display-meta';
 import type { Tag } from '@affine/env/filter';
 import { useI18n } from '@affine/i18n';
-import { assertExists } from '@blocksuite/global/utils';
-import {
-  EdgelessIcon,
-  PageIcon,
-  TodayIcon,
-  ToggleCollapseIcon,
-  ViewLayersIcon,
-} from '@blocksuite/icons/rc';
-import type { DocCollection, DocMeta } from '@blocksuite/store';
+import { assertExists } from '@blocksuite/affine/global/utils';
+import type { DocCollection, DocMeta } from '@blocksuite/affine/store';
+import { ToggleCollapseIcon, ViewLayersIcon } from '@blocksuite/icons/rc';
 import * as Collapsible from '@radix-ui/react-collapsible';
-import { DocsService, useLiveData, useService } from '@toeverything/infra';
+import { useLiveData, useService } from '@toeverything/infra';
 import clsx from 'clsx';
 import { selectAtom } from 'jotai/utils';
 import type { MouseEventHandler } from 'react';
@@ -201,7 +195,6 @@ export const ItemGroup = <T extends ListItem>({
 const requiredPropNames = [
   'docCollection',
   'rowAsLink',
-  'isPreferredEdgeless',
   'operationsRenderer',
   'selectedIds',
   'onSelectedIdsChange',
@@ -285,27 +278,16 @@ function tagIdToTagOption(
 }
 
 const PageTitle = ({ id }: { id: string }) => {
-  const doc = useLiveData(useService(DocsService).list.doc$(id));
-  const title = useLiveData(doc?.title$);
   const t = useI18n();
-  return title || t['Untitled']();
+  const docDisplayMetaService = useService(DocDisplayMetaService);
+  const title = useLiveData(docDisplayMetaService.title$(id));
+  return typeof title === 'string' ? title : t[title.key]();
 };
 
-const UnifiedPageIcon = ({
-  id,
-  docCollection,
-  isPreferredEdgeless,
-}: {
-  id: string;
-  docCollection: DocCollection;
-  isPreferredEdgeless?: (id: string) => boolean;
-}) => {
-  const isEdgeless = isPreferredEdgeless ? isPreferredEdgeless(id) : false;
-  const { isJournal } = useJournalInfoHelper(docCollection, id);
-  if (isJournal) {
-    return <TodayIcon />;
-  }
-  return isEdgeless ? <EdgelessIcon /> : <PageIcon />;
+const UnifiedPageIcon = ({ id }: { id: string }) => {
+  const docDisplayMetaService = useService(DocDisplayMetaService);
+  const Icon = useLiveData(docDisplayMetaService.icon$(id));
+  return <Icon />;
 };
 
 function pageMetaToListItemProp(
@@ -340,13 +322,7 @@ function pageMetaToListItemProp(
     updatedDate: item.updatedDate ? new Date(item.updatedDate) : undefined,
     to: props.rowAsLink && !props.selectable ? `/${item.id}` : undefined,
     onClick: toggleSelection,
-    icon: (
-      <UnifiedPageIcon
-        id={item.id}
-        docCollection={props.docCollection}
-        isPreferredEdgeless={props.isPreferredEdgeless}
-      />
-    ),
+    icon: <UnifiedPageIcon id={item.id} />,
     tags:
       item.tags
         ?.map(id => tagIdToTagOption(id, props.docCollection))

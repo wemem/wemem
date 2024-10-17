@@ -5,13 +5,12 @@
     "e2e": "yarn playwright test"
   },
   "devDependencies": {
-    "@affine-test/fixtures": "workspace:*",
     "@affine-test/kit": "workspace:*",
     "@affine/electron-api": "workspace:*",
-    "@playwright/test": "=1.44.1",
+    "@playwright/test": "=1.47.2",
     "@types/fs-extra": "^11.0.4",
     "fs-extra": "^11.2.0",
-    "playwright": "=1.44.1"
+    "playwright": "=1.47.2"
   },
-  "version": "0.16.0"
+  "version": "0.17.0"
 }

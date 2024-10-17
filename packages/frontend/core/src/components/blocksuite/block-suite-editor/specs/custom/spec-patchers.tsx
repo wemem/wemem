@@ -7,40 +7,62 @@ import {
   toReactNode,
   type useConfirmModal,
 } from '@affine/component';
-import { track } from '@affine/core/mixpanel';
-import { DocsSearchService } from '@affine/core/modules/docs-search';
+import type { EditorService } from '@affine/core/modules/editor';
+import { EditorSettingService } from '@affine/core/modules/editor-settting';
 import { resolveLinkToDoc } from '@affine/core/modules/navigation';
 import type { PeekViewService } from '@affine/core/modules/peek-view';
 import type { ActivePeekView } from '@affine/core/modules/peek-view/entities/peek-view';
 import {
   CreationQuickSearchSession,
   DocsQuickSearchSession,
-  type QuickSearchItem,
+  LinksQuickSearchSession,
   QuickSearchService,
   RecentDocsQuickSearchSession,
 } from '@affine/core/modules/quicksearch';
+import { ExternalLinksQuickSearchSession } from '@affine/core/modules/quicksearch/impls/external-links';
+import { WorkbenchService } from '@affine/core/modules/workbench';
+import { isNewTabTrigger } from '@affine/core/utils';
 import { DebugLogger } from '@affine/debug';
-import type { BlockSpec, WidgetComponent } from '@blocksuite/block-std';
+import { track } from '@affine/track';
 import {
-  type AffineReference,
+  type BlockService,
+  BlockViewIdentifier,
+  type ExtensionType,
+  type WidgetComponent,
+} from '@blocksuite/affine/block-std';
+import { BlockServiceWatcher } from '@blocksuite/affine/block-std';
+import type {
+  AffineReference,
+  DocMode,
+  DocModeProvider,
+  QuickSearchResult,
+  RootService,
+} from '@blocksuite/affine/blocks';
+import {
   AffineSlashMenuWidget,
+  DocModeExtension,
   EdgelessRootBlockComponent,
   EmbedLinkedDocBlockComponent,
-  type ParagraphBlockService,
-  type RootService,
-} from '@blocksuite/blocks';
-import { LinkIcon } from '@blocksuite/icons/rc';
-import { AIChatBlockSchema } from '@blocksuite/presets';
-import type { BlockSnapshot } from '@blocksuite/store';
+  EmbedLinkedDocBlockConfigExtension,
+  NotificationExtension,
+  ParseDocUrlExtension,
+  PeekViewExtension,
+  QuickSearchExtension,
+  ReferenceNodeConfigExtension,
+} from '@blocksuite/affine/blocks';
+import { AIChatBlockSchema } from '@blocksuite/affine/presets';
+import { type BlockSnapshot, Text } from '@blocksuite/affine/store';
 import {
-  type DocMode,
+  type DocProps,
   type DocService,
   DocsService,
   type FrameworkProvider,
+  WorkspaceService,
 } from '@toeverything/infra';
 import { type TemplateResult } from 'lit';
 import { customElement } from 'lit/decorators.js';
 import { literal } from 'lit/static-html.js';
+import { pick } from 'lodash-es';
 
 export type ReferenceReactRenderer = (
   reference: AffineReference
@@ -48,396 +70,322 @@ export type ReferenceReactRenderer = (
 
 const logger = new DebugLogger('affine::spec-patchers');
 
-function patchSpecService<Spec extends BlockSpec>(
-  spec: Spec,
-  onMounted: (
-    service: Spec extends BlockSpec<any, infer BlockService>
-      ? BlockService
-      : never
-  ) => (() => void) | void,
+function patchSpecService<Service extends BlockService = BlockService>(
+  flavour: string,
+  onMounted: (service: Service) => (() => void) | void,
   onWidgetConnected?: (component: WidgetComponent) => void
 ) {
-  const oldSetup = spec.setup;
-  spec.setup = (slots, disposableGroup) => {
-    oldSetup?.(slots, disposableGroup);
-    disposableGroup.add(
-      slots.mounted.on(({ service }) => {
-        const disposable = onMounted(service as any);
-        if (disposable) {
-          disposableGroup.add(disposable);
-        }
-      })
-    );
+  class TempServiceWatcher extends BlockServiceWatcher {
+    static override readonly flavour = flavour;
+    override mounted() {
+      super.mounted();
+      const disposable = onMounted(this.blockService as any);
+      const disposableGroup = this.blockService.disposables;
+      if (disposable) {
+        disposableGroup.add(disposable);
+      }
 
-    onWidgetConnected &&
-      disposableGroup.add(
-        slots.widgetConnected.on(({ component }) => {
-          onWidgetConnected(component);
-        })
-      );
-  };
-  return spec;
+      if (onWidgetConnected) {
+        disposableGroup.add(
+          this.blockService.specSlots.widgetConnected.on(({ component }) => {
+            onWidgetConnected(component);
+          })
+        );
+      }
+    }
+  }
+  return TempServiceWatcher;
 }
 
 /**
  * Patch the block specs with custom renderers.
  */
 export function patchReferenceRenderer(
-  specs: BlockSpec[],
   reactToLit: (element: ElementOrFactory) => TemplateResult,
   reactRenderer: ReferenceReactRenderer
-) {
+): ExtensionType {
   const litRenderer = (reference: AffineReference) => {
     const node = reactRenderer(reference);
     return reactToLit(node);
   };
 
-  return specs.map(spec => {
-    if (
-      ['affine:paragraph', 'affine:list', 'affine:database'].includes(
-        spec.schema.model.flavour
-      )
-    ) {
-      spec = patchSpecService(
-        spec as BlockSpec<string, ParagraphBlockService>,
-        service => {
-          service.referenceNodeConfig.setCustomContent(litRenderer);
-          return () => {
-            service.referenceNodeConfig.setCustomContent(null);
-          };
+  return ReferenceNodeConfigExtension({
+    customContent: litRenderer,
+  });
+}
+
+export function patchNotificationService({
+  closeConfirmModal,
+  openConfirmModal,
+}: ReturnType<typeof useConfirmModal>) {
+  return NotificationExtension({
+    confirm: async ({ title, message, confirmText, cancelText, abort }) => {
+      return new Promise<boolean>(resolve => {
+        openConfirmModal({
+          title: toReactNode(title),
+          description: toReactNode(message),
+          confirmText,
+          confirmButtonOptions: {
+            variant: 'primary',
+          },
+          cancelText,
+          onConfirm: () => {
+            resolve(true);
+          },
+          onCancel: () => {
+            resolve(false);
+          },
+        });
+        abort?.addEventListener('abort', () => {
+          resolve(false);
+          closeConfirmModal();
+        });
+      });
+    },
+    prompt: async ({
+      title,
+      message,
+      confirmText,
+      placeholder,
+      cancelText,
+      autofill,
+      abort,
+    }) => {
+      return new Promise<string | null>(resolve => {
+        let value = autofill || '';
+        const description = (
+          <div>
+            <span style={{ marginBottom: 12 }}>{toReactNode(message)}</span>
+            <Input
+              placeholder={placeholder}
+              defaultValue={value}
+              onChange={e => (value = e)}
+              ref={input => input?.select()}
+            />
+          </div>
+        );
+        openConfirmModal({
+          title: toReactNode(title),
+          description: description,
+          confirmText: confirmText ?? 'Confirm',
+          confirmButtonOptions: {
+            variant: 'primary',
+          },
+          cancelText: cancelText ?? 'Cancel',
+          onConfirm: () => {
+            resolve(value);
+          },
+          onCancel: () => {
+            resolve(null);
+          },
+        });
+        abort?.addEventListener('abort', () => {
+          resolve(null);
+          closeConfirmModal();
+        });
+      });
+    },
+    toast: (message: string, options: ToastOptions) => {
+      return toast(message, options);
+    },
+    notify: notification => {
+      const accentToNotify = {
+        error: notify.error,
+        success: notify.success,
+        warning: notify.warning,
+        info: notify,
+      };
+
+      const fn = accentToNotify[notification.accent || 'info'];
+      if (!fn) {
+        throw new Error('Invalid notification accent');
+      }
+
+      const toastId = fn(
+        {
+          title: toReactNode(notification.title),
+          message: toReactNode(notification.message),
+          action: notification.action?.onClick
+            ? {
+                label: toReactNode(notification.action?.label),
+                onClick: notification.action.onClick,
+              }
+            : undefined,
+          onDismiss: notification.onClose,
+        },
+        {
+          duration: notification.duration || 0,
+          onDismiss: notification.onClose,
+          onAutoClose: notification.onClose,
         }
       );
-    }
 
-    return spec;
+      notification.abort?.addEventListener('abort', () => {
+        notify.dismiss(toastId);
+      });
+    },
   });
 }
 
-export function patchNotificationService(
-  specs: BlockSpec[],
-  { closeConfirmModal, openConfirmModal }: ReturnType<typeof useConfirmModal>
-) {
-  const rootSpec = specs.find(
-    spec => spec.schema.model.flavour === 'affine:page'
-  ) as BlockSpec<string, RootService>;
+export function patchEmbedLinkedDocBlockConfig(framework: FrameworkProvider) {
+  const getWorkbench = () => framework.get(WorkbenchService).workbench;
 
-  if (!rootSpec) {
-    return specs;
-  }
-
-  patchSpecService(rootSpec, service => {
-    service.notificationService = {
-      confirm: async ({ title, message, confirmText, cancelText, abort }) => {
-        return new Promise<boolean>(resolve => {
-          openConfirmModal({
-            title: toReactNode(title),
-            description: toReactNode(message),
-            confirmText,
-            confirmButtonOptions: {
-              variant: 'primary',
-            },
-            cancelText,
-            onConfirm: () => {
-              resolve(true);
-            },
-            onCancel: () => {
-              resolve(false);
-            },
-          });
-          abort?.addEventListener('abort', () => {
-            resolve(false);
-            closeConfirmModal();
-          });
-        });
-      },
-      prompt: async ({
-        title,
-        message,
-        confirmText,
-        placeholder,
-        cancelText,
-        autofill,
-        abort,
-      }) => {
-        return new Promise<string | null>(resolve => {
-          let value = autofill || '';
-          const description = (
-            <div>
-              <span style={{ marginBottom: 12 }}>{toReactNode(message)}</span>
-              <Input
-                placeholder={placeholder}
-                defaultValue={value}
-                onChange={e => (value = e)}
-                ref={input => input?.select()}
-              />
-            </div>
-          );
-          openConfirmModal({
-            title: toReactNode(title),
-            description: description,
-            confirmText: confirmText ?? 'Confirm',
-            confirmButtonOptions: {
-              variant: 'primary',
-            },
-            cancelText: cancelText ?? 'Cancel',
-            onConfirm: () => {
-              resolve(value);
-            },
-            onCancel: () => {
-              resolve(null);
-            },
-          });
-          abort?.addEventListener('abort', () => {
-            resolve(null);
-            closeConfirmModal();
-          });
-        });
-      },
-      toast: (message: string, options: ToastOptions) => {
-        return toast(message, options);
-      },
-      notify: notification => {
-        const accentToNotify = {
-          error: notify.error,
-          success: notify.success,
-          warning: notify.warning,
-          info: notify,
-        };
-
-        const fn = accentToNotify[notification.accent || 'info'];
-        if (!fn) {
-          throw new Error('Invalid notification accent');
-        }
-
-        const toastId = fn(
-          {
-            title: toReactNode(notification.title),
-            message: toReactNode(notification.message),
-            action: notification.action?.onClick
-              ? {
-                  label: toReactNode(notification.action?.label),
-                  onClick: notification.action.onClick,
-                }
-              : undefined,
-            onDismiss: notification.onClose,
-          },
-          {
-            duration: notification.duration || 0,
-            onDismiss: notification.onClose,
-            onAutoClose: notification.onClose,
-          }
-        );
-
-        notification.abort?.addEventListener('abort', () => {
-          notify.dismiss(toastId);
-        });
-      },
-    };
+  return EmbedLinkedDocBlockConfigExtension({
+    handleClick(e, _, refInfo) {
+      if (isNewTabTrigger(e)) {
+        const workbench = getWorkbench();
+        workbench.openDoc(refInfo.pageId, { at: 'new-tab' });
+        e.preventDefault();
+      }
+    },
   });
-  return specs;
 }
 
-export function patchPeekViewService(
-  specs: BlockSpec[],
-  service: PeekViewService
-) {
-  const rootSpec = specs.find(
-    spec => spec.schema.model.flavour === 'affine:page'
-  ) as BlockSpec<string, RootService>;
-
-  if (!rootSpec) {
-    return specs;
-  }
-
-  patchSpecService(rootSpec, pageService => {
-    pageService.peekViewService = {
-      peek: (target: ActivePeekView['target'], template?: TemplateResult) => {
-        logger.debug('center peek', target, template);
-        return service.peekView.open(target, template);
-      },
-    };
+export function patchPeekViewService(service: PeekViewService) {
+  return PeekViewExtension({
+    peek: (target: ActivePeekView['target'], template?: TemplateResult) => {
+      logger.debug('center peek', target, template);
+      return service.peekView.open(target, template);
+    },
   });
-
-  return specs;
 }
 
 export function patchDocModeService(
-  specs: BlockSpec[],
   docService: DocService,
-  docsService: DocsService
-) {
-  const rootSpec = specs.find(
-    spec => spec.schema.model.flavour === 'affine:page'
-  ) as BlockSpec<string, RootService>;
-
-  if (!rootSpec) {
-    return specs;
+  docsService: DocsService,
+  editorService: EditorService
+): ExtensionType {
+  const DEFAULT_MODE = 'page';
+  class AffineDocModeService implements DocModeProvider {
+    setEditorMode = (mode: DocMode) => {
+      editorService.editor.setMode(mode);
+    };
+    getEditorMode = () => {
+      return editorService.editor.mode$.value;
+    };
+    setPrimaryMode = (mode: DocMode, id?: string) => {
+      if (id) {
+        docsService.list.setPrimaryMode(id, mode);
+      } else {
+        docService.doc.setPrimaryMode(mode);
+      }
+    };
+    getPrimaryMode = (id?: string) => {
+      const mode = id
+        ? docsService.list.getPrimaryMode(id)
+        : docService.doc.getPrimaryMode();
+      return (mode || DEFAULT_MODE) as DocMode;
+    };
+    togglePrimaryMode = (id?: string) => {
+      const mode = id
+        ? docsService.list.togglePrimaryMode(id)
+        : docService.doc.togglePrimaryMode();
+      return (mode || DEFAULT_MODE) as DocMode;
+    };
+    onPrimaryModeChange = (handler: (mode: DocMode) => void, id?: string) => {
+      // eslint-disable-next-line rxjs/finnish
+      const mode$ = id
+        ? docsService.list.primaryMode$(id)
+        : docService.doc.primaryMode$;
+      const sub = mode$.subscribe(m => handler((m || DEFAULT_MODE) as DocMode));
+      return {
+        dispose: sub.unsubscribe,
+      };
+    };
   }
 
-  patchSpecService(rootSpec, pageService => {
-    const DEFAULT_MODE = 'page';
-    pageService.docModeService = {
-      setMode: (mode: DocMode, id?: string) => {
-        if (id) {
-          docsService.list.setMode(id, mode);
-        } else {
-          docService.doc.setMode(mode);
-        }
-      },
-      getMode: (id?: string) => {
-        const mode = id
-          ? docsService.list.getMode(id)
-          : docService.doc.getMode();
-        return mode || DEFAULT_MODE;
-      },
-      toggleMode: (id?: string) => {
-        const mode = id
-          ? docsService.list.toggleMode(id)
-          : docService.doc.toggleMode();
-        return mode || DEFAULT_MODE;
-      },
-      onModeChange: (handler: (mode: DocMode) => void, id?: string) => {
-        // eslint-disable-next-line rxjs/finnish
-        const mode$ = id
-          ? docsService.list.observeMode(id)
-          : docService.doc.observeMode();
-        const sub = mode$.subscribe(m => handler(m || DEFAULT_MODE));
-        return {
-          dispose: sub.unsubscribe,
-        };
-      },
-    };
-  });
+  const docModeExtension = DocModeExtension(new AffineDocModeService());
 
-  return specs;
+  return docModeExtension;
 }
 
-export function patchQuickSearchService(
-  specs: BlockSpec[],
-  framework: FrameworkProvider
-) {
-  const rootSpec = specs.find(
-    spec => spec.schema.model.flavour === 'affine:page'
-  ) as BlockSpec<string, RootService>;
-
-  if (!rootSpec) {
-    return specs;
-  }
-
-  patchSpecService(
-    rootSpec,
-    pageService => {
-      pageService.quickSearchService = {
-        async searchDoc(options) {
-          let searchResult:
-            | { docId: string; isNewDoc?: boolean }
-            | { userInput: string }
-            | null = null;
-          if (options.skipSelection) {
-            const query = options.userInput;
-            if (!query) {
-              logger.error('No user input provided');
-            } else {
-              const resolvedDoc = resolveLinkToDoc(query);
-              if (resolvedDoc) {
-                searchResult = {
-                  docId: resolvedDoc.docId,
-                };
-              } else if (
-                query.startsWith('http://') ||
-                query.startsWith('https://')
-              ) {
-                searchResult = {
-                  userInput: query,
-                };
-              } else {
-                const searchedDoc = (
-                  await framework.get(DocsSearchService).search(query)
-                ).at(0);
-                if (searchedDoc) {
-                  searchResult = {
-                    docId: searchedDoc.docId,
-                  };
-                }
-              }
+export function patchQuickSearchService(framework: FrameworkProvider) {
+  const QuickSearch = QuickSearchExtension({
+    async openQuickSearch() {
+      let searchResult: QuickSearchResult = null;
+      searchResult = await new Promise(resolve =>
+        framework.get(QuickSearchService).quickSearch.show(
+          [
+            framework.get(RecentDocsQuickSearchSession),
+            framework.get(CreationQuickSearchSession),
+            framework.get(DocsQuickSearchSession),
+            framework.get(LinksQuickSearchSession),
+            framework.get(ExternalLinksQuickSearchSession),
+          ],
+          result => {
+            if (result === null) {
+              resolve(null);
+              return;
             }
-          } else {
-            searchResult = await new Promise(resolve =>
-              framework.get(QuickSearchService).quickSearch.show(
-                [
-                  framework.get(RecentDocsQuickSearchSession),
-                  framework.get(DocsQuickSearchSession),
-                  framework.get(CreationQuickSearchSession),
-                  (query: string) => {
-                    if (
-                      (query.startsWith('http://') ||
-                        query.startsWith('https://')) &&
-                      resolveLinkToDoc(query) === null
-                    ) {
-                      return [
-                        {
-                          id: 'link',
-                          source: 'link',
-                          icon: LinkIcon,
-                          label: {
-                            key: 'com.affine.cmdk.affine.insert-link',
-                          },
-                          payload: { url: query },
-                        } as QuickSearchItem<'link', { url: string }>,
-                      ];
-                    }
-                    return [];
-                  },
-                ],
-                result => {
-                  if (result === null) {
-                    resolve(null);
-                    return;
-                  }
-                  if (
-                    result.source === 'docs' ||
-                    result.source === 'recent-doc'
-                  ) {
-                    resolve({
-                      docId: result.payload.docId,
-                    });
-                  } else if (result.source === 'link') {
-                    resolve({
-                      userInput: result.payload.url,
-                    });
-                  } else if (result.source === 'creation') {
-                    const docsService = framework.get(DocsService);
-                    const mode =
-                      result.id === 'creation:create-edgeless'
-                        ? 'edgeless'
-                        : 'page';
-                    const newDoc = docsService.createDoc({
-                      mode,
-                      title: result.payload.title,
-                    });
-                    resolve({
-                      docId: newDoc.id,
-                      isNewDoc: true,
-                    });
-                  }
-                },
-                {
-                  defaultQuery: options.userInput,
-                  label: {
-                    key: 'com.affine.cmdk.insert-links',
-                  },
-                  placeholder: {
-                    key: 'com.affine.cmdk.docs.placeholder',
-                  },
-                }
-              )
-            );
-          }
 
-          return searchResult;
-        },
-      };
+            if (result.source === 'docs') {
+              resolve({
+                docId: result.payload.docId,
+              });
+              return;
+            }
+
+            if (result.source === 'recent-doc') {
+              resolve({
+                docId: result.payload.docId,
+              });
+              return;
+            }
+
+            if (result.source === 'link') {
+              resolve({
+                docId: result.payload.docId,
+                params: pick(result.payload, [
+                  'mode',
+                  'blockIds',
+                  'elementIds',
+                ]),
+              });
+              return;
+            }
+
+            if (result.source === 'external-link') {
+              const externalUrl = result.payload.url;
+              resolve({ externalUrl });
+              return;
+            }
+
+            if (result.source === 'creation') {
+              const docsService = framework.get(DocsService);
+              const editorSettingService = framework.get(EditorSettingService);
+              const mode =
+                result.id === 'creation:create-edgeless' ? 'edgeless' : 'page';
+              const docProps: DocProps = {
+                page: { title: new Text(result.payload.title) },
+                note: editorSettingService.editorSetting.get('affine:note'),
+              };
+              const newDoc = docsService.createDoc({
+                primaryMode: mode,
+                docProps,
+              });
+
+              resolve({ docId: newDoc.id });
+              return;
+            }
+          },
+          {
+            label: {
+              key: 'com.affine.cmdk.insert-links',
+            },
+            placeholder: {
+              key: 'com.affine.cmdk.docs.placeholder',
+            },
+          }
+        )
+      );
+
+      return searchResult;
     },
+  });
+
+  const SlashMenuQuickSearchExtension = patchSpecService<RootService>(
+    'affine:page',
+    () => {},
     (component: WidgetComponent) => {
       if (component instanceof AffineSlashMenuWidget) {
         component.config.items.forEach(item => {
@@ -445,74 +393,76 @@ export function patchQuickSearchService(
             'action' in item &&
             (item.name === 'Linked Doc' || item.name === 'Link')
           ) {
-            const oldAction = item.action;
-            item.action = async ({ model, rootComponent }) => {
-              const { host, service, std } = rootComponent;
-              const { quickSearchService } = service;
+            item.action = async ({ rootComponent }) => {
+              // @ts-expect-error fixme
+              const { success, insertedLinkType } =
+                // @ts-expect-error fixme
+                rootComponent.std.command.exec('insertLinkByQuickSearch');
 
-              if (!quickSearchService)
-                return oldAction({ model, rootComponent });
+              if (!success) return;
 
-              const result = await quickSearchService.searchDoc({});
-              if (result === null) return;
+              insertedLinkType
+                ?.then(
+                  (type: {
+                    flavour?: 'affine:embed-linked-doc' | 'affine:bookmark';
+                  }) => {
+                    const flavour = type?.flavour;
+                    if (!flavour) return;
 
-              if ('docId' in result) {
-                const linkedDoc = std.collection.getDoc(result.docId);
-                if (!linkedDoc) return;
+                    if (flavour === 'affine:bookmark') {
+                      track.doc.editor.slashMenu.bookmark();
+                      return;
+                    }
 
-                host.doc.addSiblingBlocks(model, [
-                  {
-                    flavour: 'affine:embed-linked-doc',
-                    pageId: linkedDoc.id,
-                  },
-                ]);
-                if (result.isNewDoc) {
-                  track.doc.editor.slashMenu.createDoc({ control: 'linkDoc' });
-                  track.doc.editor.slashMenu.linkDoc({ control: 'createDoc' });
-                }
-                track.doc.editor.slashMenu.linkDoc({ control: 'linkDoc' });
-              } else if ('userInput' in result) {
-                const embedOptions = service.getEmbedBlockOptions(
-                  result.userInput
-                );
-                if (!embedOptions) return;
-
-                host.doc.addSiblingBlocks(model, [
-                  {
-                    flavour: embedOptions.flavour,
-                    url: result.userInput,
-                  },
-                ]);
-              }
+                    if (flavour === 'affine:embed-linked-doc') {
+                      track.doc.editor.slashMenu.linkDoc({
+                        control: 'linkDoc',
+                      });
+                      return;
+                    }
+                  }
+                )
+                .catch(console.error);
             };
           }
         });
       }
     }
   );
-
-  return specs;
+  return [QuickSearch, SlashMenuQuickSearchExtension];
 }
 
-export function patchEdgelessClipboard(specs: BlockSpec[]) {
-  const rootSpec = specs.find(
-    spec => spec.schema.model.flavour === 'affine:page'
-  ) as BlockSpec<string, RootService>;
+export function patchParseDocUrlExtension(framework: FrameworkProvider) {
+  const workspaceService = framework.get(WorkspaceService);
+  const ParseDocUrl = ParseDocUrlExtension({
+    parseDocUrl(url) {
+      const info = resolveLinkToDoc(url);
+      if (!info || info.workspaceId !== workspaceService.workspace.id) return;
 
-  if (!rootSpec) {
-    return specs;
-  }
+      return {
+        docId: info.docId,
+        blockIds: info.blockIds,
+        elementIds: info.elementIds,
+        mode: info.mode,
+      };
+    },
+  });
 
-  const oldSetup = rootSpec.setup;
-  rootSpec.setup = (slots, disposableGroup) => {
-    oldSetup?.(slots, disposableGroup);
-    disposableGroup.add(
-      slots.viewConnected.on(view => {
-        const component = view.component;
-        if (component instanceof EdgelessRootBlockComponent) {
-          const AIChatBlockFlavour = AIChatBlockSchema.model.flavour;
-          const createFunc = (blocks: BlockSnapshot[]) => {
-            const blockIds = blocks.map(({ props }) => {
+  return [ParseDocUrl];
+}
+
+export function patchEdgelessClipboard() {
+  class EdgelessClipboardWatcher extends BlockServiceWatcher {
+    static override readonly flavour = 'affine:page';
+
+    override mounted() {
+      super.mounted();
+      this.blockService.disposables.add(
+        this.blockService.specSlots.viewConnected.on(view => {
+          const { component } = view;
+          if (component instanceof EdgelessRootBlockComponent) {
+            const AIChatBlockFlavour = AIChatBlockSchema.model.flavour;
+            const createFunc = (block: BlockSnapshot) => {
               const {
                 xywh,
                 scale,
@@ -520,7 +470,7 @@ export function patchEdgelessClipboard(specs: BlockSpec[]) {
                 sessionId,
                 rootDocId,
                 rootWorkspaceId,
-              } = props;
+              } = block.props;
               const blockId = component.service.addBlock(
                 AIChatBlockFlavour,
                 {
@@ -534,45 +484,42 @@ export function patchEdgelessClipboard(specs: BlockSpec[]) {
                 component.surface.model.id
               );
               return blockId;
-            });
-            return blockIds;
-          };
-          component.clipboardController.registerBlock(
-            AIChatBlockFlavour,
-            createFunc
-          );
-        }
-      })
-    );
-  };
+            };
+            component.clipboardController.registerBlock(
+              AIChatBlockFlavour,
+              createFunc
+            );
+          }
+        })
+      );
+    }
+  }
 
-  return specs;
+  return EdgelessClipboardWatcher;
 }
 
 @customElement('affine-linked-doc-ref-block')
-// @ts-expect-error ignore private warning for overriding _load
 export class LinkedDocBlockComponent extends EmbedLinkedDocBlockComponent {
-  override async _load() {
-    this.isBannerEmpty = true;
+  override getInitialState() {
+    return {
+      loading: false,
+      isBannerEmpty: true,
+    };
   }
 }
 
-export function patchForSharedPage(specs: BlockSpec[]) {
-  return specs.map(spec => {
-    const linkedDocNames = [
-      'affine:embed-linked-doc',
-      'affine:embed-synced-doc',
-    ];
-
-    if (linkedDocNames.includes(spec.schema.model.flavour)) {
-      spec = {
-        ...spec,
-        view: {
-          component: literal`affine-linked-doc-ref-block`,
-          widgets: {},
-        },
-      };
-    }
-    return spec;
-  });
+export function patchForSharedPage() {
+  const extension: ExtensionType = {
+    setup: di => {
+      di.override(
+        BlockViewIdentifier('affine:embed-linked-doc'),
+        () => literal`affine-linked-doc-ref-block`
+      );
+      di.override(
+        BlockViewIdentifier('affine:embed-synced-doc'),
+        () => literal`affine-linked-doc-ref-block`
+      );
+    },
+  };
+  return extension;
 }

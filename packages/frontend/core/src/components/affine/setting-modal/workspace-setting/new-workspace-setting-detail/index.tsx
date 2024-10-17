@@ -3,8 +3,8 @@ import {
   SettingRow,
   SettingWrapper,
 } from '@affine/component/setting-components';
-import { useWorkspace } from '@affine/core/hooks/use-workspace';
-import { useWorkspaceInfo } from '@affine/core/hooks/use-workspace-info';
+import { useWorkspace } from '@affine/core/components/hooks/use-workspace';
+import { useWorkspaceInfo } from '@affine/core/components/hooks/use-workspace-info';
 import { UNTITLED_WORKSPACE_NAME } from '@affine/env/constant';
 import { useI18n } from '@affine/i18n';
 import { ArrowRightSmallIcon } from '@blocksuite/icons/rc';
@@ -15,10 +15,10 @@ import { DeleteLeaveWorkspace } from './delete-leave-workspace';
 import { EnableCloudPanel } from './enable-cloud';
 import { ExportPanel } from './export';
 import { LabelsPanel } from './labels';
-import { MembersPanel } from './members';
+// import { MembersPanel } from './members';
 import { ProfilePanel } from './profile';
+import { SharingPanel } from './sharing';
 import type { WorkspaceSettingDetailProps } from './types';
-import { WorkspaceFlavour } from '@affine/env/workspace';
 
 export const WorkspaceSettingDetail = ({
   workspaceMetadata,
@@ -64,13 +64,12 @@ export const WorkspaceSettingDetail = ({
           <LabelsPanel />
         </SettingRow>
       </SettingWrapper>
-      {workspace.flavour === WorkspaceFlavour.LOCAL && (
-        <SettingWrapper title={t['com.affine.brand.affineCloud']()}>
-          <EnableCloudPanel />
-          {/* <MembersPanel /> */}
-        </SettingWrapper>
-      )}
-      {environment.isDesktop && (
+      <SettingWrapper title={t['com.affine.brand.affineCloud']()}>
+        <EnableCloudPanel />
+        {/*<MembersPanel />*/}
+      </SettingWrapper>
+      <SharingPanel />
+      {BUILD_CONFIG.isElectron && (
         <SettingWrapper title={t['Storage and Export']()}>
           <ExportPanel
             workspace={workspace}

@@ -1,7 +1,7 @@
 import { Loading } from '@affine/component/ui/loading';
 import type { CommandCategory } from '@affine/core/commands';
-import { useDocEngineStatus } from '@affine/core/hooks/affine/use-doc-engine-status';
-import { useAsyncCallback } from '@affine/core/hooks/affine-async-hooks';
+import { useAsyncCallback } from '@affine/core/components/hooks/affine-async-hooks';
+import { NewFeedService } from '@affine/core/modules/feed-newly';
 import { i18nTime, useI18n } from '@affine/i18n';
 import type { DocMeta } from '@blocksuite/store';
 import {
@@ -9,6 +9,7 @@ import {
   GlobalContextService,
   useLiveData,
   useService,
+  WorkspaceService,
 } from '@toeverything/infra';
 import clsx from 'clsx';
 import { Command } from 'cmdk';
@@ -35,7 +36,6 @@ import type { CMDKModalProps } from './modal';
 import { CMDKModal } from './modal';
 import { NotFoundGroup } from './not-found';
 import type { CMDKCommand } from './types';
-import { NewFeedService } from '@affine/core/modules/feed-newly';
 
 type NoParametersKeys<T> = {
   [K in keyof T]: T[K] extends () => any ? K : never;
@@ -158,6 +158,25 @@ const QuickSearchCommands = ({
   );
 };
 
+export function useDocEngineStatus() {
+  const workspace = useService(WorkspaceService).workspace;
+
+  const engineState = useLiveData(
+    workspace.engine.docEngineState$.throttleTime(100)
+  );
+  const progress =
+    (engineState.total - engineState.syncing) / engineState.total;
+
+  return useMemo(
+    () => ({
+      ...engineState,
+      progress,
+      syncing: engineState.syncing > 0 || engineState.retrying,
+    }),
+    [engineState, progress]
+  );
+}
+
 export const CMDKContainer = ({
   className,
   onQueryChange,
@@ -248,7 +267,6 @@ export const CMDKContainer = ({
 };
 
 const CMDKQuickSearchModalInner = ({
-  pageMeta,
   open,
   ...props
 }: CMDKModalProps & { pageMeta?: Partial<DocMeta> }) => {
@@ -318,7 +336,7 @@ export const NewFeedModal = ({
 };
 
 const CMDKKeyBinding = ({ keyBinding }: { keyBinding: string }) => {
-  const isMacOS = environment.isBrowser && environment.isMacOs;
+  const isMacOS = environment.isMacOs;
   const fragments = useMemo(() => {
     return keyBinding.split('+').map(fragment => {
       if (fragment === '$mod') {

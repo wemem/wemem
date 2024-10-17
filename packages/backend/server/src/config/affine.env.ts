@@ -25,6 +25,7 @@ AFFiNE.ENV_MAP = {
   OAUTH_OIDC_CLAIM_MAP_EMAIL: 'plugins.oauth.providers.oidc.args.claim_email',
   OAUTH_OIDC_CLAIM_MAP_NAME: 'plugins.oauth.providers.oidc.args.claim_name',
   METRICS_CUSTOMER_IO_TOKEN: ['metrics.customerIo.token', 'string'],
+  CAPTCHA_TURNSTILE_SECRET: ['plugins.captcha.turnstile.secret', 'string'],
   COPILOT_OPENAI_API_KEY: 'plugins.copilot.openai.apiKey',
   COPILOT_OPENAI_BASE_URL: 'plugins.copilot.openai.baseURL',
   COPILOT_FAL_API_KEY: 'plugins.copilot.fal.apiKey',

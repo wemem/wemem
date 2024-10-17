@@ -4,15 +4,29 @@ import {
   Modal,
   Scrollable,
 } from '@affine/component';
+import { DocInfoService } from '@affine/core/modules/doc-info';
 import { DocsSearchService } from '@affine/core/modules/docs-search';
 import { FeedTag } from '@affine/core/modules/tag/entities/internal-tag';
+import { useI18n } from '@affine/i18n';
+import type { Doc } from '@toeverything/infra';
 import {
+  DocsService,
+  FrameworkScope,
   LiveData,
   useLiveData,
+  useService,
   useServices,
   WorkspaceService,
 } from '@toeverything/infra';
-import { Suspense, useCallback, useContext, useMemo, useRef } from 'react';
+import {
+  Suspense,
+  useCallback,
+  useContext,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from 'react';
 
 import { BlocksuiteHeaderTitle } from '../../../blocksuite/block-suite-header/title';
 import { managerContext } from '../common';
@@ -22,38 +36,47 @@ import {
   SortableProperties,
   usePagePropertiesManager,
 } from '../table';
-import { BackLinksRow } from './back-links-row';
 import * as styles from './info-modal.css';
+import { LinksRow } from './links-row';
 import { TagsRow } from './tags-row';
 import { TimeRow } from './time-row';
 
-export const InfoModal = ({
-  open,
-  onOpenChange,
-  docId,
-}: {
-  open: boolean;
-  onOpenChange: (open: boolean) => void;
-  docId: string;
-}) => {
-  const { docsSearchService, workspaceService } = useServices({
-    DocsSearchService,
-    WorkspaceService,
-  });
-  const page = workspaceService.workspace.docCollection.getDoc(docId);
-  const titleInputHandleRef = useRef<InlineEditHandle>(null);
-  const manager = usePagePropertiesManager(docId);
-  const handleClose = useCallback(() => {
-    onOpenChange(false);
-  }, [onOpenChange]);
+export const InfoModal = () => {
+  const modal = useService(DocInfoService).modal;
+  const docId = useLiveData(modal.docId$);
+  const docsService = useService(DocsService);
 
-  const references = useLiveData(
-    useMemo(
-      () => LiveData.from(docsSearchService.watchRefsFrom(docId), null),
-      [docId, docsSearchService]
-    )
+  const [doc, setDoc] = useState<Doc | null>(null);
+  useEffect(() => {
+    if (!docId) return;
+    const docRef = docsService.open(docId);
+    setDoc(docRef.doc);
+    return () => {
+      docRef.release();
+      setDoc(null);
+    };
+  }, [docId, docsService]);
+
+  if (!doc || !docId) return null;
+
+  return (
+    <FrameworkScope scope={doc.scope}>
+      <InfoModalOpened docId={docId} />
+    </FrameworkScope>
   );
+};
 
+const InfoModalOpened = ({ docId }: { docId: string }) => {
+  const modal = useService(DocInfoService).modal;
+
+  const titleInputHandleRef = useRef<InlineEditHandle>(null);
+  const manager = usePagePropertiesManager(docId ?? '');
+  const handleClose = useCallback(() => {
+    modal.close();
+  }, [modal]);
+
+  const workspaceService = useService(WorkspaceService);
+  const page = workspaceService.workspace.docCollection.getDoc(docId);
   const hasSubscriptionTag = page?.meta?.tags.some(tag => tag === FeedTag.id);
   if (!manager.page || (!hasSubscriptionTag && manager.readonly)) {
     return null;
@@ -64,8 +87,8 @@ export const InfoModal = ({
       contentOptions={{
         className: styles.container,
       }}
-      open={open}
-      onOpenChange={onOpenChange}
+      open
+      onOpenChange={v => modal.onOpenChange(v)}
       withoutCloseButton
     >
       <Scrollable.Root>
@@ -75,10 +98,9 @@ export const InfoModal = ({
         >
           <div className={styles.titleContainer} data-testid="info-modal-title">
             <BlocksuiteHeaderTitle
+              docId={docId}
               className={styles.titleStyle}
               inputHandleRef={titleInputHandleRef}
-              pageId={docId}
-              docCollection={workspaceService.workspace.docCollection}
             />
           </div>
           <managerContext.Provider value={manager}>
@@ -86,7 +108,6 @@ export const InfoModal = ({
               <InfoTable
                 docId={docId}
                 onClose={handleClose}
-                references={references}
                 readonly={manager.readonly}
               />
             </Suspense>
@@ -98,31 +119,54 @@ export const InfoModal = ({
   );
 };
 
-const InfoTable = ({
+export const InfoTable = ({
   onClose,
-  references,
   docId,
   readonly,
 }: {
   docId: string;
   onClose: () => void;
   readonly: boolean;
-  references:
-    | {
-        docId: string;
-        title: string;
-      }[]
-    | null;
 }) => {
+  const t = useI18n();
   const manager = useContext(managerContext);
+  const { docsSearchService } = useServices({
+    DocsSearchService,
+  });
+  const links = useLiveData(
+    useMemo(
+      () => LiveData.from(docsSearchService.watchRefsFrom(docId), null),
+      [docId, docsSearchService]
+    )
+  );
+  const backlinks = useLiveData(
+    useMemo(
+      () => LiveData.from(docsSearchService.watchRefsTo(docId), null),
+      [docId, docsSearchService]
+    )
+  );
 
   return (
     <div>
-      <TimeRow docId={docId} />
+      <TimeRow className={styles.timeRow} docId={docId} />
       <Divider size="thinner" />
-      {references && references.length > 0 ? (
+      {backlinks && backlinks.length > 0 ? (
         <>
-          <BackLinksRow references={references} onClick={onClose} />
+          <LinksRow
+            references={backlinks}
+            onClick={onClose}
+            label={t['com.affine.page-properties.backlinks']()}
+          />
+          <Divider size="thinner" />
+        </>
+      ) : null}
+      {links && links.length > 0 ? (
+        <>
+          <LinksRow
+            references={links}
+            onClick={onClose}
+            label={t['com.affine.page-properties.outgoing-links']()}
+          />
           <Divider size="thinner" />
         </>
       ) : null}

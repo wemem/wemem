@@ -5,23 +5,19 @@ import {
   toast,
   Tooltip,
 } from '@affine/component';
-import { InfoModal } from '@affine/core/components/affine/page-properties';
-import { useAsyncCallback } from '@affine/core/hooks/affine-async-hooks';
-import { track } from '@affine/core/mixpanel';
+import { useAsyncCallback } from '@affine/core/components/hooks/affine-async-hooks';
+import { DocDisplayMetaService } from '@affine/core/modules/doc-display-meta';
+import { DocInfoService } from '@affine/core/modules/doc-info';
 import { DocsSearchService } from '@affine/core/modules/docs-search';
 import type { AffineDNDData } from '@affine/core/types/dnd';
 import { useI18n } from '@affine/i18n';
-import {
-  EdgelessIcon,
-  LinkedEdgelessIcon,
-  LinkedPageIcon,
-  PageIcon,
-} from '@blocksuite/icons/rc';
+import { track } from '@affine/track';
 import {
   DocsService,
   GlobalContextService,
   LiveData,
   useLiveData,
+  useService,
   useServices,
 } from '@toeverything/infra';
 import { useCallback, useLayoutEffect, useMemo, useState } from 'react';
@@ -46,35 +42,37 @@ export const ExplorerDocNode = ({
   isLinked?: boolean;
 } & GenericExplorerNode) => {
   const t = useI18n();
-  const { docsSearchService, docsService, globalContextService } = useServices({
+  const {
+    docsSearchService,
+    docsService,
+    globalContextService,
+    docDisplayMetaService,
+  } = useServices({
     DocsSearchService,
     DocsService,
     GlobalContextService,
+    DocDisplayMetaService,
   });
+  // const pageInfoAdapter = useCurrentWorkspacePropertiesAdapter();
+
   const active =
     useLiveData(globalContextService.globalContext.docId.$) === docId;
   const [collapsed, setCollapsed] = useState(true);
 
   const docRecord = useLiveData(docsService.list.doc$(docId));
-  const docMode = useLiveData(docRecord?.mode$);
-  const docTitle = useLiveData(docRecord?.title$);
+  const DocIcon = useLiveData(
+    docDisplayMetaService.icon$(docId, {
+      reference: isLinked,
+    })
+  );
+  const docTitle = useLiveData(docDisplayMetaService.title$(docId));
   const isInTrash = useLiveData(docRecord?.trash$);
 
   const Icon = useCallback(
     ({ className }: { className?: string }) => {
-      return isLinked ? (
-        docMode === 'edgeless' ? (
-          <LinkedEdgelessIcon className={className} />
-        ) : (
-          <LinkedPageIcon className={className} />
-        )
-      ) : docMode === 'edgeless' ? (
-        <EdgelessIcon className={className} />
-      ) : (
-        <PageIcon className={className} />
-      );
+      return <DocIcon className={className} />;
     },
-    [docMode, isLinked]
+    [DocIcon]
   );
 
   const children = useLiveData(
@@ -172,21 +170,21 @@ export const ExplorerDocNode = ({
     () => args => {
       const entityType = args.source.data.entity?.type;
       return args.treeInstruction?.type !== 'make-child'
-        ? (typeof canDrop === 'function' ? canDrop(args) : canDrop) ?? true
+        ? ((typeof canDrop === 'function' ? canDrop(args) : canDrop) ?? true)
         : entityType === 'doc';
     },
     [canDrop]
   );
 
-  const [enableInfoModal, setEnableInfoModal] = useState(false);
+  const docInfoModal = useService(DocInfoService).modal;
   const operations = useExplorerDocNodeOperations(
     docId,
     useMemo(
       () => ({
-        openInfoModal: () => setEnableInfoModal(true),
+        openInfoModal: () => docInfoModal.open(docId),
         openNodeCollapsed: () => setCollapsed(false),
       }),
-      []
+      [docId, docInfoModal]
     )
   );
 
@@ -202,57 +200,48 @@ export const ExplorerDocNode = ({
   }
 
   return (
-    <>
-      <ExplorerTreeNode
-        icon={Icon}
-        name={docTitle || t['Untitled']()}
-        dndData={dndData}
-        onDrop={handleDropOnDoc}
-        renameable
-        collapsed={collapsed}
-        setCollapsed={setCollapsed}
-        canDrop={handleCanDrop}
-        to={`/${docId}`}
-        active={active}
-        postfix={
-          referencesLoading &&
-          !collapsed && (
-            <Tooltip
-              content={t['com.affine.rootAppSidebar.docs.references-loading']()}
-            >
-              <div className={styles.loadingIcon}>
-                <Loading />
-              </div>
-            </Tooltip>
-          )
-        }
-        reorderable={reorderable}
-        onRename={handleRename}
-        childrenPlaceholder={<Empty onDrop={handleDropOnPlaceholder} />}
-        operations={finalOperations}
-        dropEffect={handleDropEffectOnDoc}
-        data-testid={`explorer-doc-${docId}`}
-      >
-        {children?.map(child => (
-          <ExplorerDocNode
-            key={child.docId}
-            docId={child.docId}
-            reorderable={false}
-            location={{
-              at: 'explorer:doc:linked-docs',
-              docId,
-            }}
-            isLinked
-          />
-        ))}
-      </ExplorerTreeNode>
-      {enableInfoModal && (
-        <InfoModal
-          open={enableInfoModal}
-          onOpenChange={setEnableInfoModal}
-          docId={docId}
+    <ExplorerTreeNode
+      icon={Icon}
+      name={typeof docTitle === 'string' ? docTitle : t[docTitle.key]()}
+      dndData={dndData}
+      onDrop={handleDropOnDoc}
+      renameable
+      collapsed={collapsed}
+      setCollapsed={setCollapsed}
+      canDrop={handleCanDrop}
+      to={`/${docId}`}
+      active={active}
+      postfix={
+        referencesLoading &&
+        !collapsed && (
+          <Tooltip
+            content={t['com.affine.rootAppSidebar.docs.references-loading']()}
+          >
+            <div className={styles.loadingIcon}>
+              <Loading />
+            </div>
+          </Tooltip>
+        )
+      }
+      reorderable={reorderable}
+      onRename={handleRename}
+      childrenPlaceholder={<Empty onDrop={handleDropOnPlaceholder} />}
+      operations={finalOperations}
+      dropEffect={handleDropEffectOnDoc}
+      data-testid={`explorer-doc-${docId}`}
+    >
+      {children?.map(child => (
+        <ExplorerDocNode
+          key={child.docId}
+          docId={child.docId}
+          reorderable={false}
+          location={{
+            at: 'explorer:doc:linked-docs',
+            docId,
+          }}
+          isLinked
         />
-      )}
-    </>
+      ))}
+    </ExplorerTreeNode>
   );
 };

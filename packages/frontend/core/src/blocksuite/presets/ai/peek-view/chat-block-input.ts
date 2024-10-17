@@ -1,8 +1,8 @@
-import type { EditorHost } from '@blocksuite/block-std';
-import { type AIError, openFileOrFiles } from '@blocksuite/blocks';
-import { type ChatMessage } from '@blocksuite/presets';
+import type { EditorHost } from '@blocksuite/affine/block-std';
+import { type AIError, openFileOrFiles } from '@blocksuite/affine/blocks';
+import { type ChatMessage } from '@blocksuite/affine/presets';
 import { css, html, LitElement, nothing } from 'lit';
-import { customElement, property, query, state } from 'lit/decorators.js';
+import { property, query, state } from 'lit/decorators.js';
 import { classMap } from 'lit/directives/class-map.js';
 import { repeat } from 'lit/directives/repeat.js';
 
@@ -20,7 +20,6 @@ import type { ChatContext } from './types';
 
 const MaximumImageCount = 8;
 
-@customElement('chat-block-input')
 export class ChatBlockInput extends LitElement {
   static override styles = css`
     :host {
@@ -362,6 +361,7 @@ export class ChatBlockInput extends LitElement {
     const { doc } = this.host;
     this.textarea.value = '';
     this._isInputEmpty = true;
+    this.textarea.style.height = 'unset';
     this.updateContext({
       images: [],
       status: 'loading',

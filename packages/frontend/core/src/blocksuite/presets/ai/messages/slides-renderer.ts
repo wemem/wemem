@@ -1,14 +1,14 @@
-import type { EditorHost } from '@blocksuite/block-std';
-import { WithDisposable } from '@blocksuite/block-std';
+import { BlockStdScope, type EditorHost } from '@blocksuite/affine/block-std';
 import {
   type AffineAIPanelWidgetConfig,
   EdgelessEditorBlockSpecs,
-} from '@blocksuite/blocks';
-import { AffineSchemas } from '@blocksuite/blocks/schemas';
-import type { Doc } from '@blocksuite/store';
-import { DocCollection, Schema } from '@blocksuite/store';
+} from '@blocksuite/affine/blocks';
+import { AffineSchemas } from '@blocksuite/affine/blocks/schemas';
+import { WithDisposable } from '@blocksuite/affine/global/utils';
+import type { Doc } from '@blocksuite/affine/store';
+import { DocCollection, Schema } from '@blocksuite/affine/store';
 import { css, html, LitElement, nothing } from 'lit';
-import { customElement, property, query } from 'lit/decorators.js';
+import { property, query } from 'lit/decorators.js';
 import { createRef, type Ref, ref } from 'lit/directives/ref.js';
 
 import { getAIPanel } from '../ai-panel';
@@ -48,7 +48,6 @@ export const createSlidesRenderer: (
   };
 };
 
-@customElement('ai-slides-renderer')
 export class AISlidesRenderer extends WithDisposable(LitElement) {
   static override styles = css``;
 
@@ -80,11 +79,15 @@ export class AISlidesRenderer extends WithDisposable(LitElement) {
       PPTBuilder(this._editorHost)
         .process(this.text)
         .then(res => {
-          if (this.ctx) {
+          if (res && this.ctx) {
             this.ctx.set({
               contents: res.contents,
               images: res.images,
             });
+            // refresh loading menu item
+            getAIPanel(this.host)
+              .shadowRoot?.querySelector('ai-panel-answer')
+              ?.requestUpdate();
           }
         })
         .catch(console.error);
@@ -203,7 +206,10 @@ export class AISlidesRenderer extends WithDisposable(LitElement) {
           class="edgeless-container affine-edgeless-viewport"
           ${ref(this._editorContainer)}
         >
-          ${this.host.renderSpecPortal(this._doc, EdgelessEditorBlockSpecs)}
+          ${new BlockStdScope({
+            doc: this._doc,
+            extensions: EdgelessEditorBlockSpecs,
+          }).render()}
         </div>
         <div class="mask"></div>
       </div>`;
@@ -216,8 +222,6 @@ export class AISlidesRenderer extends WithDisposable(LitElement) {
     const collection = new DocCollection({
       schema,
       id: 'SLIDES_PREVIEW',
-      disableBacklinkIndex: true,
-      disableSearchIndex: true,
     });
     collection.meta.initialize();
     collection.start();

@@ -1,12 +1,13 @@
 import './chat-panel-input';
 import './chat-panel-messages';
 
-import type { EditorHost } from '@blocksuite/block-std';
-import { ShadowlessElement, WithDisposable } from '@blocksuite/block-std';
-import { debounce } from '@blocksuite/global/utils';
-import type { Doc } from '@blocksuite/store';
+import type { EditorHost } from '@blocksuite/affine/block-std';
+import { ShadowlessElement } from '@blocksuite/affine/block-std';
+import { NotificationProvider } from '@blocksuite/affine/blocks';
+import { debounce, WithDisposable } from '@blocksuite/affine/global/utils';
+import type { Doc } from '@blocksuite/affine/store';
 import { css, html, type PropertyValues } from 'lit';
-import { customElement, property, state } from 'lit/decorators.js';
+import { property, state } from 'lit/decorators.js';
 import { createRef, type Ref, ref } from 'lit/directives/ref.js';
 
 import { AIHelpIcon, SmallHintIcon } from '../_common/icons';
@@ -18,7 +19,6 @@ import {
 import type { ChatAction, ChatContextValue, ChatItem } from './chat-context';
 import type { ChatPanelMessages } from './chat-panel-messages';
 
-@customElement('chat-panel')
 export class ChatPanel extends WithDisposable(ShadowlessElement) {
   static override styles = css`
     chat-panel {
@@ -159,8 +159,7 @@ export class ChatPanel extends WithDisposable(ShadowlessElement) {
   };
 
   private readonly _cleanupHistories = async () => {
-    const notification =
-      this.host.std.spec.getService('affine:page').notificationService;
+    const notification = this.host.std.getOptional(NotificationProvider);
     if (!notification) return;
 
     if (

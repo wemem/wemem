@@ -1,4 +1,4 @@
-import { MenuIcon, MenuItem, MenuSeparator } from '@affine/component';
+import { MenuItem, MenuSeparator } from '@affine/component';
 import { isGhostTag } from '@affine/core/modules/tag/entities/internal-tag';
 import type {
   Filter,
@@ -93,7 +93,7 @@ export const VariableSelect = ({
         // .filter(v => !selected.find(filter => filter.left.name === v.name))
         .map(v => (
           <MenuItem
-            preFix={<MenuIcon>{variableDefineMap[v.name].icon}</MenuIcon>}
+            prefixIcon={variableDefineMap[v.name].icon}
             key={v.name}
             onClick={() => {
               onSelect(createDefaultFilter(v, propertiesMeta));

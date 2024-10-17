@@ -1,12 +1,11 @@
 import { toast, useConfirmModal } from '@affine/component';
-import { useBlockSuiteMetaHelper } from '@affine/core/hooks/affine/use-block-suite-meta-helper';
-import { useBlockSuiteDocMeta } from '@affine/core/hooks/use-block-suite-page-meta';
+import { useBlockSuiteMetaHelper } from '@affine/core/components/hooks/affine/use-block-suite-meta-helper';
+import { useBlockSuiteDocMeta } from '@affine/core/components/hooks/use-block-suite-page-meta';
 import { Trans, useI18n } from '@affine/i18n';
-import type { DocMeta } from '@blocksuite/store';
+import type { DocMeta } from '@blocksuite/affine/store';
 import { useService, WorkspaceService } from '@toeverything/infra';
 import { useCallback, useMemo, useRef, useState } from 'react';
 
-import { usePageHelper } from '../blocksuite/block-suite-page-list/utils';
 import { ListFloatingToolbar } from './components/list-floating-toolbar';
 import { usePageHeaderColsDef } from './header-col-def';
 import { TrashOperationCell } from './operation-cell';
@@ -19,14 +18,11 @@ import { VirtualizedList } from './virtualized-list';
 export const VirtualizedTrashList = () => {
   const currentWorkspace = useService(WorkspaceService).workspace;
   const docCollection = currentWorkspace.docCollection;
-  const { restoreFromTrash, permanentlyDeletePage } =
-    useBlockSuiteMetaHelper(docCollection);
+  const { restoreFromTrash, permanentlyDeletePage } = useBlockSuiteMetaHelper();
   const pageMetas = useBlockSuiteDocMeta(docCollection);
   const filteredPageMetas = useFilteredPageMetas(pageMetas, {
     trash: true,
   });
-
-  const { isPreferredEdgeless } = usePageHelper(docCollection);
 
   const listRef = useRef<ItemListHandle>(null);
   const [showFloatingToolbar, setShowFloatingToolbar] = useState(false);
@@ -121,7 +117,6 @@ export const VirtualizedTrashList = () => {
         selectable="toggle"
         items={filteredPageMetas}
         rowAsLink
-        isPreferredEdgeless={isPreferredEdgeless}
         onSelectionActiveChange={setShowFloatingToolbar}
         docCollection={currentWorkspace.docCollection}
         operationsRenderer={pageOperationsRenderer}

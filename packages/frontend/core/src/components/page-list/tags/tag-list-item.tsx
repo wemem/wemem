@@ -1,9 +1,8 @@
-import { useTagI18N } from '@affine/core/modules/tag/entities/internal-tag';
 import { Checkbox, useDraggable } from '@affine/component';
+import { useTagI18N } from '@affine/core/modules/tag/entities/internal-tag';
 import { WorkbenchLink } from '@affine/core/modules/workbench';
 import type { AffineDNDData } from '@affine/core/types/dnd';
 import { stopPropagation } from '@affine/core/utils';
-import { useI18n } from '@affine/i18n';
 import type { ForwardedRef, PropsWithChildren } from 'react';
 import { forwardRef, useCallback, useMemo } from 'react';
 
@@ -14,9 +13,7 @@ import * as styles from './tag-list-item.css';
 
 const TagListTitleCell = ({
   title,
-  pageCount,
 }: Pick<TagListItemProps, 'title' | 'pageCount'>) => {
-  const t = useI18n();
   const tt = useTagI18N();
   return (
     <div data-testid="tag-list-item-title" className={styles.titleCell}>
@@ -26,12 +23,13 @@ const TagListTitleCell = ({
       >
         {tt(title)}
       </div>
+      {/* // TODO(@EYHN): when indexer is ready, add this back
       <div
         data-testid="page-list-item-preview-text"
         className={styles.titleCellPreview}
       >
         {` · ${t['com.affine.tags.count']({ count: pageCount || 0 })}`}
-      </div>
+      </div> */}
     </div>
   );
 };

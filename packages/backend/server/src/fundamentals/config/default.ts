@@ -1,3 +1,6 @@
+import { resolve } from 'node:path';
+import { fileURLToPath } from 'node:url';
+
 import pkg from '../../../package.json' assert { type: 'json' };
 import {
   AFFINE_ENV,
@@ -25,6 +28,7 @@ function getPredefinedAFFiNEConfig(): PreDefinedAFFiNEConfig {
     'allinone',
     'graphql',
     'sync',
+    'renderer',
   ]);
   const deploymentType = readEnv<DeploymentType>(
     'DEPLOYMENT_TYPE',
@@ -56,12 +60,15 @@ function getPredefinedAFFiNEConfig(): PreDefinedAFFiNEConfig {
     isSelfhosted,
     flavor: {
       type: flavor,
+      allinone: flavor === 'allinone',
       graphql: flavor === 'graphql' || flavor === 'allinone',
       sync: flavor === 'sync' || flavor === 'allinone',
+      renderer: flavor === 'renderer' || flavor === 'allinone',
     },
     affine,
     node,
     deploy: !node.dev && !node.test,
+    projectRoot: resolve(fileURLToPath(import.meta.url), '../../../../'),
   };
 }
 

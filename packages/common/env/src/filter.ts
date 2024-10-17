@@ -1,4 +1,4 @@
-import type { DocCollection } from '@blocksuite/store';
+import type { DocCollection } from '@blocksuite/affine/store';
 import { z } from 'zod';
 import { feedSchema } from '@affine/env/feed';
 

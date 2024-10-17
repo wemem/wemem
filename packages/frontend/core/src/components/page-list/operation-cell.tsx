@@ -1,28 +1,26 @@
 import {
   IconButton,
   Menu,
-  MenuIcon,
   MenuItem,
   toast,
   useConfirmModal,
 } from '@affine/component';
-import { useAppSettingHelper } from '@affine/core/hooks/affine/use-app-setting-helper';
-import { useBlockSuiteMetaHelper } from '@affine/core/hooks/affine/use-block-suite-meta-helper';
-import { useTrashModalHelper } from '@affine/core/hooks/affine/use-trash-modal-helper';
-import { useCatchEventCallback } from '@affine/core/hooks/use-catch-event-hook';
-import { track } from '@affine/core/mixpanel';
+import { useBlockSuiteMetaHelper } from '@affine/core/components/hooks/affine/use-block-suite-meta-helper';
+import { useTrashModalHelper } from '@affine/core/components/hooks/affine/use-trash-modal-helper';
+import { useCatchEventCallback } from '@affine/core/components/hooks/use-catch-event-hook';
+import { DocInfoService } from '@affine/core/modules/doc-info';
 import { FavoriteService } from '@affine/core/modules/favorite';
 import { CompatibleFavoriteItemsAdapter } from '@affine/core/modules/properties';
 import { WorkbenchService } from '@affine/core/modules/workbench';
 import type { Collection, DeleteCollectionInfo } from '@affine/env/filter';
 import { useI18n } from '@affine/i18n';
+import { track } from '@affine/track';
+import type { DocMeta } from '@blocksuite/affine/store';
 import {
   DeleteIcon,
   DeletePermanentlyIcon,
   DuplicateIcon,
   EditIcon,
-  FavoritedIcon,
-  FavoriteIcon,
   FilterIcon,
   FilterMinusIcon,
   InformationIcon,
@@ -32,18 +30,19 @@ import {
   ResetIcon,
   SplitViewIcon,
 } from '@blocksuite/icons/rc';
-import type { DocMeta } from '@blocksuite/store';
 import {
+  FeatureFlagService,
   useLiveData,
   useService,
   useServices,
   WorkspaceService,
 } from '@toeverything/infra';
+import type { MouseEvent } from 'react';
 import { useCallback, useState } from 'react';
 
 import type { CollectionService } from '../../modules/collection';
-import { InfoModal } from '../affine/page-properties';
 import { usePageHelper } from '../blocksuite/block-suite-page-list/utils';
+import { IsFavoriteIcon } from '../pure/icons';
 import { FavoriteTag } from './components/favorite-tag';
 import * as styles from './list.css';
 import { DisablePublicSharing, MoveToTrash } from './operation-menu-items';
@@ -67,23 +66,35 @@ export const PageOperationCell = ({
   onRemoveFromAllowList,
 }: PageOperationCellProps) => {
   const t = useI18n();
-  const currentWorkspace = useService(WorkspaceService).workspace;
-  const { appSettings } = useAppSettingHelper();
-  const { setTrashModal } = useTrashModalHelper(currentWorkspace.docCollection);
-  const [openDisableShared, setOpenDisableShared] = useState(false);
-  const favAdapter = useService(CompatibleFavoriteItemsAdapter);
+  const {
+    featureFlagService,
+    workspaceService,
+    compatibleFavoriteItemsAdapter: favAdapter,
+    workbenchService,
+  } = useServices({
+    FeatureFlagService,
+    WorkspaceService,
+    CompatibleFavoriteItemsAdapter,
+    WorkbenchService,
+  });
+  const enableSplitView = useLiveData(
+    featureFlagService.flags.enable_multi_view.$
+  );
+  const currentWorkspace = workspaceService.workspace;
+  const { setTrashModal } = useTrashModalHelper();
   const favourite = useLiveData(favAdapter.isFavorite$(page.id, 'doc'));
-  const workbench = useService(WorkbenchService).workbench;
-  const { duplicate } = useBlockSuiteMetaHelper(currentWorkspace.docCollection);
+  const workbench = workbenchService.workbench;
+  const { duplicate } = useBlockSuiteMetaHelper();
   const blocksuiteDoc = currentWorkspace.docCollection.getDoc(page.id);
 
-  const [openInfoModal, setOpenInfoModal] = useState(false);
+  const docInfoModal = useService(DocInfoService).modal;
   const onOpenInfoModal = useCallback(() => {
     track.$.docInfoPanel.$.open();
-    setOpenInfoModal(true);
-  }, []);
+    docInfoModal.open(blocksuiteDoc?.id);
+  }, [blocksuiteDoc?.id, docInfoModal]);
 
   const onDisablePublicSharing = useCallback(() => {
+    // TODO(@EYHN): implement disable public sharing
     toast('Successfully disabled', {
       portal: document.body,
     });
@@ -144,84 +155,38 @@ export const PageOperationCell = ({
       {page.isPublic && (
         <DisablePublicSharing
           data-testid="disable-public-sharing"
-          onSelect={() => {
-            setOpenDisableShared(true);
-          }}
+          onSelect={onDisablePublicSharing}
         />
       )}
       {isInAllowList && (
         <MenuItem
           onClick={handleRemoveFromAllowList}
-          preFix={
-            <MenuIcon>
-              <FilterMinusIcon />
-            </MenuIcon>
-          }
+          prefixIcon={<FilterMinusIcon />}
         >
           {t['Remove special filter']()}
         </MenuItem>
       )}
       <MenuItem
         onClick={onToggleFavoritePageOption}
-        preFix={
-          <MenuIcon>
-            {favourite ? (
-              <FavoritedIcon style={{ color: 'var(--affine-primary-color)' }} />
-            ) : (
-              <FavoriteIcon />
-            )}
-          </MenuIcon>
-        }
+        prefixIcon={<IsFavoriteIcon favorite={favourite} />}
       >
         {favourite
           ? t['com.affine.favoritePageOperation.remove']()
           : t['com.affine.favoritePageOperation.add']()}
       </MenuItem>
-      {runtimeConfig.enableInfoModal ? (
-        <MenuItem
-          onClick={onOpenInfoModal}
-          preFix={
-            <MenuIcon>
-              <InformationIcon />
-            </MenuIcon>
-          }
-        >
-          {t['com.affine.page-properties.page-info.view']()}
-        </MenuItem>
-      ) : null}
-
-      <MenuItem
-        onClick={onOpenInNewTab}
-        preFix={
-          <MenuIcon>
-            <OpenInNewIcon />
-          </MenuIcon>
-        }
-      >
+      <MenuItem onClick={onOpenInfoModal} prefixIcon={<InformationIcon />}>
+        {t['com.affine.page-properties.page-info.view']()}
+      </MenuItem>
+      <MenuItem onClick={onOpenInNewTab} prefixIcon={<OpenInNewIcon />}>
         {t['com.affine.workbench.tab.page-menu-open']()}
       </MenuItem>
-
-      {environment.isDesktop && appSettings.enableMultiView ? (
-        <MenuItem
-          onClick={onOpenInSplitView}
-          preFix={
-            <MenuIcon>
-              <SplitViewIcon />
-            </MenuIcon>
-          }
-        >
+      {BUILD_CONFIG.isElectron && enableSplitView ? (
+        <MenuItem onClick={onOpenInSplitView} prefixIcon={<SplitViewIcon />}>
           {t['com.affine.workbench.split-view.page-menu-open']()}
         </MenuItem>
       ) : null}
 
-      <MenuItem
-        preFix={
-          <MenuIcon>
-            <DuplicateIcon />
-          </MenuIcon>
-        }
-        onSelect={onDuplicate}
-      >
+      <MenuItem prefixIcon={<DuplicateIcon />} onSelect={onDuplicate}>
         {t['com.affine.header.option.duplicate']()}
       </MenuItem>
 
@@ -250,18 +215,6 @@ export const PageOperationCell = ({
           </IconButton>
         </Menu>
       </ColWrapper>
-      {blocksuiteDoc ? (
-        <InfoModal
-          open={openInfoModal}
-          onOpenChange={setOpenInfoModal}
-          docId={blocksuiteDoc.id}
-        />
-      ) : null}
-      <DisablePublicSharing.DisablePublicSharingModal
-        onConfirm={onDisablePublicSharing}
-        open={openDisableShared}
-        onOpenChange={setOpenDisableShared}
-      />
     </>
   );
 };
@@ -342,46 +295,66 @@ export const CollectionOperationCell = ({
   info,
 }: CollectionOperationCellProps) => {
   const t = useI18n();
-
-  const favAdapter = useService(CompatibleFavoriteItemsAdapter);
-  const docCollection = useService(WorkspaceService).workspace.docCollection;
+  const { compatibleFavoriteItemsAdapter: favAdapter, workspaceService } =
+    useServices({
+      CompatibleFavoriteItemsAdapter,
+      WorkspaceService,
+    });
+  const docCollection = workspaceService.workspace.docCollection;
   const { createPage } = usePageHelper(docCollection);
   const { openConfirmModal } = useConfirmModal();
   const favourite = useLiveData(
     favAdapter.isFavorite$(collection.id, 'collection')
   );
 
-  const { open: openEditCollectionModal, node: editModal } =
-    useEditCollection();
+  const { open: openEditCollectionModal } = useEditCollection();
 
-  const { open: openEditCollectionNameModal, node: editNameModal } =
-    useEditCollectionName({
-      title: t['com.affine.editCollection.renameCollection'](),
-    });
+  const { open: openEditCollectionNameModal } = useEditCollectionName({
+    title: t['com.affine.editCollection.renameCollection'](),
+  });
 
-  const handleEditName = useCallback(() => {
-    // use openRenameModal if it is in the sidebar collection list
-    openEditCollectionNameModal(collection.name)
-      .then(name => {
-        return service.updateCollection(collection.id, collection => ({
-          ...collection,
-          name,
-        }));
-      })
-      .catch(err => {
-        console.error(err);
-      });
-  }, [collection.id, collection.name, openEditCollectionNameModal, service]);
+  const handlePropagation = useCallback((event: MouseEvent) => {
+    event.preventDefault();
+    event.stopPropagation();
+  }, []);
 
-  const handleEdit = useCallback(() => {
-    openEditCollectionModal(collection)
-      .then(collection => {
-        return service.updateCollection(collection.id, () => collection);
-      })
-      .catch(err => {
-        console.error(err);
-      });
-  }, [openEditCollectionModal, collection, service]);
+  const handleEditName = useCallback(
+    (event: MouseEvent) => {
+      handlePropagation(event);
+      // use openRenameModal if it is in the sidebar collection list
+      openEditCollectionNameModal(collection.name)
+        .then(name => {
+          return service.updateCollection(collection.id, collection => ({
+            ...collection,
+            name,
+          }));
+        })
+        .catch(err => {
+          console.error(err);
+        });
+    },
+    [
+      collection.id,
+      collection.name,
+      handlePropagation,
+      openEditCollectionNameModal,
+      service,
+    ]
+  );
+
+  const handleEdit = useCallback(
+    (event: MouseEvent) => {
+      handlePropagation(event);
+      openEditCollectionModal(collection)
+        .then(collection => {
+          return service.updateCollection(collection.id, () => collection);
+        })
+        .catch(err => {
+          console.error(err);
+        });
+    },
+    [handlePropagation, openEditCollectionModal, collection, service]
+  );
 
   const handleDelete = useCallback(() => {
     return service.deleteCollection(info, collection.id);
@@ -417,8 +390,6 @@ export const CollectionOperationCell = ({
 
   return (
     <>
-      {editModal}
-      {editNameModal}
       <ColWrapper
         hideInSmallContainer
         data-testid="page-list-item-favorite"
@@ -447,17 +418,7 @@ export const CollectionOperationCell = ({
             <>
               <MenuItem
                 onClick={onToggleFavoriteCollection}
-                preFix={
-                  <MenuIcon>
-                    {favourite ? (
-                      <FavoritedIcon
-                        style={{ color: 'var(--affine-primary-color)' }}
-                      />
-                    ) : (
-                      <FavoriteIcon />
-                    )}
-                  </MenuIcon>
-                }
+                prefixIcon={<IsFavoriteIcon favorite={favourite} />}
               >
                 {favourite
                   ? t['com.affine.favoritePageOperation.remove']()
@@ -465,22 +426,15 @@ export const CollectionOperationCell = ({
               </MenuItem>
               <MenuItem
                 onClick={onConfirmAddDocToCollection}
-                preFix={
-                  <MenuIcon>
-                    <PlusIcon />
-                  </MenuIcon>
-                }
+                prefixIcon={<PlusIcon />}
               >
                 {t['New Page']()}
               </MenuItem>
               <MenuItem
                 onClick={handleDelete}
-                preFix={
-                  <MenuIcon>
-                    <DeleteIcon />
-                  </MenuIcon>
-                }
+                prefixIcon={<DeleteIcon />}
                 type="danger"
+                data-testid="delete-collection"
               >
                 {t['Delete']()}
               </MenuItem>
@@ -490,7 +444,7 @@ export const CollectionOperationCell = ({
             align: 'end',
           }}
         >
-          <IconButton>
+          <IconButton data-testid="collection-item-operation-button">
             <MoreVerticalIcon />
           </IconButton>
         </Menu>
@@ -544,7 +498,13 @@ export const TagOperationCell = ({
       <IconButton
         tooltip={t['Rename']()}
         tooltipOptions={tooltipSideTop}
-        onClick={() => setOpen(true)}
+        onClick={useCallback(
+          (e: React.MouseEvent<HTMLButtonElement>) => {
+            e.preventDefault();
+            setOpen(true);
+          },
+          [setOpen]
+        )}
       >
         <EditIcon />
       </IconButton>
@@ -553,13 +513,10 @@ export const TagOperationCell = ({
         <Menu
           items={
             <MenuItem
-              preFix={
-                <MenuIcon>
-                  <DeleteIcon />
-                </MenuIcon>
-              }
+              prefixIcon={<DeleteIcon />}
               type="danger"
               onSelect={handleDelete}
+              data-testid="delete-tag"
             >
               {t['Delete']()}
             </MenuItem>
@@ -568,7 +525,7 @@ export const TagOperationCell = ({
             align: 'end',
           }}
         >
-          <IconButton>
+          <IconButton data-testid="tag-item-operation-button">
             <MoreVerticalIcon />
           </IconButton>
         </Menu>

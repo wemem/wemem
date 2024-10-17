@@ -1,9 +1,9 @@
-import type { AffineAIPanelWidget } from '@blocksuite/blocks';
+import type { AffineAIPanelWidget } from '@blocksuite/affine/blocks';
 
 import { handleInlineAskAIAction } from '../../actions/doc-handler';
 import { AIProvider } from '../../provider';
 
-export function setupSpaceEntry(panel: AffineAIPanelWidget) {
+export function setupSpaceAIEntry(panel: AffineAIPanelWidget) {
   panel.handleEvent('keyDown', ctx => {
     const host = panel.host;
     const keyboardState = ctx.get('keyboardState');

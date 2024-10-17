@@ -1,29 +1,5 @@
-import { HomeIcon } from '@affine/component';
-import { openSettingModalAtom } from '@affine/core/atoms';
-import { useAsyncCallback } from '@affine/core/hooks/affine-async-hooks';
-import { track } from '@affine/core/mixpanel';
-import {
-  ExplorerCollections,
-  ExplorerFavorites,
-  ExplorerMigrationFavorites,
-  ExplorerOrganize,
-} from '@affine/core/modules/explorer';
-import { ExplorerFeeds } from '@affine/core/modules/explorer/views/sections/feeds';
-import { ExplorerTags } from '@affine/core/modules/explorer/views/sections/tags';
-import { CMDKQuickSearchService } from '@affine/core/modules/quicksearch/services/cmdk';
-import { isNewTabTrigger } from '@affine/core/utils';
-import { events } from '@affine/electron-api';
-import { useI18n } from '@affine/i18n';
-import { AllDocsIcon, SettingsIcon } from '@blocksuite/icons/rc';
-import type { Doc } from '@blocksuite/store';
-import type { Workspace } from '@toeverything/infra';
-import { useLiveData, useService, WorkspaceService } from '@toeverything/infra';
-import { useSetAtom } from 'jotai';
-import type { MouseEvent, ReactElement } from 'react';
-import { useCallback, useEffect } from 'react';
-
-import { useAppSettingHelper } from '../../hooks/affine/use-app-setting-helper';
-import { WorkbenchService } from '../../modules/workbench';
+import { openSettingModalAtom } from '@affine/core/components/atoms';
+import { useAsyncCallback } from '@affine/core/components/hooks/affine-async-hooks';
 import {
   AddPageButton,
   AppDownloadButton,
@@ -34,9 +10,42 @@ import {
   QuickSearchInput,
   SidebarContainer,
   SidebarScrollableContainer,
-} from '../app-sidebar';
+} from '@affine/core/modules/app-sidebar/views';
+import { ExternalMenuLinkItem } from '@affine/core/modules/app-sidebar/views/menu-item/external-menu-link-item';
+import { HomeIcon } from '@affine/component';
+import {
+  ExplorerCollections,
+  ExplorerFavorites,
+  ExplorerMigrationFavorites,
+  ExplorerOrganize,
+} from '@affine/core/modules/explorer';
+import { ExplorerFeeds } from '@affine/core/modules/explorer/views/sections/feeds';
+import { ExplorerTags } from '@affine/core/modules/explorer/views/sections/tags';
+import { CMDKQuickSearchService } from '@affine/core/modules/quicksearch/services/cmdk';
+import { isNewTabTrigger } from '@affine/core/utils';
+import { apis, events } from '@affine/electron-api';
+import { useI18n } from '@affine/i18n';
+import { track } from '@affine/track';
+import type { Doc } from '@blocksuite/affine/store';
+import {
+  AllDocsIcon,
+  GithubIcon,
+  JournalIcon,
+  SettingsIcon,
+} from '@blocksuite/icons/rc';
+import type { Workspace } from '@toeverything/infra';
+import {
+  useLiveData,
+  useServices,
+  WorkspaceService,
+} from '@toeverything/infra';
+import { useSetAtom } from 'jotai';
+import type { MouseEvent, ReactElement } from 'react';
+import { useCallback, useEffect } from 'react';
+
+import { WorkbenchService } from '../../modules/workbench';
 import { usePageHelper } from '../blocksuite/block-suite-page-list/utils';
-import { WorkspaceSelector } from '../workspace-selector';
+import { WorkspaceNavigator } from '../workspace-selector';
 import ImportPage from './import-page';
 import {
   quickSearch,
@@ -69,18 +78,22 @@ export type RootAppSidebarProps = {
  *
  */
 export const RootAppSidebar = (): ReactElement => {
-  const currentWorkspace = useService(WorkspaceService).workspace;
-  const { appSettings } = useAppSettingHelper();
+  const { workbenchService, workspaceService, cMDKQuickSearchService } =
+    useServices({
+      WorkspaceService,
+      WorkbenchService,
+      CMDKQuickSearchService,
+    });
+  const currentWorkspace = workspaceService.workspace;
   const docCollection = currentWorkspace.docCollection;
   const t = useI18n();
-  const workbench = useService(WorkbenchService).workbench;
+  const workbench = workbenchService.workbench;
   const currentPath = useLiveData(
     workbench.location$.map(location => location.pathname)
   );
-  const cmdkQuickSearchService = useService(CMDKQuickSearchService);
   const onOpenQuickSearchModal = useCallback(() => {
-    cmdkQuickSearchService.toggle();
-  }, [cmdkQuickSearchService]);
+    cMDKQuickSearchService.toggle();
+  }, [cMDKQuickSearchService]);
 
   const allPageActive = currentPath === '/all';
   const homePageActive = currentPath === '/home';
@@ -89,15 +102,27 @@ export const RootAppSidebar = (): ReactElement => {
 
   const onClickNewPage = useAsyncCallback(
     async (e?: MouseEvent) => {
-      const page = pageHelper.createPage(isNewTabTrigger(e) ? 'new-tab' : true);
-      page.load();
+      pageHelper.createPage(undefined, isNewTabTrigger(e) ? 'new-tab' : true);
       track.$.navigationPanel.$.createDoc();
     },
     [pageHelper]
   );
+
   useEffect(() => {
-    if (environment.isDesktop) {
-      return events?.applicationMenu.onNewPageAction(() => onClickNewPage());
+    if (BUILD_CONFIG.isElectron) {
+      return events?.applicationMenu.onNewPageAction(() => {
+        apis?.ui
+          .isActiveTab()
+          .then(isActive => {
+            if (!isActive) {
+              return;
+            }
+            onClickNewPage();
+          })
+          .catch(err => {
+            console.error(err);
+          });
+      });
     }
     return;
   }, [onClickNewPage]);
@@ -113,14 +138,15 @@ export const RootAppSidebar = (): ReactElement => {
   }, [setOpenSettingModalAtom]);
 
   return (
-    <AppSidebar
-      clientBorder={appSettings.clientBorder}
-      translucentUI={appSettings.enableBlurBackground}
-    >
+    <AppSidebar>
       <SidebarContainer>
         <div className={workspaceAndUserWrapper}>
           <div className={workspaceWrapper}>
-            <WorkspaceSelector />
+            <WorkspaceNavigator
+              showEnableCloudButton
+              showSettingsButton
+              showSyncStatus
+            />
           </div>
           <UserInfo />
         </div>
@@ -158,7 +184,7 @@ export const RootAppSidebar = (): ReactElement => {
       </SidebarContainer>
       <SidebarScrollableContainer>
         <ExplorerFavorites />
-        {runtimeConfig.enableOrganize && <ExplorerOrganize />}
+        <ExplorerOrganize />
         <ExplorerMigrationFavorites />
         <ExplorerCollections />
         <ExplorerTags />
@@ -167,10 +193,20 @@ export const RootAppSidebar = (): ReactElement => {
         <div style={{ padding: '0 8px' }}>
           <TrashButton />
           <ImportPage docCollection={docCollection} />
+          <ExternalMenuLinkItem
+            href="https://affine.pro/blog?tag=Release+Note"
+            icon={<JournalIcon />}
+            label={t['com.affine.app-sidebar.learn-more']()}
+          />
+          <ExternalMenuLinkItem
+            href="https://github.com/toeverything/affine"
+            icon={<GithubIcon />}
+            label={t['com.affine.app-sidebar.star-us']()}
+          />
         </div>
       </SidebarScrollableContainer>
       <SidebarContainer>
-        {environment.isDesktop ? <UpdaterButton /> : <AppDownloadButton />}
+        {BUILD_CONFIG.isElectron ? <UpdaterButton /> : <AppDownloadButton />}
       </SidebarContainer>
     </AppSidebar>
   );

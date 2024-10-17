@@ -37,7 +37,11 @@ class Doc implements DocType {
     if (!apis?.db) {
       throw new Error('sqlite datasource is not available');
     }
-    const update = await apis.db.getDocAsUpdates(this.workspaceId, docId);
+    const update = await apis.db.getDocAsUpdates(
+      'workspace',
+      this.workspaceId,
+      docId
+    );
 
     if (update) {
       if (
@@ -57,7 +61,7 @@ class Doc implements DocType {
     if (!apis?.db) {
       throw new Error('sqlite datasource is not available');
     }
-    await apis.db.applyDocUpdate(this.workspaceId, data, docId);
+    await apis.db.applyDocUpdate('workspace', this.workspaceId, data, docId);
   }
 
   clear(): void | Promise<void> {
@@ -68,7 +72,7 @@ class Doc implements DocType {
     if (!apis?.db) {
       throw new Error('sqlite datasource is not available');
     }
-    await apis.db.deleteDoc(this.workspaceId, docId);
+    await apis.db.deleteDoc('workspace', this.workspaceId, docId);
   }
 }
 
@@ -82,35 +86,35 @@ class SyncMetadataKV implements ByteKV {
     if (!apis?.db) {
       throw new Error('sqlite datasource is not available');
     }
-    return apis.db.getSyncMetadata(this.workspaceId, key);
+    return apis.db.getSyncMetadata('workspace', this.workspaceId, key);
   }
 
   set(key: string, data: Uint8Array): void | Promise<void> {
     if (!apis?.db) {
       throw new Error('sqlite datasource is not available');
     }
-    return apis.db.setSyncMetadata(this.workspaceId, key, data);
+    return apis.db.setSyncMetadata('workspace', this.workspaceId, key, data);
   }
 
   keys(): string[] | Promise<string[]> {
     if (!apis?.db) {
       throw new Error('sqlite datasource is not available');
     }
-    return apis.db.getSyncMetadataKeys(this.workspaceId);
+    return apis.db.getSyncMetadataKeys('workspace', this.workspaceId);
   }
 
   del(key: string): void | Promise<void> {
     if (!apis?.db) {
       throw new Error('sqlite datasource is not available');
     }
-    return apis.db.delSyncMetadata(this.workspaceId, key);
+    return apis.db.delSyncMetadata('workspace', this.workspaceId, key);
   }
 
   clear(): void | Promise<void> {
     if (!apis?.db) {
       throw new Error('sqlite datasource is not available');
     }
-    return apis.db.clearSyncMetadata(this.workspaceId);
+    return apis.db.clearSyncMetadata('workspace', this.workspaceId);
   }
 }
 
@@ -124,34 +128,34 @@ class ServerClockKV implements ByteKV {
     if (!apis?.db) {
       throw new Error('sqlite datasource is not available');
     }
-    return apis.db.getServerClock(this.workspaceId, key);
+    return apis.db.getServerClock('workspace', this.workspaceId, key);
   }
 
   set(key: string, data: Uint8Array): void | Promise<void> {
     if (!apis?.db) {
       throw new Error('sqlite datasource is not available');
     }
-    return apis.db.setServerClock(this.workspaceId, key, data);
+    return apis.db.setServerClock('workspace', this.workspaceId, key, data);
   }
 
   keys(): string[] | Promise<string[]> {
     if (!apis?.db) {
       throw new Error('sqlite datasource is not available');
     }
-    return apis.db.getServerClockKeys(this.workspaceId);
+    return apis.db.getServerClockKeys('workspace', this.workspaceId);
   }
 
   del(key: string): void | Promise<void> {
     if (!apis?.db) {
       throw new Error('sqlite datasource is not available');
     }
-    return apis.db.delServerClock(this.workspaceId, key);
+    return apis.db.delServerClock('workspace', this.workspaceId, key);
   }
 
   clear(): void | Promise<void> {
     if (!apis?.db) {
       throw new Error('sqlite datasource is not available');
     }
-    return apis.db.clearServerClock(this.workspaceId);
+    return apis.db.clearServerClock('workspace', this.workspaceId);
   }
 }

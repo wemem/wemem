@@ -1,27 +1,30 @@
 import {
   IconButton,
-  MenuIcon,
   MenuItem,
   MenuSeparator,
   useConfirmModal,
 } from '@affine/component';
-import { useAppSettingHelper } from '@affine/core/hooks/affine/use-app-setting-helper';
-import { useDeleteCollectionInfo } from '@affine/core/hooks/affine/use-delete-collection-info';
-import { track } from '@affine/core/mixpanel';
+import { usePageHelper } from '@affine/core/components/blocksuite/block-suite-page-list/utils';
+import { useDeleteCollectionInfo } from '@affine/core/components/hooks/affine/use-delete-collection-info';
+import { IsFavoriteIcon } from '@affine/core/components/pure/icons';
 import { CollectionService } from '@affine/core/modules/collection';
 import { CompatibleFavoriteItemsAdapter } from '@affine/core/modules/properties';
 import { WorkbenchService } from '@affine/core/modules/workbench';
 import { useI18n } from '@affine/i18n';
+import { track } from '@affine/track';
 import {
   DeleteIcon,
-  FavoritedIcon,
-  FavoriteIcon,
   FilterIcon,
   OpenInNewIcon,
   PlusIcon,
   SplitViewIcon,
 } from '@blocksuite/icons/rc';
-import { DocsService, useLiveData, useServices } from '@toeverything/infra';
+import {
+  FeatureFlagService,
+  useLiveData,
+  useServices,
+  WorkspaceService,
+} from '@toeverything/infra';
 import { useCallback, useMemo } from 'react';
 
 import type { NodeOperation } from '../../tree/types';
@@ -32,20 +35,28 @@ export const useExplorerCollectionNodeOperations = (
   onOpenEdit: () => void
 ): NodeOperation[] => {
   const t = useI18n();
-  const { appSettings } = useAppSettingHelper();
   const {
     workbenchService,
-    docsService,
+    workspaceService,
     collectionService,
     compatibleFavoriteItemsAdapter,
+    featureFlagService,
   } = useServices({
-    DocsService,
     WorkbenchService,
+    WorkspaceService,
     CollectionService,
     CompatibleFavoriteItemsAdapter,
+    FeatureFlagService,
   });
   const deleteInfo = useDeleteCollectionInfo();
 
+  const { createPage } = usePageHelper(
+    workspaceService.workspace.docCollection
+  );
+
+  const enableMultiView = useLiveData(
+    featureFlagService.flags.enable_multi_view.$
+  );
   const favorite = useLiveData(
     useMemo(
       () =>
@@ -56,7 +67,7 @@ export const useExplorerCollectionNodeOperations = (
   const { openConfirmModal } = useConfirmModal();
 
   const createAndAddDocument = useCallback(() => {
-    const newDoc = docsService.createDoc();
+    const newDoc = createPage();
     collectionService.addPageToCollection(collectionId, newDoc.id);
     track.$.navigationPanel.collections.createDoc();
     track.$.navigationPanel.collections.addDocToCollection({
@@ -67,7 +78,7 @@ export const useExplorerCollectionNodeOperations = (
   }, [
     collectionId,
     collectionService,
-    docsService,
+    createPage,
     onOpenCollapsed,
     workbenchService.workbench,
   ]);
@@ -135,14 +146,7 @@ export const useExplorerCollectionNodeOperations = (
       {
         index: 99,
         view: (
-          <MenuItem
-            preFix={
-              <MenuIcon>
-                <FilterIcon />
-              </MenuIcon>
-            }
-            onClick={handleShowEdit}
-          >
+          <MenuItem prefixIcon={<FilterIcon />} onClick={handleShowEdit}>
             {t['com.affine.collection.menu.edit']()}
           </MenuItem>
         ),
@@ -151,11 +155,7 @@ export const useExplorerCollectionNodeOperations = (
         index: 99,
         view: (
           <MenuItem
-            preFix={
-              <MenuIcon>
-                <PlusIcon />
-              </MenuIcon>
-            }
+            prefixIcon={<PlusIcon />}
             onClick={handleAddDocToCollection}
           >
             {t['New Page']()}
@@ -166,17 +166,7 @@ export const useExplorerCollectionNodeOperations = (
         index: 99,
         view: (
           <MenuItem
-            preFix={
-              <MenuIcon>
-                {favorite ? (
-                  <FavoritedIcon
-                    style={{ color: 'var(--affine-primary-color)' }}
-                  />
-                ) : (
-                  <FavoriteIcon />
-                )}
-              </MenuIcon>
-            }
+            prefixIcon={<IsFavoriteIcon favorite={favorite} />}
             onClick={handleToggleFavoriteCollection}
           >
             {favorite
@@ -188,29 +178,18 @@ export const useExplorerCollectionNodeOperations = (
       {
         index: 99,
         view: (
-          <MenuItem
-            preFix={
-              <MenuIcon>
-                <OpenInNewIcon />
-              </MenuIcon>
-            }
-            onClick={handleOpenInNewTab}
-          >
+          <MenuItem prefixIcon={<OpenInNewIcon />} onClick={handleOpenInNewTab}>
             {t['com.affine.workbench.tab.page-menu-open']()}
           </MenuItem>
         ),
       },
-      ...(appSettings.enableMultiView
+      ...(BUILD_CONFIG.isElectron && enableMultiView
         ? [
             {
               index: 99,
               view: (
                 <MenuItem
-                  preFix={
-                    <MenuIcon>
-                      <SplitViewIcon />
-                    </MenuIcon>
-                  }
+                  prefixIcon={<SplitViewIcon />}
                   onClick={handleOpenInSplitView}
                 >
                   {t['com.affine.workbench.split-view.page-menu-open']()}
@@ -228,11 +207,7 @@ export const useExplorerCollectionNodeOperations = (
         view: (
           <MenuItem
             type={'danger'}
-            preFix={
-              <MenuIcon>
-                <DeleteIcon />
-              </MenuIcon>
-            }
+            prefixIcon={<DeleteIcon />}
             onClick={handleDeleteCollection}
           >
             {t['Delete']()}
@@ -241,7 +216,7 @@ export const useExplorerCollectionNodeOperations = (
       },
     ],
     [
-      appSettings.enableMultiView,
+      enableMultiView,
       favorite,
       handleAddDocToCollection,
       handleDeleteCollection,

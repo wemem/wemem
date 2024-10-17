@@ -4,7 +4,8 @@ import {
   type CommandCategory,
   PreconditionStrategy,
 } from '@affine/core/commands';
-import type { DocMode, GlobalContextService } from '@toeverything/infra';
+import type { DocMode } from '@blocksuite/affine/blocks';
+import type { GlobalContextService } from '@toeverything/infra';
 import { Entity, LiveData } from '@toeverything/infra';
 import Fuse from 'fuse.js';
 
@@ -185,12 +186,12 @@ export class CommandsQuickSearchSession
                 titleMatches ?? []
               ) ?? item.label.title,
             subTitle: item.label.subTitle
-              ? highlighter(
+              ? (highlighter(
                   item.label.subTitle,
                   '<b>',
                   '</b>',
                   subTitleMatches ?? []
-                ) ?? item.label.subTitle
+                ) ?? item.label.subTitle)
               : undefined,
           },
           group: categories[item.category],

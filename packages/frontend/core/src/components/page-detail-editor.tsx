@@ -1,23 +1,22 @@
 import './page-detail-editor.css';
 
-import { useDocCollectionPage } from '@affine/core/hooks/use-block-suite-workspace-page';
-import { assertExists, DisposableGroup } from '@blocksuite/global/utils';
-import type { AffineEditorContainer } from '@blocksuite/presets';
-import type { Doc as BlockSuiteDoc, DocCollection } from '@blocksuite/store';
 import {
-  type DocMode,
-  DocService,
-  fontStyleOptions,
-  useLiveData,
-  useService,
-} from '@toeverything/infra';
+  SeenTag,
+  UnseenTag,
+} from '@affine/core/modules/tag/entities/internal-tag';
+import type { AffineEditorContainer } from '@blocksuite/affine/presets';
+import type { Doc, DocCollection } from '@blocksuite/affine/store';
+import { useLiveData, useService } from '@toeverything/infra';
+import { cssVar } from '@toeverything/theme';
 import clsx from 'clsx';
 import type { CSSProperties } from 'react';
-import { memo, Suspense, useCallback, useEffect, useMemo } from 'react';
-import { useLocation } from 'react-router-dom';
+import { useEffect, useMemo } from 'react';
 
-import { useAppSettingHelper } from '../hooks/affine/use-app-setting-helper';
-import { SeenTag, UnseenTag } from '../modules/tag/entities/internal-tag';
+import { EditorService } from '../modules/editor';
+import {
+  EditorSettingService,
+  fontStyleOptions,
+} from '../modules/editor-settting';
 import { BlockSuiteEditor as Editor } from './blocksuite/block-suite-editor';
 import * as styles from './page-detail-editor.css';
 
@@ -27,79 +26,72 @@ declare global {
 }
 
 export type OnLoadEditor = (
-  page: BlockSuiteDoc,
   editor: AffineEditorContainer
-) => () => void;
+) => (() => void) | void;
 
 export interface PageDetailEditorProps {
-  isPublic?: boolean;
-  publishMode?: DocMode;
-  docCollection: DocCollection;
-  pageId: string;
   onLoad?: OnLoadEditor;
+  docCollection?: DocCollection;
 }
 
-function useRouterHash() {
-  return useLocation().hash.substring(1);
-}
+// when the page is opened, we need to set the page as seen
+// for the feed page
+const setPageAsSeen = (docCollection: DocCollection, blockSuiteDoc?: Doc) => {
+  if (!blockSuiteDoc) {
+    return;
+  }
+  if (blockSuiteDoc.meta?.tags.includes(UnseenTag.id)) {
+    const tags = blockSuiteDoc.meta.tags.filter(tag => tag !== UnseenTag.id);
+    tags.push(SeenTag.id);
+    docCollection.setDocMeta(blockSuiteDoc.id, {
+      ...blockSuiteDoc.meta,
+      tags,
+    });
+  }
+};
 
-const PageDetailEditorMain = memo(function PageDetailEditorMain({
-  page,
+export const PageDetailEditor = ({
   onLoad,
-  isPublic,
-  publishMode,
-}: PageDetailEditorProps & { page: BlockSuiteDoc }) {
-  const currentMode = useLiveData(useService(DocService).doc.mode$);
-  const mode = useMemo(() => {
-    const shareMode = publishMode || currentMode;
+  docCollection,
+}: PageDetailEditorProps) => {
+  const editor = useService(EditorService).editor;
+  const mode = useLiveData(editor.mode$);
 
-    if (isPublic) {
-      return shareMode;
-    }
-    return currentMode;
-  }, [isPublic, publishMode, currentMode]);
-
-  const { appSettings } = useAppSettingHelper();
+  const isSharedMode = editor.isSharedMode;
+  const editorSetting = useService(EditorSettingService).editorSetting;
+  const settings = useLiveData(
+    editorSetting.settings$.selector(s => ({
+      fontFamily: s.fontFamily,
+      customFontFamily: s.customFontFamily,
+      fullWidthLayout: s.fullWidthLayout,
+    }))
+  );
 
   const value = useMemo(() => {
     const fontStyle = fontStyleOptions.find(
-      option => option.key === appSettings.fontStyle
+      option => option.key === settings.fontFamily
     );
-    assertExists(fontStyle);
-    return fontStyle.value;
-  }, [appSettings.fontStyle]);
+    if (!fontStyle) {
+      return cssVar('fontSansFamily');
+    }
+    const customFontFamily = settings.customFontFamily;
 
-  const blockId = useRouterHash();
+    return customFontFamily && fontStyle.key === 'Custom'
+      ? `${customFontFamily}, ${fontStyle.value}`
+      : fontStyle.value;
+  }, [settings.customFontFamily, settings.fontFamily]);
 
-  const onLoadEditor = useCallback(
-    (editor: AffineEditorContainer) => {
-      // debug current detail editor
-      globalThis.currentEditor = editor;
-      const disposableGroup = new DisposableGroup();
-      localStorage.setItem('last_page_id', page.id);
-
-      if (onLoad) {
-        // Invoke onLoad once the editor has been mounted to the DOM.
-        editor.updateComplete
-          .then(() => editor.host?.updateComplete)
-          .then(() => {
-            disposableGroup.add(onLoad(page, editor));
-          })
-          .catch(console.error);
-      }
-
-      return () => {
-        disposableGroup.dispose();
-      };
-    },
-    [onLoad, page]
-  );
+  useEffect(() => {
+    if (docCollection) {
+      setPageAsSeen(docCollection, editor.doc.blockSuiteDoc);
+    }
+  }, [editor.doc.blockSuiteDoc, docCollection]);
 
   return (
     <Editor
       className={clsx(styles.editor, {
-        'full-screen': !isPublic && appSettings.fullWidthLayout,
-        'is-public': isPublic,
+        'full-screen': !isSharedMode && settings.fullWidthLayout,
+        'is-public': isSharedMode,
       })}
       style={
         {
@@ -107,37 +99,9 @@ const PageDetailEditorMain = memo(function PageDetailEditorMain({
         } as CSSProperties
       }
       mode={mode}
-      page={page}
-      shared={isPublic}
-      defaultSelectedBlockId={blockId}
-      onLoadEditor={onLoadEditor}
+      page={editor.doc.blockSuiteDoc}
+      shared={isSharedMode}
+      onEditorReady={onLoad}
     />
-  );
-});
-
-export const PageDetailEditor = (props: PageDetailEditorProps) => {
-  const { docCollection, pageId } = props;
-  const page = useDocCollectionPage(docCollection, pageId);
-  useEffect(() => {
-    if (!page) {
-      return;
-    }
-    if (page.meta?.tags.includes(UnseenTag.id)) {
-      const tags = page.meta.tags.filter(tag => tag !== UnseenTag.id);
-      tags.push(SeenTag.id);
-      docCollection.setDocMeta(page.id, {
-        ...page.meta,
-        tags,
-      });
-    }
-  }, [page, docCollection]);
-
-  if (!page) {
-    return null;
-  }
-  return (
-    <Suspense>
-      <PageDetailEditorMain {...props} page={page} />
-    </Suspense>
   );
 };

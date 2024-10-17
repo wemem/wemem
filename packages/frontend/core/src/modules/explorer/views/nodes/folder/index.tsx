@@ -4,18 +4,17 @@ import {
   type DropTargetDropEvent,
   type DropTargetOptions,
   IconButton,
-  MenuIcon,
   MenuItem,
   MenuSeparator,
   MenuSub,
   notify,
 } from '@affine/component';
+import { usePageHelper } from '@affine/core/components/blocksuite/block-suite-page-list/utils';
 import {
   useSelectCollection,
   useSelectDoc,
   useSelectTag,
 } from '@affine/core/components/page-list/selector';
-import { track } from '@affine/core/mixpanel';
 import {
   type FolderNode,
   OrganizeService,
@@ -25,6 +24,7 @@ import { WorkbenchService } from '@affine/core/modules/workbench';
 import type { AffineDNDData } from '@affine/core/types/dnd';
 import { Unreachable } from '@affine/env/constant';
 import { useI18n } from '@affine/i18n';
+import { track } from '@affine/track';
 import {
   DeleteIcon,
   FolderIcon,
@@ -34,7 +34,12 @@ import {
   RemoveFolderIcon,
   TagsIcon,
 } from '@blocksuite/icons/rc';
-import { DocsService, useLiveData, useServices } from '@toeverything/infra';
+import {
+  FeatureFlagService,
+  useLiveData,
+  useServices,
+  WorkspaceService,
+} from '@toeverything/infra';
 import { difference } from 'lodash-es';
 import { useCallback, useMemo, useState } from 'react';
 
@@ -65,7 +70,9 @@ export const ExplorerFolderNode = ({
     | NodeOperation[]
     | ((type: string, node: FolderNode) => NodeOperation[]);
 } & Omit<GenericExplorerNode, 'operations'>) => {
-  const { organizeService } = useServices({ OrganizeService });
+  const { organizeService } = useServices({
+    OrganizeService,
+  });
   const node = useLiveData(organizeService.folderTree.folderNode$(nodeId));
   const type = useLiveData(node?.type$);
   const data = useLiveData(node?.data$);
@@ -180,18 +187,26 @@ export const ExplorerFolderNodeFolder = ({
   node: FolderNode;
 } & GenericExplorerNode) => {
   const t = useI18n();
-  const { docsService, workbenchService } = useServices({
-    DocsService,
-    WorkbenchService,
-    CompatibleFavoriteItemsAdapter,
-  });
+  const { workbenchService, workspaceService, featureFlagService } =
+    useServices({
+      WorkbenchService,
+      WorkspaceService,
+      CompatibleFavoriteItemsAdapter,
+      FeatureFlagService,
+    });
   const openDocsSelector = useSelectDoc();
   const openTagsSelector = useSelectTag();
   const openCollectionsSelector = useSelectCollection();
   const name = useLiveData(node.name$);
+  const enableEmojiIcon = useLiveData(
+    featureFlagService.flags.enable_emoji_folder_icon.$
+  );
   const [collapsed, setCollapsed] = useState(true);
   const [newFolderId, setNewFolderId] = useState<string | null>(null);
 
+  const { createPage } = usePageHelper(
+    workspaceService.workspace.docCollection
+  );
   const handleDelete = useCallback(() => {
     node.delete();
     track.$.navigationPanel.organize.deleteOrganizeItem({
@@ -535,7 +550,7 @@ export const ExplorerFolderNodeFolder = ({
   );
 
   const handleNewDoc = useCallback(() => {
-    const newDoc = docsService.createDoc();
+    const newDoc = createPage();
     node.createLink('doc', newDoc.id, node.indexAt('before'));
     workbenchService.workbench.openDoc(newDoc.id);
     track.$.navigationPanel.folders.createDoc();
@@ -544,7 +559,7 @@ export const ExplorerFolderNodeFolder = ({
       target: 'doc',
     });
     setCollapsed(false);
-  }, [docsService, node, workbenchService.workbench]);
+  }, [createPage, node, workbenchService.workbench]);
 
   const handleCreateSubfolder = useCallback(() => {
     const newFolderId = node.createFolder(
@@ -621,14 +636,7 @@ export const ExplorerFolderNodeFolder = ({
       {
         index: 100,
         view: (
-          <MenuItem
-            preFix={
-              <MenuIcon>
-                <FolderIcon />
-              </MenuIcon>
-            }
-            onClick={handleCreateSubfolder}
-          >
+          <MenuItem prefixIcon={<FolderIcon />} onClick={handleCreateSubfolder}>
             {t['com.affine.rootAppSidebar.organize.folder.create-subfolder']()}
           </MenuItem>
         ),
@@ -637,11 +645,7 @@ export const ExplorerFolderNodeFolder = ({
         index: 101,
         view: (
           <MenuItem
-            preFix={
-              <MenuIcon>
-                <PageIcon />
-              </MenuIcon>
-            }
+            prefixIcon={<PageIcon />}
             onClick={() => handleAddToFolder('doc')}
           >
             {t['com.affine.rootAppSidebar.organize.folder.add-docs']()}
@@ -653,31 +657,19 @@ export const ExplorerFolderNodeFolder = ({
         view: (
           <MenuSub
             triggerOptions={{
-              preFix: (
-                <MenuIcon>
-                  <PlusThickIcon />
-                </MenuIcon>
-              ),
+              prefixIcon: <PlusThickIcon />,
             }}
             items={
               <>
                 <MenuItem
                   onClick={() => handleAddToFolder('tag')}
-                  preFix={
-                    <MenuIcon>
-                      <TagsIcon />
-                    </MenuIcon>
-                  }
+                  prefixIcon={<TagsIcon />}
                 >
                   {t['com.affine.rootAppSidebar.organize.folder.add-tags']()}
                 </MenuItem>
                 <MenuItem
                   onClick={() => handleAddToFolder('collection')}
-                  preFix={
-                    <MenuIcon>
-                      <AnimatedCollectionsIcon closed={false} />
-                    </MenuIcon>
-                  }
+                  prefixIcon={<AnimatedCollectionsIcon closed={false} />}
                 >
                   {t[
                     'com.affine.rootAppSidebar.organize.folder.add-collections'
@@ -705,11 +697,7 @@ export const ExplorerFolderNodeFolder = ({
         view: (
           <MenuItem
             type={'danger'}
-            preFix={
-              <MenuIcon>
-                <DeleteIcon />
-              </MenuIcon>
-            }
+            prefixIcon={<DeleteIcon />}
             onClick={handleDelete}
           >
             {t['com.affine.rootAppSidebar.organize.delete']()}
@@ -743,11 +731,7 @@ export const ExplorerFolderNodeFolder = ({
             view: (
               <MenuItem
                 type={'danger'}
-                preFix={
-                  <MenuIcon>
-                    <RemoveFolderIcon />
-                  </MenuIcon>
-                }
+                prefixIcon={<RemoveFolderIcon />}
                 data-event-props="$.navigationPanel.organize.deleteOrganizeItem"
                 data-event-args-type={node.type$.value}
                 onClick={() => node.delete()}
@@ -780,6 +764,7 @@ export const ExplorerFolderNodeFolder = ({
       onDrop={handleDropOnFolder}
       defaultRenaming={defaultRenaming}
       renameable
+      extractEmojiAsIcon={enableEmojiIcon}
       reorderable={reorderable}
       collapsed={collapsed}
       setCollapsed={handleCollapsedChange}

@@ -1,4 +1,4 @@
-import type { BlockComponent, EditorHost } from '@blocksuite/block-std';
+import type { BlockComponent, EditorHost } from '@blocksuite/affine/block-std';
 import {
   AFFINE_EDGELESS_COPILOT_WIDGET,
   type EdgelessCopilotWidget,
@@ -6,7 +6,7 @@ import {
   matchFlavours,
   MindmapElementModel,
   type ShapeElementModel,
-} from '@blocksuite/blocks';
+} from '@blocksuite/affine/blocks';
 
 export function mindMapToMarkdown(mindmap: MindmapElementModel) {
   let markdownStr = '';
@@ -40,7 +40,7 @@ export function isMindmapChild(ele: BlockSuite.EdgelessModel) {
 }
 
 export function getService(host: EditorHost) {
-  const edgelessService = host.spec.getService(
+  const edgelessService = host.std.getService(
     'affine:page'
   ) as EdgelessRootService;
 
@@ -68,7 +68,10 @@ export function findNoteBlockModel(blockElement: BlockComponent) {
     if (matchFlavours(curBlock.model, ['affine:page', 'affine:surface'])) {
       return null;
     }
-    curBlock = curBlock.parentBlock;
+    if (!curBlock.parentComponent) {
+      break;
+    }
+    curBlock = curBlock.parentComponent;
   }
   return null;
 }

@@ -1,6 +1,9 @@
+import { toURLSearchParams } from '@affine/core/modules/navigation/utils';
 import { Unreachable } from '@affine/env/constant';
+import type { ReferenceParams } from '@blocksuite/affine/blocks';
 import { Entity, LiveData } from '@toeverything/infra';
 import { type To } from 'history';
+import { omit } from 'lodash-es';
 import { nanoid } from 'nanoid';
 
 import type { WorkbenchNewTabHandler } from '../services/workbench-new-tab-handler';
@@ -121,12 +124,21 @@ export class Workbench extends Entity {
   }
 
   openDoc(
-    id: string | { docId: string; blockId?: string },
+    id: string | ({ docId: string } & ReferenceParams),
     options?: WorkbenchOpenOptions
   ) {
-    const docId = typeof id === 'string' ? id : id.docId;
-    const blockId = typeof id === 'string' ? undefined : id.blockId;
-    this.open(blockId ? `/${docId}#${blockId}` : `/${docId}`, options);
+    const isString = typeof id === 'string';
+    const docId = isString ? id : id.docId;
+
+    let query = '';
+    if (!isString) {
+      const search = toURLSearchParams(omit(id, ['docId']));
+      if (search?.size) {
+        query = `?${search.toString()}`;
+      }
+    }
+
+    this.open(`/${docId}${query}`, options);
   }
 
   openCollections(options?: WorkbenchOpenOptions) {

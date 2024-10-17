@@ -1,5 +1,5 @@
 import { WorkspaceFlavour } from '@affine/env/workspace';
-import { DocCollection, nanoid } from '@blocksuite/store';
+import { DocCollection, nanoid } from '@blocksuite/affine/store';
 import { map } from 'rxjs';
 import { applyUpdate, encodeStateAsUpdate } from 'yjs';
 
@@ -14,7 +14,7 @@ import {
 import { MemoryBlobStorage } from '../../../sync/blob/blob';
 import type { GlobalState } from '../../storage';
 import type { WorkspaceProfileInfo } from '../entities/profile';
-import { globalBlockSuiteSchema } from '../global-schema';
+import { getAFFiNEWorkspaceSchema } from '../global-schema';
 import type { WorkspaceMetadata } from '../metadata';
 import type {
   WorkspaceEngineProvider,
@@ -57,12 +57,10 @@ export class TestingWorkspaceLocalProvider
     const docCollection = new DocCollection({
       id: id,
       idGenerator: () => nanoid(),
-      schema: globalBlockSuiteSchema,
+      schema: getAFFiNEWorkspaceSchema(),
       blobSources: {
         main: blobStorage,
       },
-      disableBacklinkIndex: true,
-      disableSearchIndex: true,
     });
 
     // apply initial state
@@ -96,9 +94,7 @@ export class TestingWorkspaceLocalProvider
 
     const bs = new DocCollection({
       id,
-      schema: globalBlockSuiteSchema,
-      disableBacklinkIndex: true,
-      disableSearchIndex: true,
+      schema: getAFFiNEWorkspaceSchema(),
     });
 
     applyUpdate(bs.doc, data);

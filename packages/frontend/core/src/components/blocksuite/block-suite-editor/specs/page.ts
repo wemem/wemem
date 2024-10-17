@@ -1,19 +1,24 @@
-import type { BlockSpec } from '@blocksuite/block-std';
+import type { ExtensionType } from '@blocksuite/affine/block-std';
 import {
+  NoteBlockSpec,
   PageSurfaceBlockSpec,
   PageSurfaceRefBlockSpec,
-} from '@blocksuite/blocks';
+} from '@blocksuite/affine/blocks';
 import { type FrameworkProvider } from '@toeverything/infra';
 
-import { CommonBlockSpecs } from './common';
+import { AIBlockSpecs, DefaultBlockSpecs } from './common';
 import { createPageRootBlockSpec } from './custom/root-block';
 
-export function createPageModeSpecs(framework: FrameworkProvider): BlockSpec[] {
+export function createPageModeSpecs(
+  framework: FrameworkProvider,
+  enableAI: boolean
+): ExtensionType[] {
   return [
-    ...CommonBlockSpecs,
+    ...(enableAI ? AIBlockSpecs : DefaultBlockSpecs),
     PageSurfaceBlockSpec,
     PageSurfaceRefBlockSpec,
+    NoteBlockSpec,
     // special
-    createPageRootBlockSpec(framework),
-  ];
+    createPageRootBlockSpec(framework, enableAI),
+  ].flat();
 }

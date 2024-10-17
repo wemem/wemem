@@ -8,11 +8,11 @@ import {
   ThrottlerGuard,
   ThrottlerModule,
   type ThrottlerModuleOptions,
-  ThrottlerOptions,
   ThrottlerOptionsFactory,
+  ThrottlerRequest,
   ThrottlerStorageService,
 } from '@nestjs/throttler';
-import type { Request } from 'express';
+import type { Request, Response } from 'express';
 
 import { Config } from '../config';
 import { getRequestResponseFromContext } from '../utils/request';
@@ -50,7 +50,10 @@ export class CloudThrottlerGuard extends ThrottlerGuard {
     super(options, storageService, reflector);
   }
 
-  override getRequestResponse(context: ExecutionContext) {
+  override getRequestResponse(context: ExecutionContext): {
+    req: Request;
+    res: Response;
+  } {
     return getRequestResponseFromContext(context) as any;
   }
 
@@ -74,12 +77,15 @@ export class CloudThrottlerGuard extends ThrottlerGuard {
     return `${tracker};${throttler}`;
   }
 
-  override async handleRequest(
-    context: ExecutionContext,
-    limit: number,
-    ttl: number,
-    throttlerOptions: ThrottlerOptions
-  ) {
+  override async handleRequest(request: ThrottlerRequest) {
+    const {
+      context,
+      throttler: throttlerOptions,
+      ttl,
+      blockDuration,
+    } = request;
+    let limit = request.limit;
+
     // give it 'default' if no throttler is specified,
     // so the unauthenticated users visits will always hit default throttler
     // authenticated users will directly bypass unprotected APIs in [CloudThrottlerGuard.canActivate]
@@ -118,13 +124,11 @@ export class CloudThrottlerGuard extends ThrottlerGuard {
       tracker,
       throttlerOptions.name ?? 'default'
     );
-    const { timeToExpire, totalHits } = await this.storageService.increment(
-      key,
-      ttl
-    );
+    const { timeToExpire, totalHits, isBlocked, timeToBlockExpire } =
+      await this.storageService.increment(key, ttl, limit, blockDuration, key);
 
-    if (totalHits > limit) {
-      res.header('Retry-After', timeToExpire.toString());
+    if (isBlocked) {
+      res.header('Retry-After', timeToBlockExpire.toString());
       await this.throwThrottlingException(context, {
         limit,
         ttl,
@@ -132,6 +136,8 @@ export class CloudThrottlerGuard extends ThrottlerGuard {
         tracker,
         totalHits,
         timeToExpire,
+        isBlocked,
+        timeToBlockExpire,
       });
     }
 
@@ -150,7 +156,7 @@ export class CloudThrottlerGuard extends ThrottlerGuard {
     const throttler = this.getSpecifiedThrottler(context);
 
     // if user is logged in, bypass non-protected handlers
-    if (!throttler && req.user) {
+    if (!throttler && req.session?.user) {
       return true;
     }
 

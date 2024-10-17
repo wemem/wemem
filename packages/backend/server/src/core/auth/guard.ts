@@ -4,9 +4,9 @@ import type {
   FactoryProvider,
   OnModuleInit,
 } from '@nestjs/common';
-import { Injectable, SetMetadata, UseGuards } from '@nestjs/common';
+import { Injectable, SetMetadata } from '@nestjs/common';
 import { ModuleRef, Reflector } from '@nestjs/core';
-import type { Request } from 'express';
+import type { Request, Response } from 'express';
 
 import {
   AuthenticationRequired,
@@ -16,16 +16,8 @@ import {
   parseCookies,
 } from '../../fundamentals';
 import { WEBSOCKET_OPTIONS } from '../../fundamentals/websocket';
-import { CurrentUser, UserSession } from './current-user';
-import { AuthService, parseAuthUserSeqNum } from './service';
-
-function extractTokenFromHeader(authorization: string) {
-  if (!/^Bearer\s/i.test(authorization)) {
-    return;
-  }
-
-  return authorization.substring(7);
-}
+import { AuthService } from './service';
+import { Session } from './session';
 
 const PUBLIC_ENTRYPOINT_SYMBOL = Symbol('public');
 
@@ -45,9 +37,9 @@ export class AuthGuard implements CanActivate, OnModuleInit {
   async canActivate(context: ExecutionContext) {
     const { req, res } = getRequestResponseFromContext(context);
 
-    const userSession = await this.signIn(req);
-    if (res && userSession && userSession.session.expiresAt) {
-      await this.auth.refreshUserSessionIfNeeded(req, res, userSession.session);
+    const userSession = await this.signIn(req, res);
+    if (res && userSession && userSession.expiresAt) {
+      await this.auth.refreshUserSessionIfNeeded(res, userSession);
     }
 
     // api is public
@@ -60,43 +52,31 @@ export class AuthGuard implements CanActivate, OnModuleInit {
       return true;
     }
 
-    if (!req.user) {
+    if (!userSession) {
       throw new AuthenticationRequired();
     }
+
     return true;
   }
 
-  async signIn(
-    req: Request
-  ): Promise<{ user: CurrentUser; session: UserSession } | null> {
-    if (req.user && req.session) {
-      return {
-        user: req.user,
-        session: req.session,
-      };
+  async signIn(req: Request, res?: Response): Promise<Session | null> {
+    if (req.session) {
+      return req.session;
     }
 
+    // compatibility with websocket request
     parseCookies(req);
-    let sessionToken: string | undefined =
-      req.cookies[AuthService.sessionCookieName];
 
-    if (!sessionToken && req.headers.authorization) {
-      sessionToken = extractTokenFromHeader(req.headers.authorization);
-    }
+    // TODO(@forehalo): a cache for user session
+    const userSession = await this.auth.getUserSessionFromRequest(req, res);
 
-    if (sessionToken) {
-      const userSeq = parseAuthUserSeqNum(
-        req.headers[AuthService.authUserSeqHeaderName]
-      );
+    if (userSession) {
+      req.session = {
+        ...userSession.session,
+        user: userSession.user,
+      };
 
-      const userSession = await this.auth.getUserSession(sessionToken, userSeq);
-
-      if (userSession) {
-        req.session = userSession.session;
-        req.user = userSession.user;
-      }
-
-      return userSession;
+      return req.session;
     }
 
     return null;
@@ -104,26 +84,8 @@ export class AuthGuard implements CanActivate, OnModuleInit {
 }
 
 /**
- * This guard is used to protect routes/queries/mutations that require a user to be logged in.
- *
- * The `@CurrentUser()` parameter decorator used in a `Auth` guarded queries would always give us the user because the `Auth` guard will
- * fast throw if user is not logged in.
- *
- * @example
- *
- * ```typescript
- * \@Auth()
- * \@Query(() => UserType)
- * user(@CurrentUser() user: CurrentUser) {
- *   return user;
- * }
- * ```
+ * Mark api to be public accessible
  */
-export const Auth = () => {
-  return UseGuards(AuthGuard);
-};
-
-// api is public accessible
 export const Public = () => SetMetadata(PUBLIC_ENTRYPOINT_SYMBOL, true);
 
 export const AuthWebsocketOptionsProvider: FactoryProvider = {

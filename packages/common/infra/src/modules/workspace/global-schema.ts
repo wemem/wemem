@@ -1,8 +1,14 @@
-import { AffineSchemas } from '@blocksuite/blocks/schemas';
-import { AIChatBlockSchema } from '@blocksuite/presets';
-import { Schema } from '@blocksuite/store';
+import { AffineSchemas } from '@blocksuite/affine/blocks/schemas';
+import { AIChatBlockSchema } from '@blocksuite/affine/presets';
+import { Schema } from '@blocksuite/affine/store';
 
-export const globalBlockSuiteSchema = new Schema();
+let _schema: Schema | null = null;
+export function getAFFiNEWorkspaceSchema() {
+  if (!_schema) {
+    _schema = new Schema();
 
-const schemas = [...AffineSchemas, AIChatBlockSchema];
-globalBlockSuiteSchema.register(schemas);
+    _schema.register([...AffineSchemas, AIChatBlockSchema]);
+  }
+
+  return _schema;
+}

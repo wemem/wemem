@@ -10,7 +10,7 @@ import { test as base, testResultDir } from './playwright';
 import { removeWithRetry } from './utils/utils';
 
 const projectRoot = join(__dirname, '..', '..');
-const electronRoot = join(projectRoot, 'packages/frontend/electron');
+const electronRoot = join(projectRoot, 'packages/frontend/apps/electron');
 
 function generateUUID() {
   return crypto.randomUUID();
@@ -20,13 +20,13 @@ type RoutePath = 'setting';
 
 const getPageId = async (page: Page) => {
   return page.evaluate(() => {
-    return (window.appInfo as any)?.viewId as string;
+    return (window.__appInfo as any)?.viewId as string;
   });
 };
 
 const isActivePage = async (page: Page) => {
   return page.evaluate(async () => {
-    return await (window as any).apis?.ui.isActiveTab();
+    return await (window as any).__apis?.ui.isActiveTab();
   });
 };
 
@@ -67,9 +67,14 @@ export const test = base.extend<{
   },
   page: async ({ electronApp }, use) => {
     await expect
-      .poll(() => {
-        return electronApp.windows().length > 1;
-      })
+      .poll(
+        () => {
+          return electronApp.windows().length > 1;
+        },
+        {
+          timeout: 50000,
+        }
+      )
       .toBeTruthy();
 
     const page = await getActivePage(electronApp.windows());

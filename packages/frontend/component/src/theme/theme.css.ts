@@ -7,12 +7,6 @@ globalStyle('body', {
   fontSize: cssVar('fontBase'),
 });
 
-if (process.env.NODE_ENV === 'development') {
-  globalStyle('.undefined', {
-    border: '5px solid red !important',
-  });
-}
-
 globalStyle('[data-theme="light"]', {
   vars: {
     '--affine-brand-color': 'hsl(240 5.9% 10%)',

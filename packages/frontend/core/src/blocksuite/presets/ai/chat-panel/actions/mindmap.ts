@@ -1,18 +1,17 @@
 import './action-wrapper';
 
-import type { EditorHost } from '@blocksuite/block-std';
-import { ShadowlessElement, WithDisposable } from '@blocksuite/block-std';
-import { MiniMindmapPreview } from '@blocksuite/blocks';
-import { noop } from '@blocksuite/global/utils';
+import type { EditorHost } from '@blocksuite/affine/block-std';
+import { ShadowlessElement } from '@blocksuite/affine/block-std';
+import { MiniMindmapPreview } from '@blocksuite/affine/blocks';
+import { noop, WithDisposable } from '@blocksuite/affine/global/utils';
 import { html } from 'lit';
-import { customElement, property } from 'lit/decorators.js';
+import { property } from 'lit/decorators.js';
 import { styleMap } from 'lit/directives/style-map.js';
 
 import type { ChatAction } from '../chat-context';
 
 noop(MiniMindmapPreview);
 
-@customElement('action-mindmap')
 export class ActionMindmap extends WithDisposable(ShadowlessElement) {
   @property({ attribute: false })
   accessor item!: ChatAction;

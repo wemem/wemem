@@ -283,11 +283,17 @@ export const CMDKGroup = ({
 };
 
 const CMDKKeyBinding = ({ keyBinding }: { keyBinding: string }) => {
-  const isMacOS = environment.isBrowser && environment.isMacOs;
+  const isMacOS = environment.isMacOs;
   const fragments = useMemo(() => {
     return keyBinding.split('+').map(fragment => {
       if (fragment === '$mod') {
         return isMacOS ? '⌘' : 'Ctrl';
+      }
+      if (fragment === 'Alt') {
+        return isMacOS ? '⌥' : 'Alt';
+      }
+      if (fragment.startsWith('Key')) {
+        return fragment.slice(3);
       }
       if (fragment === 'ArrowUp') {
         return '↑';

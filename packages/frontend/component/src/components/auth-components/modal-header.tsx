@@ -1,6 +1,6 @@
 import type { FC } from 'react';
 
-import { Logo1Icon, Logo1IconBorder } from '../../wemem/icons';
+import { Logo1IconBorder } from '../../wemem/icons';
 import { modalHeaderWrapper } from './share.css';
 export const ModalHeader: FC<{
   title: string;

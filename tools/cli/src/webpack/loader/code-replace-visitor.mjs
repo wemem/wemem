@@ -471,6 +471,7 @@ class ReplaceVisitor {
     stmt.body = this.visitStatement(stmt.body);
     return stmt;
   }
+  // eslint-disable-next-line sonarjs/no-identical-functions
   visitForInStatement(stmt) {
     if (stmt.left.type === 'VariableDeclaration') {
       stmt.left = this.visitVariableDeclaration(stmt.left);
@@ -607,11 +608,13 @@ class ReplaceVisitor {
     n.typeAnnotation = this.visitTsTypeAnnotation(n.typeAnnotation);
     return n;
   }
+  // eslint-disable-next-line sonarjs/no-identical-functions
   visitTsConstructSignatureDeclaration(n) {
     n.params = this.visitTsFnParameters(n.params);
     n.typeAnnotation = this.visitTsTypeAnnotation(n.typeAnnotation);
     return n;
   }
+  // eslint-disable-next-line sonarjs/no-identical-functions
   visitTsPropertySignature(n) {
     n.params = this.visitTsFnParameters(n.params);
     n.typeAnnotation = this.visitTsTypeAnnotation(n.typeAnnotation);
@@ -643,6 +646,7 @@ class ReplaceVisitor {
     n.init = this.visitOptionalExpression(n.init);
     return n;
   }
+  // eslint-disable-next-line sonarjs/no-identical-functions
   visitTsEnumMemberId(n) {
     switch (n.type) {
       case 'Identifier':
@@ -847,6 +851,7 @@ class ReplaceVisitor {
     stmt.expression = this.visitExpression(stmt.expression);
     return stmt;
   }
+  // eslint-disable-next-line sonarjs/no-identical-functions
   visitContinueStatement(stmt) {
     if (stmt.label) {
       stmt.label = this.visitLabelIdentifier(stmt.label);
@@ -1010,11 +1015,13 @@ class ReplaceVisitor {
     n.expression = this.visitExpression(n.expression);
     return n;
   }
+  // eslint-disable-next-line sonarjs/no-identical-functions
   visitTsAsExpression(n) {
     n.expression = this.visitExpression(n.expression);
     n.typeAnnotation = this.visitTsType(n.typeAnnotation);
     return n;
   }
+  // eslint-disable-next-line sonarjs/no-identical-functions
   visitTsSatisfiesExpression(n) {
     n.expression = this.visitExpression(n.expression);
     n.typeAnnotation = this.visitTsType(n.typeAnnotation);
@@ -1135,6 +1142,7 @@ class ReplaceVisitor {
     n.typeArguments = this.visitTsTypeArguments(n.typeArguments);
     return n;
   }
+  // eslint-disable-next-line sonarjs/no-identical-functions
   visitTsTypeArguments(n) {
     if (n) {
       n.params = this.visitTsTypes(n.params);
@@ -1369,7 +1377,7 @@ class ReplaceVisitor {
     }
     return a;
   }
-  visitTsType(n) {
+  visitTsType(_n) {
     throw new Error('Method visitTsType not implemented.');
   }
   visitPatterns(nodes) {

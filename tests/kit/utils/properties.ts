@@ -126,10 +126,9 @@ export const addCustomProperty = async (
         })
         .locator('.selected')
     ).toBeVisible();
-    await page.keyboard.press('Escape', {
-      delay: 100,
-    });
+    await page.keyboard.press('Escape');
   }
+  await page.waitForTimeout(500);
 };
 
 export const expectPropertyOrdering = async (
@@ -173,7 +172,11 @@ export const selectVisibilitySelector = async (
     })
     .click();
 
+  await page.waitForTimeout(500);
+
   await page.keyboard.press('Escape');
+
+  await page.waitForTimeout(500);
 };
 
 export const changePropertyVisibility = async (

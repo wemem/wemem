@@ -1,13 +1,14 @@
 import { Module } from '@nestjs/common';
 
-import { DocModule } from '../doc';
+import { DocStorageModule } from '../doc';
+import { DocRendererModule } from '../doc-renderer';
 import { FeatureModule } from '../features';
+import { PermissionModule } from '../permission';
 import { QuotaModule } from '../quota';
 import { StorageModule } from '../storage';
 import { UserModule } from '../user';
 import { WorkspacesController } from './controller';
 import { WorkspaceManagementResolver } from './management';
-import { PermissionService } from './permission';
 import {
   DocHistoryResolver,
   PagePermissionResolver,
@@ -16,17 +17,23 @@ import {
 } from './resolvers';
 
 @Module({
-  imports: [DocModule, FeatureModule, QuotaModule, StorageModule, UserModule],
+  imports: [
+    DocStorageModule,
+    DocRendererModule,
+    FeatureModule,
+    QuotaModule,
+    StorageModule,
+    UserModule,
+    PermissionModule,
+  ],
   controllers: [WorkspacesController],
   providers: [
     WorkspaceResolver,
     WorkspaceManagementResolver,
-    PermissionService,
     PagePermissionResolver,
     DocHistoryResolver,
     WorkspaceBlobResolver,
   ],
-  exports: [PermissionService],
 })
 export class WorkspaceModule {}
 

@@ -8,7 +8,7 @@ import {
 import type { User } from '@prisma/client';
 
 import type { Payload } from '../../fundamentals/event/def';
-import { CurrentUser } from '../auth/current-user';
+import { type CurrentUser } from '../auth/session';
 
 @ObjectType()
 export class UserType implements CurrentUser {
@@ -79,6 +79,15 @@ export class RemoveAvatar {
 
 @InputType()
 export class UpdateUserInput implements Partial<User> {
+  @Field({ description: 'User name', nullable: true })
+  name?: string;
+}
+
+@InputType()
+export class ManageUserInput {
+  @Field({ description: 'User email', nullable: true })
+  email?: string;
+
   @Field({ description: 'User name', nullable: true })
   name?: string;
 }

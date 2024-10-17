@@ -1,5 +1,5 @@
 import { Button, Input, Modal } from '@affine/component';
-import { useCatchEventCallback } from '@affine/core/hooks/use-catch-event-hook';
+import { useCatchEventCallback } from '@affine/core/components/hooks/use-catch-event-hook';
 import { useI18n } from '@affine/i18n';
 import type { KeyboardEvent } from 'react';
 import { useCallback, useMemo, useState } from 'react';
@@ -88,7 +88,7 @@ export const CreateCollection = ({
     [isNameEmpty]
   );
   return (
-    <div>
+    <div data-testid="edit-collection-modal">
       <div className={styles.content}>
         <div className={styles.label}>
           {t['com.affine.editCollectionName.name']()}

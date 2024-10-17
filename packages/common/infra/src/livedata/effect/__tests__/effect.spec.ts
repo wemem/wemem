@@ -17,7 +17,7 @@ describe('example', () => {
     name: string;
   };
 
-  const fetchUser = vi.fn<[number], Promise<User>>();
+  const fetchUser = vi.fn<(id: number) => Promise<User>>();
 
   const user$ = new LiveData<User | null>(null);
   const isLoading$ = new LiveData<boolean>(false);
@@ -56,6 +56,7 @@ describe('example', () => {
     fetchUser.mockRejectedValue(new Error('some error'));
     loadUser(1);
     await vi.waitFor(() => expect(error$.value).toBeInstanceOf(Error));
+    await vi.waitFor(() => expect(isLoading$.value).toBe(false));
   });
 
   test('isLoading', async () => {

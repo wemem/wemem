@@ -76,9 +76,7 @@ spec:
           - name: AFFINE_SERVER_HTTPS
             value: "{{ .Values.app.https }}"
           - name: ENABLE_R2_OBJECT_STORAGE
-            value: "{{ .Values.app.objectStorage.r2.enabled }}"
-          - name: ENABLE_CAPTCHA
-            value: "{{ .Values.app.captcha.enabled }}"
+            value: "{{ .Values.global.objectStorage.r2.enabled }}"
           - name: FEATURES_EARLY_ACCESS_PREVIEW
             value: "{{ .Values.app.features.earlyAccessPreview }}"
           - name: FEATURES_SYNC_CLIENT_VERSION_CHECK
@@ -124,21 +122,21 @@ spec:
           - name: DOC_MERGE_USE_JWST_CODEC
             value: "true"
           {{ end }}
-          {{ if .Values.app.objectStorage.r2.enabled }}
+          {{ if .Values.global.objectStorage.r2.enabled }}
           - name: R2_OBJECT_STORAGE_ACCOUNT_ID
             valueFrom:
               secretKeyRef:
-                name: "{{ .Values.app.objectStorage.r2.secretName }}"
+                name: "{{ .Values.global.objectStorage.r2.secretName }}"
                 key: accountId
           - name: R2_OBJECT_STORAGE_ACCESS_KEY_ID
             valueFrom:
               secretKeyRef:
-                name: "{{ .Values.app.objectStorage.r2.secretName }}"
+                name: "{{ .Values.global.objectStorage.r2.secretName }}"
                 key: accessKeyId
           - name: R2_OBJECT_STORAGE_SECRET_ACCESS_KEY
             valueFrom:
               secretKeyRef:
-                name: "{{ .Values.app.objectStorage.r2.secretName }}"
+                name: "{{ .Values.global.objectStorage.r2.secretName }}"
                 key: secretAccessKey
           {{ end }}
           {{ if .Values.app.captcha.enabled }}
@@ -204,12 +202,12 @@ spec:
               protocol: TCP
           livenessProbe:
             httpGet:
-              path: /
+              path: /info
               port: http
             initialDelaySeconds: {{ .Values.probe.initialDelaySeconds }}
           readinessProbe:
             httpGet:
-              path: /
+              path: /info
               port: http
             initialDelaySeconds: {{ .Values.probe.initialDelaySeconds }}
           resources:

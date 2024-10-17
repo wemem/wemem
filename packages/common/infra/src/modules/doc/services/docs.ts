@@ -1,11 +1,11 @@
 import { Unreachable } from '@affine/env/constant';
-import type { RootBlockModel } from '@blocksuite/blocks';
+import { type DocMode } from '@blocksuite/affine/blocks';
 
 import { Service } from '../../../framework';
-import { initEmptyPage } from '../../../initialization';
+import { type DocProps, initDocFromProps } from '../../../initialization';
 import { ObjectPool } from '../../../utils';
 import type { Doc } from '../entities/doc';
-import type { DocMode } from '../entities/record';
+import { DocPropertyList } from '../entities/property-list';
 import { DocRecordList } from '../entities/record-list';
 import { DocScope } from '../scopes/doc';
 import type { DocsStore } from '../stores/docs';
@@ -19,6 +19,8 @@ export class DocsService extends Service {
       obj.scope.dispose();
     },
   });
+
+  propertyList = this.framework.createEntity(DocPropertyList);
 
   constructor(private readonly store: DocsStore) {
     super();
@@ -54,19 +56,19 @@ export class DocsService extends Service {
 
   createDoc(
     options: {
-      mode?: DocMode;
-      title?: string;
+      primaryMode?: DocMode;
+      docProps?: DocProps;
     } = {}
   ) {
     const doc = this.store.createBlockSuiteDoc();
-    initEmptyPage(doc, options.title);
+    initDocFromProps(doc, options.docProps);
     this.store.markDocSyncStateAsReady(doc.id);
     const docRecord = this.list.doc$(doc.id).value;
     if (!docRecord) {
       throw new Unreachable();
     }
-    if (options.mode) {
-      docRecord.setMode(options.mode);
+    if (options.primaryMode) {
+      docRecord.setPrimaryMode(options.primaryMode);
     }
     return docRecord;
   }
@@ -100,15 +102,7 @@ export class DocsService extends Service {
     const { doc, release } = this.open(docId);
     doc.setPriorityLoad(10);
     await doc.waitForSyncReady();
-    const pageBlock = doc.blockSuiteDoc.getBlocksByFlavour('affine:page').at(0)
-      ?.model as RootBlockModel | undefined;
-    if (pageBlock) {
-      doc.blockSuiteDoc.transact(() => {
-        pageBlock.title.delete(0, pageBlock.title.length);
-        pageBlock.title.insert(newTitle, 0);
-      });
-      doc.record.setMeta({ title: newTitle });
-    }
+    doc.changeDocTitle(newTitle);
     release();
   }
 }

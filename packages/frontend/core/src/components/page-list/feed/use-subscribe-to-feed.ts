@@ -1,33 +1,34 @@
 import { tagColors } from '@affine/core/components/affine/page-properties/common';
 import { createEmptyCollection } from '@affine/core/components/page-list';
-import { useNavigateHelper } from '@affine/core/hooks/use-navigate-helper';
 import { FeedsService } from '@affine/core/modules/feed/services/feeds-service';
-import type { SubscriptionRecord } from '@affine/core/modules/feed-newly/views/data-hooks';
+import type { FeedRecord } from '@affine/core/modules/feed-newly/views/data-hooks';
 import { TagService } from '@affine/core/modules/tag';
 import type { DocCollection } from '@blocksuite/store';
 import { useService } from '@toeverything/infra';
 import { useCallback } from 'react';
 
+import { useNavigateHelper } from '../../hooks/use-navigate-helper';
+
 export const FeedFilterTagPrefix = 'feed-filter-tag-';
 
 export const useSubscribeToFeed = (docCollection: DocCollection) => {
   const navigateHelper = useNavigateHelper();
-  const subscriptionService = useService(FeedsService);
+  const feedsService = useService(FeedsService);
   const tagList = useService(TagService).tagList;
 
   return useCallback(
-    (subscription: SubscriptionRecord) => {
-      if (subscriptionService.hasSubscribe(subscription.id)) {
+    (feedRecord: FeedRecord) => {
+      if (feedsService.hasSubscribe(feedRecord.id)) {
         return;
       }
-      const id = subscription.id;
-      subscriptionService.subscribe(
+      const id = feedRecord.id;
+      feedsService.subscribe(
         createEmptyCollection(id, {
-          name: subscription.name,
-          subscription: {
-            url: subscription.url,
-            description: subscription.description,
-            icon: subscription.icon,
+          name: feedRecord.name,
+          feed: {
+            url: feedRecord.url,
+            description: feedRecord.description,
+            icon: feedRecord.icon,
           },
           filterList: [
             {
@@ -40,7 +41,7 @@ export const useSubscribeToFeed = (docCollection: DocCollection) => {
               args: [
                 {
                   type: 'literal',
-                  value: [subscription.url],
+                  value: [feedRecord.url],
                 },
               ],
             },
@@ -54,6 +55,6 @@ export const useSubscribeToFeed = (docCollection: DocCollection) => {
       );
       navigateHelper.jumpToFeed(docCollection.id, id);
     },
-    [docCollection.id, subscriptionService, navigateHelper, tagList]
+    [docCollection.id, feedsService, navigateHelper, tagList]
   );
 };

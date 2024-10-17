@@ -1,52 +1,46 @@
 import { toast } from '@affine/component';
 import {
   Menu,
-  MenuIcon,
   MenuItem,
   MenuSeparator,
   MenuSub,
 } from '@affine/component/ui/menu';
-import {
-  openHistoryTipsModalAtom,
-  openInfoModalAtom,
-} from '@affine/core/atoms';
 import { PageHistoryModal } from '@affine/core/components/affine/page-history-modal';
 import { ShareMenuContent } from '@affine/core/components/affine/share-page-modal/share-menu';
+import { openHistoryTipsModalAtom } from '@affine/core/components/atoms';
+import { useBlockSuiteMetaHelper } from '@affine/core/components/hooks/affine/use-block-suite-meta-helper';
+import { useEnableCloud } from '@affine/core/components/hooks/affine/use-enable-cloud';
+import { useExportPage } from '@affine/core/components/hooks/affine/use-export-page';
+import { useTrashModalHelper } from '@affine/core/components/hooks/affine/use-trash-modal-helper';
+import { useAsyncCallback } from '@affine/core/components/hooks/affine-async-hooks';
+import { useDocMetaHelper } from '@affine/core/components/hooks/use-block-suite-page-meta';
 import { Export, MoveToTrash } from '@affine/core/components/page-list';
-import { useBlockSuiteMetaHelper } from '@affine/core/hooks/affine/use-block-suite-meta-helper';
-import { useEnableCloud } from '@affine/core/hooks/affine/use-enable-cloud';
-import { useExportPage } from '@affine/core/hooks/affine/use-export-page';
-import { useTrashModalHelper } from '@affine/core/hooks/affine/use-trash-modal-helper';
-import { useAsyncCallback } from '@affine/core/hooks/affine-async-hooks';
-import { track } from '@affine/core/mixpanel';
+import { IsFavoriteIcon } from '@affine/core/components/pure/icons';
+import { useDetailPageHeaderResponsive } from '@affine/core/desktop/pages/workspace/detail-page/use-header-responsive';
+import { DocInfoService } from '@affine/core/modules/doc-info';
+import { EditorService } from '@affine/core/modules/editor';
 import { WorkbenchService } from '@affine/core/modules/workbench';
 import { ViewService } from '@affine/core/modules/workbench/services/view';
-import { useDetailPageHeaderResponsive } from '@affine/core/pages/workspace/detail-page/use-header-responsive';
 import { WorkspaceFlavour } from '@affine/env/workspace';
 import { useI18n } from '@affine/i18n';
+import { track } from '@affine/track';
+import type { Doc } from '@blocksuite/affine/store';
 import {
   DuplicateIcon,
   EdgelessIcon,
   EditIcon,
-  FavoritedIcon,
-  FavoriteIcon,
   FrameIcon,
   HistoryIcon,
   ImportIcon,
   InformationIcon,
   OpenInNewIcon,
   PageIcon,
+  SaveIcon,
   ShareIcon,
   SplitViewIcon,
   TocIcon,
 } from '@blocksuite/icons/rc';
-import type { Doc } from '@blocksuite/store';
-import {
-  DocService,
-  useLiveData,
-  useService,
-  WorkspaceService,
-} from '@toeverything/infra';
+import { useLiveData, useService, WorkspaceService } from '@toeverything/infra';
 import { useSetAtom } from 'jotai';
 import { useCallback, useState } from 'react';
 
@@ -75,17 +69,22 @@ export const PageHeaderMenuButton = ({
   const workspace = useService(WorkspaceService).workspace;
   const docCollection = workspace.docCollection;
 
-  const doc = useService(DocService).doc;
-  const isInTrash = useLiveData(doc.meta$.map(m => m.trash));
-  const currentMode = useLiveData(doc.mode$);
+  const editorService = useService(EditorService);
+  const isInTrash = useLiveData(
+    editorService.editor.doc.meta$.map(meta => meta.trash)
+  );
+  const currentMode = useLiveData(editorService.editor.mode$);
 
   const workbench = useService(WorkbenchService).workbench;
 
   const { favorite, toggleFavorite } = useFavorite(pageId);
 
-  const { duplicate } = useBlockSuiteMetaHelper(docCollection);
+  const { duplicate } = useBlockSuiteMetaHelper();
   const { importFile } = usePageHelper(docCollection);
-  const { setTrashModal } = useTrashModalHelper(docCollection);
+  const { setTrashModal } = useTrashModalHelper();
+
+  const [isEditing, setEditing] = useState(!page.readonly);
+  const { setDocReadonly } = useDocMetaHelper();
 
   const view = useService(ViewService).view;
 
@@ -116,11 +115,11 @@ export const PageHeaderMenuButton = ({
     return setOpenHistoryTipsModal(true);
   }, [setOpenHistoryTipsModal, workspace.flavour]);
 
-  const setOpenInfoModal = useSetAtom(openInfoModalAtom);
+  const docInfoModal = useService(DocInfoService).modal;
   const openInfoModal = useCallback(() => {
     track.$.header.pageInfo.open();
-    setOpenInfoModal(true);
-  }, [setOpenInfoModal]);
+    docInfoModal.open(pageId);
+  }, [docInfoModal, pageId]);
 
   const handleOpenInNewTab = useCallback(() => {
     workbench.openDoc(pageId, {
@@ -139,9 +138,9 @@ export const PageHeaderMenuButton = ({
     setTrashModal({
       open: true,
       pageIds: [pageId],
-      pageTitles: [doc.meta$.value.title ?? ''],
+      pageTitles: [editorService.editor.doc.meta$.value.title ?? ''],
     });
-  }, [doc.meta$.value.title, pageId, setTrashModal]);
+  }, [editorService, pageId, setTrashModal]);
 
   const handleRename = useCallback(() => {
     rename?.();
@@ -149,7 +148,7 @@ export const PageHeaderMenuButton = ({
   }, [rename]);
 
   const handleSwitchMode = useCallback(() => {
-    doc.toggleMode();
+    editorService.editor.toggleMode();
     track.$.header.docOptions.switchPageMode({
       mode: currentMode === 'page' ? 'edgeless' : 'page',
     });
@@ -158,11 +157,7 @@ export const PageHeaderMenuButton = ({
         ? t['com.affine.toastMessage.edgelessMode']()
         : t['com.affine.toastMessage.pageMode']()
     );
-  }, [currentMode, doc, t]);
-  const menuItemStyle = {
-    padding: '4px 12px',
-    transition: 'all 0.3s',
-  };
+  }, [currentMode, editorService, t]);
 
   const handleMenuOpenChange = useCallback((open: boolean) => {
     if (open) {
@@ -170,7 +165,7 @@ export const PageHeaderMenuButton = ({
     }
   }, []);
 
-  const exportHandler = useExportPage(doc.blockSuiteDoc);
+  const exportHandler = useExportPage();
 
   const handleDuplicate = useCallback(() => {
     duplicate(pageId);
@@ -204,6 +199,21 @@ export const PageHeaderMenuButton = ({
     toggleFavorite();
   }, [toggleFavorite]);
 
+  const handleToggleEdit = useCallback(() => {
+    setDocReadonly(page.id, !page.readonly);
+    setEditing(!isEditing);
+  }, [isEditing, page.id, page.readonly, setDocReadonly]);
+
+  const isMobile = environment.isMobile;
+  const mobileEditMenuItem = (
+    <MenuItem
+      prefixIcon={isEditing ? <SaveIcon /> : <EditIcon />}
+      onSelect={handleToggleEdit}
+    >
+      {t[isEditing ? 'Save' : 'Edit']()}
+    </MenuItem>
+  );
+
   const showResponsiveMenu = hideShare;
   const ResponsiveMenuItems = (
     <>
@@ -227,11 +237,7 @@ export const PageHeaderMenuButton = ({
             </div>
           }
           triggerOptions={{
-            preFix: (
-              <MenuIcon>
-                <ShareIcon />
-              </MenuIcon>
-            ),
+            prefixIcon: <ShareIcon />,
           }}
           subOptions={{
             onOpenChange: handleShareMenuOpenChange,
@@ -247,29 +253,20 @@ export const PageHeaderMenuButton = ({
   const EditMenu = (
     <>
       {showResponsiveMenu ? ResponsiveMenuItems : null}
+      {isMobile && mobileEditMenuItem}
       {!isJournal && (
         <MenuItem
-          preFix={
-            <MenuIcon>
-              <EditIcon />
-            </MenuIcon>
-          }
+          prefixIcon={<EditIcon />}
           data-testid="editor-option-menu-rename"
           onSelect={handleRename}
-          style={menuItemStyle}
         >
           {t['Rename']()}
         </MenuItem>
       )}
       <MenuItem
-        preFix={
-          <MenuIcon>
-            {currentMode === 'page' ? <EdgelessIcon /> : <PageIcon />}
-          </MenuIcon>
-        }
+        prefixIcon={currentMode === 'page' ? <EdgelessIcon /> : <PageIcon />}
         data-testid="editor-option-menu-edgeless"
         onSelect={handleSwitchMode}
-        style={menuItemStyle}
       >
         {t['Convert to ']()}
         {currentMode === 'page'
@@ -279,16 +276,7 @@ export const PageHeaderMenuButton = ({
       <MenuItem
         data-testid="editor-option-menu-favorite"
         onSelect={handleToggleFavorite}
-        style={menuItemStyle}
-        preFix={
-          <MenuIcon>
-            {favorite ? (
-              <FavoritedIcon style={{ color: 'var(--affine-primary-color)' }} />
-            ) : (
-              <FavoriteIcon />
-            )}
-          </MenuIcon>
-        }
+        prefixIcon={<IsFavoriteIcon favorite={favorite} />}
       >
         {favorite
           ? t['com.affine.favoritePageOperation.remove']()
@@ -296,112 +284,68 @@ export const PageHeaderMenuButton = ({
       </MenuItem>
       <MenuSeparator />
       <MenuItem
-        preFix={
-          <MenuIcon>
-            <OpenInNewIcon />
-          </MenuIcon>
-        }
+        prefixIcon={<OpenInNewIcon />}
         data-testid="editor-option-menu-open-in-new-tab"
         onSelect={handleOpenInNewTab}
-        style={menuItemStyle}
       >
         {t['com.affine.workbench.tab.page-menu-open']()}
       </MenuItem>
-
-      {environment.isDesktop && (
+      {BUILD_CONFIG.isElectron && (
         <MenuItem
-          preFix={
-            <MenuIcon>
-              <SplitViewIcon />
-            </MenuIcon>
-          }
+          prefixIcon={<SplitViewIcon />}
           data-testid="editor-option-menu-open-in-split-new"
           onSelect={handleOpenInSplitView}
-          style={menuItemStyle}
         >
           {t['com.affine.workbench.split-view.page-menu-open']()}
         </MenuItem>
       )}
 
       <MenuSeparator />
-
-      {runtimeConfig.enableInfoModal && (
-        <MenuItem
-          preFix={
-            <MenuIcon>
-              <InformationIcon />
-            </MenuIcon>
-          }
-          data-testid="editor-option-menu-info"
-          onSelect={openInfoModal}
-          style={menuItemStyle}
-        >
-          {t['com.affine.page-properties.page-info.view']()}
-        </MenuItem>
-      )}
+      <MenuItem
+        prefixIcon={<InformationIcon />}
+        data-testid="editor-option-menu-info"
+        onSelect={openInfoModal}
+      >
+        {t['com.affine.page-properties.page-info.view']()}
+      </MenuItem>
       {currentMode === 'page' ? (
         <MenuItem
-          preFix={
-            <MenuIcon>
-              <TocIcon />
-            </MenuIcon>
-          }
+          prefixIcon={<TocIcon />}
           data-testid="editor-option-toc"
           onSelect={openOutlinePanel}
-          style={menuItemStyle}
         >
           {t['com.affine.header.option.view-toc']()}
         </MenuItem>
       ) : (
         <MenuItem
-          preFix={
-            <MenuIcon>
-              <FrameIcon />
-            </MenuIcon>
-          }
+          prefixIcon={<FrameIcon />}
           data-testid="editor-option-frame"
           onSelect={openAllFrames}
-          style={menuItemStyle}
         >
           {t['com.affine.header.option.view-frame']()}
         </MenuItem>
       )}
       <MenuItem
-        preFix={
-          <MenuIcon>
-            <HistoryIcon />
-          </MenuIcon>
-        }
+        prefixIcon={<HistoryIcon />}
         data-testid="editor-option-menu-history"
         onSelect={openHistoryModal}
-        style={menuItemStyle}
       >
         {t['com.affine.history.view-history-version']()}
       </MenuItem>
       <MenuSeparator />
       {!isJournal && (
         <MenuItem
-          preFix={
-            <MenuIcon>
-              <DuplicateIcon />
-            </MenuIcon>
-          }
+          prefixIcon={<DuplicateIcon />}
           data-testid="editor-option-menu-duplicate"
           onSelect={handleDuplicate}
-          style={menuItemStyle}
         >
           {t['com.affine.header.option.duplicate']()}
         </MenuItem>
       )}
       <MenuItem
-        preFix={
-          <MenuIcon>
-            <ImportIcon />
-          </MenuIcon>
-        }
+        prefixIcon={<ImportIcon />}
         data-testid="editor-option-menu-import"
         onSelect={onImportFile}
-        style={menuItemStyle}
       >
         {t['Import']()}
       </MenuItem>

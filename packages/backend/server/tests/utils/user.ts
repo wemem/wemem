@@ -13,7 +13,7 @@ import { gql } from './common';
 export async function internalSignIn(app: INestApplication, userId: string) {
   const auth = app.get(AuthService);
 
-  const session = await auth.createUserSession({ id: userId });
+  const session = await auth.createUserSession(userId);
 
   return `${AuthService.sessionCookieName}=${session.sessionId}`;
 }
@@ -56,7 +56,7 @@ export async function signUp(
     password,
     emailVerifiedAt: autoVerifyEmail ? new Date() : null,
   });
-  const { sessionId } = await app.get(AuthService).createUserSession(user);
+  const { sessionId } = await app.get(AuthService).createUserSession(user.id);
 
   return {
     ...sessionUser(user),
@@ -129,26 +129,23 @@ export async function sendSetPasswordEmail(
 
 export async function changePassword(
   app: INestApplication,
-  userToken: string,
+  userId: string,
   token: string,
   password: string
 ): Promise<string> {
   const res = await request(app.getHttpServer())
     .post(gql)
-    .auth(userToken, { type: 'bearer' })
     .set({ 'x-request-id': 'test', 'x-operation-name': 'test' })
     .send({
       query: `
-            mutation changePassword($token: String!, $password: String!) {
-              changePassword(token: $token, newPassword: $password) {
-                id
-              }
+            mutation changePassword($token: String!, $userId: String!, $password: String!) {
+              changePassword(token: $token, userId: $userId, newPassword: $password)
             }
           `,
-      variables: { token, password },
+      variables: { token, password, userId },
     })
     .expect(200);
-  return res.body.data.changePassword.id;
+  return res.body.data.changePassword;
 }
 
 export async function sendVerifyChangeEmail(

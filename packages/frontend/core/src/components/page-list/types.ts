@@ -1,5 +1,5 @@
 import type { Collection, Tag } from '@affine/env/filter';
-import type { DocCollection, DocMeta } from '@blocksuite/store';
+import type { DocCollection, DocMeta } from '@blocksuite/affine/store';
 import type { PropsWithChildren, ReactNode } from 'react';
 import type { To } from 'react-router-dom';
 
@@ -95,7 +95,6 @@ export interface ListProps<T> {
   className?: string;
   hideHeader?: boolean; // whether or not to hide the header. default is false (showing header)
   groupBy?: ItemGroupDefinition<T>[];
-  isPreferredEdgeless?: (pageId: string) => boolean; // determines the icon used for each row
   rowAsLink?: boolean;
   selectable?: 'toggle' | boolean; // show selection checkbox. toggle means showing a toggle selection in header on click; boolean == true means showing a selection checkbox for each item
   selectedIds?: string[]; // selected page ids

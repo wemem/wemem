@@ -90,6 +90,7 @@ export class LinkPreviewer {
           description: tweet.text,
           image: tweet.media?.photos[0].url || tweet.author.banner_url,
         };
+        // eslint-disable-next-line @typescript-eslint/no-unused-vars
       } catch (_) {
         throw new Error('Failed to fetch tweet');
       }

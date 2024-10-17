@@ -1,13 +1,12 @@
 import { IconButton, Menu, toast } from '@affine/component';
-import { useBlockSuiteDocMeta } from '@affine/core/hooks/use-block-suite-page-meta';
+import { useBlockSuiteDocMeta } from '@affine/core/components/hooks/use-block-suite-page-meta';
 import { CompatibleFavoriteItemsAdapter } from '@affine/core/modules/properties';
-import { ShareDocsService } from '@affine/core/modules/share-doc';
+import { ShareDocsListService } from '@affine/core/modules/share-doc';
 import { PublicPageMode } from '@affine/graphql';
 import { Trans, useI18n } from '@affine/i18n';
+import type { DocMeta } from '@blocksuite/affine/store';
 import { FilterIcon } from '@blocksuite/icons/rc';
-import type { DocMeta } from '@blocksuite/store';
 import {
-  DocsService,
   useLiveData,
   useServices,
   WorkspaceService,
@@ -60,23 +59,21 @@ export const SelectPage = ({
   const {
     workspaceService,
     compatibleFavoriteItemsAdapter,
-    shareDocsService,
-    docsService,
+    shareDocsListService,
   } = useServices({
-    DocsService,
-    ShareDocsService,
+    ShareDocsListService,
     WorkspaceService,
     CompatibleFavoriteItemsAdapter,
   });
-  const shareDocs = useLiveData(shareDocsService.shareDocs?.list$);
+  const shareDocs = useLiveData(shareDocsListService.shareDocs?.list$);
   const workspace = workspaceService.workspace;
   const docCollection = workspace.docCollection;
   const pageMetas = useBlockSuiteDocMeta(docCollection);
   const favourites = useLiveData(compatibleFavoriteItemsAdapter.favorites$);
 
   useEffect(() => {
-    shareDocsService.shareDocs?.revalidate();
-  }, [shareDocsService.shareDocs]);
+    shareDocsListService.shareDocs?.revalidate();
+  }, [shareDocsListService.shareDocs]);
 
   const getPublicMode = useCallback(
     (id: string) => {
@@ -95,13 +92,6 @@ export const SelectPage = ({
   const isFavorite = useCallback(
     (meta: DocMeta) => favourites.some(fav => fav.id === meta.id),
     [favourites]
-  );
-
-  const isEdgeless = useCallback(
-    (id: string) => {
-      return docsService.list.doc$(id).value?.mode$.value === 'edgeless';
-    },
-    [docsService.list]
   );
 
   const onToggleFavoritePage = useCallback(
@@ -207,7 +197,6 @@ export const SelectPage = ({
             selectable
             onSelectedIdsChange={onChange}
             selectedIds={value}
-            isPreferredEdgeless={isEdgeless}
             operationsRenderer={operationsRenderer}
             itemRenderer={pageItemRenderer}
             headerRenderer={pageHeaderRenderer}

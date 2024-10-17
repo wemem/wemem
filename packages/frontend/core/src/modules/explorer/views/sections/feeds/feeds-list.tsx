@@ -1,9 +1,8 @@
 import { type DropTargetOptions, RssIcon } from '@affine/component';
 import { IconButton } from '@affine/component/ui/button';
-import { MenuLinkItem as SidebarMenuLinkItem } from '@affine/core/components/app-sidebar';
 import { type CollectionMeta } from '@affine/core/components/page-list';
 import { FeedAvatar } from '@affine/core/components/page-list/feed/avatar';
-import { mixpanel, track } from '@affine/core/mixpanel';
+import { MenuLinkItem as SidebarMenuLinkItem } from '@affine/core/modules/app-sidebar/views';
 import { ExplorerService } from '@affine/core/modules/explorer';
 import { CollapsibleSection } from '@affine/core/modules/explorer/views/layouts/collapsible-section';
 import { ExplorerDocNode } from '@affine/core/modules/explorer/views/nodes/doc';
@@ -14,6 +13,7 @@ import {
   ExplorerTreeRoot,
 } from '@affine/core/modules/explorer/views/tree';
 import { FeedsService } from '@affine/core/modules/feed/services/feeds-service';
+import { NewFeedService } from '@affine/core/modules/feed-newly';
 import type { Tag } from '@affine/core/modules/tag';
 import {
   WorkbenchLink,
@@ -22,6 +22,7 @@ import {
 import type { AffineDNDData } from '@affine/core/types/dnd';
 import { stopPropagation } from '@affine/core/utils';
 import { useI18n } from '@affine/i18n';
+import track, { mixpanel } from '@affine/track';
 import { MoreHorizontalIcon, PlusIcon } from '@blocksuite/icons/rc';
 import {
   GlobalContextService,
@@ -35,9 +36,8 @@ import { useCallback, useMemo, useState } from 'react';
 import { RootEmpty } from './empty';
 import { useEditSubscription } from './feeds-hooks';
 import { FeedsOperations } from './feeds-operations';
-import * as styles from './styles.css';
 import { useExplorerFeedNodeOperations } from './operations';
-import { NewFeedService } from '@affine/core/modules/feed-newly';
+import * as styles from './styles.css';
 
 const unseenPath = '/feed/unseen';
 const seenPath = '/feed/seen';
@@ -315,7 +315,7 @@ export const ExplorerFeedNode = ({
     () => args => {
       const entityType = args.source.data.entity?.type;
       return args.treeInstruction?.type !== 'make-child'
-        ? (typeof canDrop === 'function' ? canDrop(args) : canDrop) ?? true
+        ? ((typeof canDrop === 'function' ? canDrop(args) : canDrop) ?? true)
         : entityType === 'doc';
     },
     [canDrop]

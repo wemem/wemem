@@ -117,7 +117,7 @@ jobs:
     name: E2E Test
     runs-on: ubuntu-latest
     env:
-      DISTRIBUTION: browser
+      DISTRIBUTION: web
       IN_CI_TEST: true
     strategy:
       fail-fast: false
@@ -143,11 +143,41 @@ jobs:
           path: ./test-results
           if-no-files-found: ignore
 
+  e2e-mobile-test:
+    name: E2E Mobile Test
+    runs-on: ubuntu-latest
+    env:
+      DISTRIBUTION: mobile
+      IN_CI_TEST: true
+    strategy:
+      fail-fast: false
+      matrix:
+        shard: [1, 2, 3, 4, 5]
+    steps:
+      - uses: actions/checkout@v4
+      - name: Setup Node.js
+        uses: ./.github/actions/setup-node
+        with:
+          playwright-install: true
+          electron-install: false
+          full-cache: true
+
+      - name: Run playwright tests
+        run: yarn workspace @affine-test/affine-mobile e2e --forbid-only --shard=${{ matrix.shard }}/${{ strategy.job-total }}
+
+      - name: Upload test results
+        if: ${{ failure() }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: test-results-e2e-mobile-${{ matrix.shard }}
+          path: ./test-results
+          if-no-files-found: ignore
+
   e2e-migration-test:
     name: E2E Migration Test
     runs-on: ubuntu-latest
     env:
-      DISTRIBUTION: browser
+      DISTRIBUTION: web
     steps:
       - uses: actions/checkout@v4
       - name: Setup Node.js
@@ -174,13 +204,13 @@ jobs:
     needs:
       - build-native
     env:
-      DISTRIBUTION: browser
+      DISTRIBUTION: web
     steps:
       - uses: actions/checkout@v4
       - name: Setup Node.js
         uses: ./.github/actions/setup-node
         with:
-          electron-install: false
+          electron-install: true
           full-cache: true
 
       - name: Download affine.linux-x64-gnu.node
@@ -266,8 +296,8 @@ jobs:
           path: ./packages/backend/native/server-native.node
           if-no-files-found: error
 
-  build-web:
-    name: Build @affine/web
+  build-electron-renderer:
+    name: Build @affine/electron renderer
     runs-on: ubuntu-latest
 
     steps:
@@ -277,13 +307,13 @@ jobs:
         with:
           electron-install: false
           full-cache: true
-      - name: Build Web
+      - name: Build Electron renderer
         # always skip cache because its fast, and cache configuration is always changing
-        run: yarn nx build @affine/web --skip-nx-cache
+        run: yarn build
         env:
-          DISTRIBUTION: 'desktop'
+          DISTRIBUTION: desktop
       - name: zip web
-        run: tar -czf dist.tar.gz --directory=packages/frontend/electron/renderer/dist .
+        run: tar -czf dist.tar.gz --directory=packages/frontend/apps/electron/renderer/dist .
       - name: Upload web artifact
         uses: actions/upload-artifact@v4
         with:
@@ -297,7 +327,7 @@ jobs:
     needs: build-server-native
     env:
       NODE_ENV: test
-      DISTRIBUTION: browser
+      DISTRIBUTION: web
     services:
       postgres:
         image: postgres
@@ -366,7 +396,7 @@ jobs:
     name: ${{ matrix.tests.name }}
     runs-on: ubuntu-latest
     env:
-      DISTRIBUTION: browser
+      DISTRIBUTION: web
       DATABASE_URL: postgresql://affine:affine@localhost:5432/affine
       IN_CI_TEST: true
     strategy:
@@ -490,7 +520,7 @@ jobs:
               test: true,
             }
     needs:
-      - build-web
+      - build-electron-renderer
       - build-native
     steps:
       - uses: actions/checkout@v4
@@ -524,7 +554,7 @@ jobs:
       - name: Download web artifact
         uses: ./.github/actions/download-web
         with:
-          path: packages/frontend/electron/resources/web-static
+          path: packages/frontend/apps/electron/resources/web-static
 
       - name: Build Desktop Layers
         run: yarn workspace @affine/electron build
@@ -571,8 +601,11 @@ jobs:
       - lint
       - check-yarn-binary
       - e2e-test
+      - e2e-mobile-test
       - e2e-migration-test
       - unit-test
+      - build-native
+      - build-server-native
       - server-test
       - server-e2e-test
       - desktop-test

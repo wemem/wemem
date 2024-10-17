@@ -4,9 +4,10 @@ import {
   type CommandCategory,
   PreconditionStrategy,
 } from '@affine/core/commands';
+import { useNavigateHelper } from '@affine/core/components/hooks/use-navigate-helper';
 import { useSubscribeToFeed } from '@affine/core/components/page-list';
 import { FeedAvatar } from '@affine/core/components/page-list/feed/avatar';
-import { useNavigateHelper } from '@affine/core/hooks/use-navigate-helper';
+import { NewFeedService } from '@affine/core/modules/feed-newly';
 import { NewFeedCommandRegistry } from '@affine/core/modules/feed-newly/commands';
 import type { SearchSubscriptionsQuery } from '@affine/graphql';
 import { useI18n } from '@affine/i18n';
@@ -21,9 +22,8 @@ import { useCallback, useEffect, useMemo, useState } from 'react';
 
 import { filterSortAndGroupCommands } from './filter-commands';
 import type { CMDKCommand, CommandContext } from './types';
-import { NewFeedService } from '@affine/core/modules/feed-newly';
 
-export type SubscriptionRecord = NonNullable<
+export type FeedRecord = NonNullable<
   SearchSubscriptionsQuery['searchSubscriptions']
 >[number];
 export const cmdkValueAtom = atom('');
@@ -62,7 +62,7 @@ function getAllCommand(context: CommandContext) {
 
 const subscriptionToCommand = (
   category: CommandCategory,
-  subscription: SubscriptionRecord,
+  subscription: FeedRecord,
   run: () => void
 ): CMDKCommand => {
   const commandLabel = {
@@ -83,7 +83,7 @@ const subscriptionToCommand = (
 };
 
 function useSearchedSubscribeFeedCommands(
-  onSelect: (record: SubscriptionRecord) => void
+  onSelect: (record: FeedRecord) => void
 ) {
   const subscribeFeed = useService(NewFeedService).subscribeFeed;
   const query = useLiveData(subscribeFeed.query$);
@@ -115,7 +115,7 @@ export const useSearchFeedsCommands = () => {
   const t = useI18n();
 
   const onSelectPage = useCallback(
-    (record: SubscriptionRecord) => {
+    (record: FeedRecord) => {
       if (!workspace) {
         console.error('current workspace not found');
         return;
@@ -136,7 +136,7 @@ export const useSearchCallbackCommands = () => {
   const subscribeFeed = useService(NewFeedService).subscribeFeed;
   const workspace = useService(WorkspaceService).workspace;
   const onSelectPage = useCallback(
-    (feed: SubscriptionRecord) => {
+    (feed: FeedRecord) => {
       if (!workspace) {
         console.error('current workspace not found');
         return;

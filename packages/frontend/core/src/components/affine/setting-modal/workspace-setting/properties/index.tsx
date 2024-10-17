@@ -1,6 +1,6 @@
 import { Button, IconButton, Menu } from '@affine/component';
 import { SettingHeader } from '@affine/component/setting-components';
-import { useWorkspaceInfo } from '@affine/core/hooks/use-workspace-info';
+import { useWorkspaceInfo } from '@affine/core/components/hooks/use-workspace-info';
 import type { PageInfoCustomPropertyMeta } from '@affine/core/modules/properties/services/schema';
 import { Trans, useI18n } from '@affine/i18n';
 import {
@@ -20,8 +20,8 @@ import {
   useState,
 } from 'react';
 
-import { useCurrentWorkspacePropertiesAdapter } from '../../../../../hooks/use-affine-adapter';
-import { useWorkspace } from '../../../../../hooks/use-workspace';
+import { useCurrentWorkspacePropertiesAdapter } from '../../../../../components/hooks/use-affine-adapter';
+import { useWorkspace } from '../../../../../components/hooks/use-workspace';
 import type { PagePropertyIcon } from '../../../page-properties';
 import {
   nameToIcon,
@@ -172,6 +172,10 @@ const EditPropertyButton = ({
           onOpenChange: handleFinishEditing,
         }}
         items={editing ? editMenuItems : defaultMenuItems}
+        contentOptions={{
+          align: 'end',
+          sideOffset: 4,
+        }}
       >
         <IconButton onClick={() => setOpen(true)} size="20">
           <MoreHorizontalIcon />
@@ -279,29 +283,51 @@ const CustomPropertyRowsList = ({
 
     return <CustomPropertyRows properties={filtered} statistics={statistics} />;
   } else {
-    const required = properties.filter(property => property.required);
-    const optional = properties.filter(property => !property.required);
+    const partition = Object.groupBy(properties, p =>
+      p.required ? 'required' : p.readonly ? 'readonly' : 'optional'
+    );
+
     return (
       <>
-        {required.length > 0 ? (
+        {partition.required && partition.required.length > 0 ? (
           <>
             <div className={styles.subListHeader}>
               {t[
                 'com.affine.settings.workspace.properties.required-properties'
               ]()}
             </div>
-            <CustomPropertyRows properties={required} statistics={statistics} />
+            <CustomPropertyRows
+              properties={partition.required}
+              statistics={statistics}
+            />
           </>
         ) : null}
 
-        {optional.length > 0 ? (
+        {partition.optional && partition.optional.length > 0 ? (
           <>
             <div className={styles.subListHeader}>
               {t[
                 'com.affine.settings.workspace.properties.general-properties'
               ]()}
             </div>
-            <CustomPropertyRows properties={optional} statistics={statistics} />
+            <CustomPropertyRows
+              properties={partition.optional}
+              statistics={statistics}
+            />
+          </>
+        ) : null}
+
+        {partition.readonly && partition.readonly.length > 0 ? (
+          <>
+            <div className={styles.subListHeader}>
+              {t[
+                'com.affine.settings.workspace.properties.readonly-properties'
+              ]()}
+            </div>
+            <CustomPropertyRows
+              properties={partition.readonly}
+              statistics={statistics}
+            />
           </>
         ) : null}
       </>

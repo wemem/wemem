@@ -1,7 +1,12 @@
-import type { AuthModalProps as AuthModalBaseProps } from '@affine/component/auth-components';
+import { notify } from '@affine/component';
 import { AuthModal as AuthModalBase } from '@affine/component/auth-components';
+import { authAtom, type AuthAtomData } from '@affine/core/components/atoms';
+import { AuthService } from '@affine/core/modules/cloud';
+import { useI18n } from '@affine/i18n';
+import { useLiveData, useService } from '@toeverything/infra';
+import { useAtom } from 'jotai/react';
 import type { FC } from 'react';
-import { useCallback, useMemo } from 'react';
+import { useCallback, useEffect, useRef } from 'react';
 
 import { AfterSignInSendEmail } from './after-sign-in-send-email';
 import { AfterSignUpSendEmail } from './after-sign-up-send-email';
@@ -9,33 +14,26 @@ import { SendEmail } from './send-email';
 import { SignIn } from './sign-in';
 import { SignInWithPassword } from './sign-in-with-password';
 
-export type AuthProps = {
-  state:
-    | 'signIn'
-    | 'afterSignUpSendEmail'
-    | 'afterSignInSendEmail'
-    // throw away
-    | 'signInWithPassword'
-    | 'sendEmail';
-  setAuthState: (state: AuthProps['state']) => void;
-  setAuthEmail: (state: AuthProps['email']) => void;
-  setEmailType: (state: AuthProps['emailType']) => void;
-  email: string;
-  emailType: 'setPassword' | 'changePassword' | 'changeEmail' | 'verifyEmail';
-  onSignedIn?: () => void;
-};
+type AuthAtomType<T extends AuthAtomData['state']> = Extract<
+  AuthAtomData,
+  { state: T }
+>;
 
-export type AuthPanelProps = {
-  email: string;
-  setAuthState: AuthProps['setAuthState'];
-  setAuthEmail: AuthProps['setAuthEmail'];
-  setEmailType: AuthProps['setEmailType'];
-  emailType: AuthProps['emailType'];
-  onSignedIn?: () => void;
-};
+// return field in B that is not in A
+type Difference<
+  A extends Record<string, any>,
+  B extends Record<string, any>,
+> = Pick<B, Exclude<keyof B, keyof A>>;
+
+export type AuthPanelProps<State extends AuthAtomData['state']> = {
+  setAuthData: <T extends AuthAtomData['state']>(
+    updates: { state: T } & Difference<AuthAtomType<State>, AuthAtomType<T>>
+  ) => void;
+  onSkip?: () => void;
+} & Extract<AuthAtomData, { state: State }>;
 
 const config: {
-  [k in AuthProps['state']]: FC<AuthPanelProps>;
+  [k in AuthAtomData['state']]: FC<AuthPanelProps<k>>;
 } = {
   signIn: SignIn,
   afterSignUpSendEmail: AfterSignUpSendEmail,
@@ -44,58 +42,65 @@ const config: {
   sendEmail: SendEmail,
 };
 
-export const AuthModal: FC<AuthModalBaseProps & AuthProps> = ({
-  open,
-  state,
-  setOpen,
-  email,
-  setAuthEmail,
-  setAuthState,
-  setEmailType,
-  emailType,
-}) => {
-  const onSignedIn = useCallback(() => {
-    setAuthState('signIn');
-    setAuthEmail('');
-    setOpen(false);
-  }, [setAuthState, setAuthEmail, setOpen]);
+export function AuthModal() {
+  const [authAtomValue, setAuthAtom] = useAtom(authAtom);
+  const setOpen = useCallback(
+    (open: boolean) => {
+      setAuthAtom(prev => ({ ...prev, openModal: open }));
+    },
+    [setAuthAtom]
+  );
 
   return (
-    <AuthModalBase open={open} setOpen={setOpen}>
-      <AuthPanel
-        state={state}
-        email={email}
-        setAuthEmail={setAuthEmail}
-        setAuthState={setAuthState}
-        setEmailType={setEmailType}
-        emailType={emailType}
-        onSignedIn={onSignedIn}
-      />
+    <AuthModalBase open={authAtomValue.openModal} setOpen={setOpen}>
+      <AuthPanel />
     </AuthModalBase>
   );
-};
+}
 
-export const AuthPanel: FC<AuthProps> = ({
-  state,
-  email,
-  setAuthEmail,
-  setAuthState,
-  setEmailType,
-  emailType,
-  onSignedIn,
-}) => {
-  const CurrentPanel = useMemo(() => {
-    return config[state];
-  }, [state]);
+export function AuthPanel({ onSkip }: { onSkip?: () => void }) {
+  const t = useI18n();
+  const [authAtomValue, setAuthAtom] = useAtom(authAtom);
+  const authService = useService(AuthService);
+  const loginStatus = useLiveData(authService.session.status$);
+  const previousLoginStatus = useRef(loginStatus);
 
-  return (
-    <CurrentPanel
-      email={email}
-      setAuthState={setAuthState}
-      setAuthEmail={setAuthEmail}
-      setEmailType={setEmailType}
-      emailType={emailType}
-      onSignedIn={onSignedIn}
-    />
+  const setAuthData = useCallback(
+    (updates: Partial<AuthAtomData>) => {
+      // @ts-expect-error checked in impls
+      setAuthAtom(prev => ({
+        ...prev,
+        ...updates,
+      }));
+    },
+    [setAuthAtom]
   );
-};
+
+  useEffect(() => {
+    if (
+      loginStatus === 'authenticated' &&
+      previousLoginStatus.current === 'unauthenticated'
+    ) {
+      setAuthAtom({
+        openModal: false,
+        state: 'signIn',
+      });
+      notify.success({
+        title: t['com.affine.auth.toast.title.signed-in'](),
+        message: t['com.affine.auth.toast.message.signed-in'](),
+      });
+    }
+    previousLoginStatus.current = loginStatus;
+  }, [loginStatus, setAuthAtom, t]);
+
+  const CurrentPanel = config[authAtomValue.state];
+
+  const props = {
+    ...authAtomValue,
+    onSkip,
+    setAuthData,
+  };
+
+  // @ts-expect-error checked in impls
+  return <CurrentPanel {...props} />;
+}

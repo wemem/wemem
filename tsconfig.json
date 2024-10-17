@@ -39,7 +39,7 @@
     "lib": ["ESNext", "DOM"],
     "target": "ES2022",
     "useDefineForClassFields": false,
-    "experimentalDecorators": true,
+    "experimentalDecorators": false,
     "emitDecoratorMetadata": false,
     // Projects
     "composite": true,
@@ -48,7 +48,6 @@
     "skipLibCheck": true, // skip all type checks for .d.ts files
     "paths": {
       "@affine/core/*": ["./packages/frontend/core/src/*"],
-      "@affine/core": ["./packages/frontend/core/src/index.ts"],
       "@affine/admin/*": ["./packages/frontend/admin/src/*"],
       "@affine/admin/components/ui/*": [
         "./packages/frontend/admin/src/components/ui/*"
@@ -73,7 +72,7 @@
       "@affine/native/*": ["./packages/frontend/native/*"],
       "@affine/server-native": ["./packages/backend/native/index.d.ts"],
       // Development only
-      "@affine/electron/*": ["./packages/frontend/electron/src/*"]
+      "@affine/electron/*": ["./packages/frontend/apps/electron/src/*"]
     }
   },
   "include": [],
@@ -96,13 +95,19 @@
       "path": "./packages/frontend/core"
     },
     {
-      "path": "./packages/frontend/web"
+      "path": "./packages/frontend/track"
     },
     {
-      "path": "./packages/frontend/electron/tsconfig.test.json"
+      "path": "./packages/frontend/apps/web"
     },
     {
-      "path": "./packages/frontend/electron/renderer/tsconfig.json"
+      "path": "./packages/frontend/apps/mobile"
+    },
+    {
+      "path": "./packages/frontend/apps/electron/tsconfig.test.json"
+    },
+    {
+      "path": "./packages/frontend/apps/electron/renderer/tsconfig.json"
     },
     {
       "path": "./packages/frontend/graphql"
@@ -133,6 +138,9 @@
     },
     {
       "path": "./tests/affine-migration"
+    },
+    {
+      "path": "./tests/affine-mobile"
     },
     {
       "path": "./tests/affine-legacy/0.7.0-canary.18"

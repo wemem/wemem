@@ -1,5 +1,3 @@
-import { join } from 'node:path';
-
 import {
   DynamicModule,
   ForwardReference,
@@ -7,16 +5,17 @@ import {
   Module,
 } from '@nestjs/common';
 import { ScheduleModule } from '@nestjs/schedule';
-import { ServeStaticModule } from '@nestjs/serve-static';
 import { get } from 'lodash-es';
 
 import { AppController } from './app.controller';
 import { AuthModule } from './core/auth';
 import { ADD_ENABLED_FEATURES, ServerConfigModule } from './core/config';
-import { DocModule } from './core/doc';
+import { DocStorageModule } from './core/doc';
+import { DocRendererModule } from './core/doc-renderer';
 import { FeatureModule } from './core/features';
+import { PermissionModule } from './core/permission';
 import { QuotaModule } from './core/quota';
-import { CustomSetupModule } from './core/setup';
+import { SelfhostModule } from './core/selfhost';
 import { StorageModule } from './core/storage';
 import { SyncModule } from './core/sync';
 import { UserModule } from './core/user';
@@ -44,7 +43,6 @@ import { ENABLED_PLUGINS } from './plugins/registry';
 
 export const FunctionalityModules = [
   ConfigModule.forRoot(),
-  ScheduleModule.forRoot(),
   EventModule,
   CacheModule,
   MutexModule,
@@ -137,7 +135,7 @@ export class AppModuleBuilder {
   compile() {
     @Module({
       imports: this.modules,
-      controllers: this.config.isSelfhosted ? [] : [AppController],
+      controllers: [AppController],
     })
     class AppModule {}
 
@@ -145,20 +143,20 @@ export class AppModuleBuilder {
   }
 }
 
-function buildAppModule() {
+export function buildAppModule() {
   AFFiNE = mergeConfigOverride(AFFiNE);
   const factor = new AppModuleBuilder(AFFiNE);
 
   factor
-    // common fundamental modules
+    // basic
     .use(...FunctionalityModules)
     .useIf(config => config.flavor.sync, WebSocketModule)
 
     // auth
-    .use(AuthModule)
+    .use(UserModule, AuthModule, PermissionModule)
 
     // business modules
-    .use(DocModule)
+    .use(FeatureModule, QuotaModule, DocStorageModule)
 
     // sync server only
     .useIf(config => config.flavor.sync, SyncModule)
@@ -166,28 +164,16 @@ function buildAppModule() {
     // graphql server only
     .useIf(
       config => config.flavor.graphql,
-      ServerConfigModule,
+      ScheduleModule.forRoot(),
       GqlModule,
       StorageModule,
-      UserModule,
-      WorkspaceModule,
-      FeatureModule,
-      QuotaModule
+      ServerConfigModule,
+      WorkspaceModule
     )
 
     // self hosted server only
-    .useIf(
-      config => config.isSelfhosted,
-      CustomSetupModule,
-      ServeStaticModule.forRoot({
-        rootPath: join('/app', 'static'),
-        exclude: ['/admin*'],
-      }),
-      ServeStaticModule.forRoot({
-        rootPath: join('/app', 'static', 'admin'),
-        serveRoot: '/admin',
-      })
-    );
+    .useIf(config => config.isSelfhosted, SelfhostModule)
+    .useIf(config => config.flavor.renderer, DocRendererModule);
 
   // plugin modules
   ENABLED_PLUGINS.forEach(name => {

@@ -1,13 +1,16 @@
 import type { MenuItemProps } from '@affine/component';
-import { Menu, MenuIcon, MenuItem } from '@affine/component';
+import { Menu, MenuItem } from '@affine/component';
 import { useUnsubscribe } from '@affine/core/components/page-list';
-import { useAppSettingHelper } from '@affine/core/hooks/affine/use-app-setting-helper';
 import { FeedsService } from '@affine/core/modules/feed/services/feeds-service';
 import { WorkbenchService } from '@affine/core/modules/workbench';
 import type { Collection } from '@affine/env/filter';
 import { useI18n } from '@affine/i18n';
 import { DeleteIcon, EditIcon, SplitViewIcon } from '@blocksuite/icons/rc';
-import { useService } from '@toeverything/infra';
+import {
+  FeatureFlagService,
+  useLiveData,
+  useService,
+} from '@toeverything/infra';
 import type { PropsWithChildren, ReactElement } from 'react';
 import { useCallback, useMemo } from 'react';
 
@@ -22,7 +25,6 @@ export const FeedOperations = ({
   feed: Collection;
   openRenameModal?: () => void;
 }>) => {
-  const { appSettings } = useAppSettingHelper();
   const service = useService(FeedsService);
   const workbench = useService(WorkbenchService).workbench;
   const deleteFeed = useUnsubscribe();
@@ -31,6 +33,12 @@ export const FeedOperations = ({
     useCreateFeedModal({
       title: t['ai.wemem.edit-feed.editFeed'](),
     });
+
+  const featureFlagService = useService(FeatureFlagService);
+
+  const enableMultiView = useLiveData(
+    featureFlagService.flags.enable_multi_view.$
+  );
 
   const showEditName = useCallback(() => {
     // use openRenameModal if it is in the sidebar feed list
@@ -69,22 +77,14 @@ export const FeedOperations = ({
   >(
     () => [
       {
-        icon: (
-          <MenuIcon>
-            <EditIcon />
-          </MenuIcon>
-        ),
+        icon: <EditIcon />,
         name: t['ai.wemem.feed.menu.rename'](),
         click: showEditName,
       },
-      ...(appSettings.enableMultiView
+      ...(BUILD_CONFIG.isElectron && enableMultiView
         ? [
             {
-              icon: (
-                <MenuIcon>
-                  <SplitViewIcon />
-                </MenuIcon>
-              ),
+              icon: <SplitViewIcon />,
               name: t['com.affine.workbench.split-view.page-menu-open'](),
               click: openFeedSplitView,
             },
@@ -94,11 +94,7 @@ export const FeedOperations = ({
         element: <div key="divider" className={styles.divider}></div>,
       },
       {
-        icon: (
-          <MenuIcon>
-            <DeleteIcon />
-          </MenuIcon>
-        ),
+        icon: <DeleteIcon />,
         name: t['Delete'](),
         click: () => {
           deleteFeed(feed.id);
@@ -106,14 +102,7 @@ export const FeedOperations = ({
         type: 'danger',
       },
     ],
-    [
-      t,
-      showEditName,
-      appSettings.enableMultiView,
-      openFeedSplitView,
-      service,
-      feed.id,
-    ]
+    [t, showEditName, enableMultiView, openFeedSplitView, deleteFeed, feed.id]
   );
   return (
     <>
@@ -130,7 +119,7 @@ export const FeedOperations = ({
                   data-testid="feed-option"
                   key={action.name}
                   type={action.type}
-                  preFix={action.icon}
+                  prefixIcon={action.icon}
                   onClick={action.click}
                 >
                   {action.name}

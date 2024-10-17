@@ -3,6 +3,7 @@ import { TagService } from '@affine/core/modules/tag';
 import { useI18n } from '@affine/i18n';
 import { useLiveData, useService } from '@toeverything/infra';
 import clsx from 'clsx';
+import type { MouseEvent } from 'react';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 
 import type { TagMeta } from '../types';
@@ -112,6 +113,11 @@ export const CreateOrEditTag = ({
     return;
   }, [onClose, t, tag, tagIcon, tagMeta, tagName, tagOptions, tagList]);
 
+  const handlePropagation = useCallback((event: MouseEvent) => {
+    event.preventDefault();
+    event.stopPropagation();
+  }, []);
+
   useEffect(() => {
     if (!open) return;
     if (menuOpen) return;
@@ -139,7 +145,12 @@ export const CreateOrEditTag = ({
   }
 
   return (
-    <div className={styles.createTagWrapper} data-show={open}>
+    <div
+      className={styles.createTagWrapper}
+      data-show={open}
+      data-testid="edit-tag-modal"
+      onClick={handlePropagation}
+    >
       <Menu
         rootOptions={{
           open: menuOpen,
@@ -159,11 +170,17 @@ export const CreateOrEditTag = ({
         value={tagName}
         onChange={handleChangeName}
         autoFocus
+        data-testid="edit-tag-input"
       />
       <Button className={styles.cancelBtn} onClick={onClose}>
         {t['Cancel']()}
       </Button>
-      <Button variant="primary" onClick={onConfirm} disabled={!tagName}>
+      <Button
+        variant="primary"
+        onClick={onConfirm}
+        disabled={!tagName}
+        data-testid="save-tag"
+      >
         {tagMeta ? t['Save']() : t['Create']()}
       </Button>
     </div>

@@ -1,4 +1,4 @@
-import type { EditorHost } from '@blocksuite/block-std';
+import type { EditorHost } from '@blocksuite/affine/block-std';
 import type {
   AffineAIPanelWidget,
   AIItemConfig,
@@ -8,7 +8,7 @@ import type {
   MindmapElementModel,
   ShapeElementModel,
   SurfaceBlockModel,
-} from '@blocksuite/blocks';
+} from '@blocksuite/affine/blocks';
 import {
   DeleteIcon,
   EDGELESS_ELEMENT_TOOLBAR_WIDGET,
@@ -18,15 +18,17 @@ import {
   fitContent,
   ImageBlockModel,
   InsertBelowIcon,
+  LightLoadingIcon,
+  MindmapUtils,
   NoteDisplayMode,
   ResetIcon,
-} from '@blocksuite/blocks';
-import { assertExists, Bound } from '@blocksuite/global/utils';
-import type { TemplateResult } from 'lit';
+  TelemetryProvider,
+} from '@blocksuite/affine/blocks';
+import { assertExists, Bound } from '@blocksuite/affine/global/utils';
+import { html, type TemplateResult } from 'lit';
+import { styleMap } from 'lit/directives/style-map.js';
 
 import { AIPenIcon, ChatWithAIIcon } from '../_common/icons';
-import { insertFromMarkdown } from '../_common/markdown-utils';
-import { getSurfaceElementFromEditor } from '../_common/selection-utils';
 import { getAIPanel } from '../ai-panel';
 import { AIProvider } from '../provider';
 import { reportResponse } from '../utils/action-reporter';
@@ -37,10 +39,12 @@ import {
 } from '../utils/edgeless';
 import { preprocessHtml } from '../utils/html';
 import { fetchImageToFile } from '../utils/image';
+import { insertFromMarkdown } from '../utils/markdown-utils';
 import {
   getCopilotSelectedElems,
   getEdgelessRootFromEditor,
   getEdgelessService,
+  getSurfaceElementFromEditor,
 } from '../utils/selection-utils';
 import { EXCLUDING_INSERT_ACTIONS, generatingStages } from './consts';
 import type { CtxRecord } from './types';
@@ -98,27 +102,55 @@ export function retry(panel: AffineAIPanelWidget): AIItemConfig {
   };
 }
 
+const extraConditions: Record<string, (data: any) => boolean> = {
+  createSlides: data => !!data.contents,
+};
 export function createInsertResp<T extends keyof BlockSuitePresets.AIActions>(
   id: T,
   handler: (host: EditorHost, ctx: CtxRecord) => void,
   host: EditorHost,
   ctx: CtxRecord,
   buttonText: string = 'Insert below'
-): AIItemConfig {
-  return {
-    name: buttonText,
-    icon: InsertBelowIcon,
-    showWhen: () => {
-      const panel = getAIPanel(host);
-      return !EXCLUDING_INSERT_ACTIONS.includes(id) && !!panel.answer;
+): AIItemConfig[] {
+  const extraCondition = extraConditions[id] || ((_: any) => true);
+  return [
+    {
+      name: `${buttonText} - Loading...`,
+      icon: html`<div style=${styleMap({ height: '20px', width: '20px' })}>
+        ${LightLoadingIcon}
+      </div>`,
+      showWhen: () => {
+        const panel = getAIPanel(host);
+        const data = ctx.get();
+        return (
+          !EXCLUDING_INSERT_ACTIONS.includes(id) &&
+          !!panel.answer &&
+          // required data for insert
+          !extraCondition(data)
+        );
+      },
     },
-    handler: () => {
-      reportResponse('result:insert');
-      handler(host, ctx);
-      const panel = getAIPanel(host);
-      panel.hide();
+    {
+      name: buttonText,
+      icon: InsertBelowIcon,
+      showWhen: () => {
+        const panel = getAIPanel(host);
+        const data = ctx.get();
+        return (
+          !EXCLUDING_INSERT_ACTIONS.includes(id) &&
+          !!panel.answer &&
+          // required data for insert
+          !!extraCondition(data)
+        );
+      },
+      handler: () => {
+        reportResponse('result:insert');
+        handler(host, ctx);
+        const panel = getAIPanel(host);
+        panel.hide();
+      },
     },
-  };
+  ];
 }
 
 export function asCaption<T extends keyof BlockSuitePresets.AIActions>(
@@ -161,7 +193,7 @@ function insertBelow(
   parentId: string,
   index = 0
 ) {
-  insertFromMarkdown(host, markdown, parentId, index)
+  insertFromMarkdown(host, markdown, host.doc, parentId, index)
     .then(() => {
       const service = getService(host);
 
@@ -332,7 +364,7 @@ export const responses: {
 
     if (data.node.children) {
       data.node.children.forEach(childTree => {
-        mindmap.addTree(elements[0].id, childTree);
+        MindmapUtils.addTree(mindmap, elements[0].id, childTree);
       });
 
       const subtree = mindmap.getNode(elements[0].id);
@@ -405,7 +437,8 @@ export const responses: {
       });
     });
 
-    edgelessService.telemetryService?.track('CanvasElementAdded', {
+    const telemetryService = host.std.getOptional(TelemetryProvider);
+    telemetryService?.track('CanvasElementAdded', {
       control: 'ai',
       page: 'whiteboard editor',
       module: 'toolbar',
@@ -477,7 +510,8 @@ export const responses: {
     const contents = data.contents as unknown[];
     if (!contents) return;
     const images = data.images as { url: string; id: string }[][];
-    const service = host.spec.getService<EdgelessRootService>('affine:page');
+    const service = host.std.getService<EdgelessRootService>('affine:page');
+    if (!service) return;
 
     (async function () {
       for (let i = 0; i < contents.length - 1; i++) {
@@ -555,7 +589,7 @@ export function actionToResponse<T extends keyof BlockSuitePresets.AIActions>(
               panel.hide();
             },
           },
-          getInsertAndReplaceHandler(id, host, ctx, variants),
+          ...getInsertAndReplaceHandler(id, host, ctx, variants),
           asCaption(id, host),
           retry(getAIPanel(host)),
           discard(getAIPanel(host), getEdgelessCopilotWidget(host)),
@@ -603,7 +637,7 @@ export function actionToErrorResponse<
     responses: [
       {
         name: 'Response',
-        items: [getInsertAndReplaceHandler(id, host, ctx, variants)],
+        items: getInsertAndReplaceHandler(id, host, ctx, variants),
       },
       {
         name: '',

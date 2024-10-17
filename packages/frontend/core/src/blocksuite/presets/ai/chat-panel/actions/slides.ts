@@ -1,15 +1,15 @@
 import './action-wrapper';
 import '../../messages/slides-renderer';
 
-import type { EditorHost } from '@blocksuite/block-std';
-import { ShadowlessElement, WithDisposable } from '@blocksuite/block-std';
+import type { EditorHost } from '@blocksuite/affine/block-std';
+import { ShadowlessElement } from '@blocksuite/affine/block-std';
+import { WithDisposable } from '@blocksuite/affine/global/utils';
 import { html, nothing } from 'lit';
-import { customElement, property } from 'lit/decorators.js';
+import { property } from 'lit/decorators.js';
 import { styleMap } from 'lit/directives/style-map.js';
 
 import type { ChatAction } from '../chat-context';
 
-@customElement('action-slides')
 export class ActionSlides extends WithDisposable(ShadowlessElement) {
   @property({ attribute: false })
   accessor item!: ChatAction;

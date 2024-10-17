@@ -1,11 +1,11 @@
 import { IconButton } from '@affine/component';
 import { useEditCollectionName } from '@affine/core/components/page-list';
 import { createEmptyCollection } from '@affine/core/components/page-list/use-collection-manager';
-import { track } from '@affine/core/mixpanel';
 import { CollectionService } from '@affine/core/modules/collection';
 import { ExplorerTreeRoot } from '@affine/core/modules/explorer/views/tree';
 import { WorkbenchService } from '@affine/core/modules/workbench';
 import { useI18n } from '@affine/i18n';
+import { track } from '@affine/track';
 import { PlusIcon } from '@blocksuite/icons/rc';
 import { useLiveData, useServices } from '@toeverything/infra';
 import { nanoid } from 'nanoid';
@@ -25,7 +25,7 @@ export const ExplorerCollections = () => {
   });
   const explorerSection = explorerService.sections.collections;
   const collections = useLiveData(collectionService.collections$);
-  const { node, open: openCreateCollectionModel } = useEditCollectionName({
+  const { open: openCreateCollectionModel } = useEditCollectionName({
     title: t['com.affine.editCollection.createCollection'](),
     showTips: true,
   });
@@ -52,40 +52,37 @@ export const ExplorerCollections = () => {
   ]);
 
   return (
-    <>
-      <CollapsibleSection
-        name="collections"
-        testId="explorer-collections"
-        title={t['com.affine.rootAppSidebar.collections']()}
-        actions={
-          <IconButton
-            data-testid="explorer-bar-add-collection-button"
-            onClick={handleCreateCollection}
-            size="16"
-            tooltip={t[
-              'com.affine.rootAppSidebar.explorer.collection-section-add-tooltip'
-            ]()}
-          >
-            <PlusIcon />
-          </IconButton>
-        }
-      >
-        <ExplorerTreeRoot
-          placeholder={<RootEmpty onClickCreate={handleCreateCollection} />}
+    <CollapsibleSection
+      name="collections"
+      testId="explorer-collections"
+      title={t['com.affine.rootAppSidebar.collections']()}
+      actions={
+        <IconButton
+          data-testid="explorer-bar-add-collection-button"
+          onClick={handleCreateCollection}
+          size="16"
+          tooltip={t[
+            'com.affine.rootAppSidebar.explorer.collection-section-add-tooltip'
+          ]()}
         >
-          {collections.map(collection => (
-            <ExplorerCollectionNode
-              key={collection.id}
-              collectionId={collection.id}
-              reorderable={false}
-              location={{
-                at: 'explorer:collection:list',
-              }}
-            />
-          ))}
-        </ExplorerTreeRoot>
-      </CollapsibleSection>
-      {node}
-    </>
+          <PlusIcon />
+        </IconButton>
+      }
+    >
+      <ExplorerTreeRoot
+        placeholder={<RootEmpty onClickCreate={handleCreateCollection} />}
+      >
+        {collections.map(collection => (
+          <ExplorerCollectionNode
+            key={collection.id}
+            collectionId={collection.id}
+            reorderable={false}
+            location={{
+              at: 'explorer:collection:list',
+            }}
+          />
+        ))}
+      </ExplorerTreeRoot>
+    </CollapsibleSection>
   );
 };

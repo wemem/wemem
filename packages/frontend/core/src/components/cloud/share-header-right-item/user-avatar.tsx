@@ -1,11 +1,6 @@
 import { Avatar } from '@affine/component/ui/avatar';
-import {
-  Menu,
-  MenuIcon,
-  MenuItem,
-  MenuSeparator,
-} from '@affine/component/ui/menu';
-import { useAsyncCallback } from '@affine/core/hooks/affine-async-hooks';
+import { Menu, MenuItem, MenuSeparator } from '@affine/component/ui/menu';
+import { useAsyncCallback } from '@affine/core/components/hooks/affine-async-hooks';
 import { useI18n } from '@affine/i18n';
 import { SignOutIcon } from '@blocksuite/icons/rc';
 import { useLiveData, useService } from '@toeverything/infra';
@@ -66,11 +61,7 @@ export const PublishPageUserAvatar = () => {
         <UserInfo />
         <MenuSeparator />
         <MenuItem
-          preFix={
-            <MenuIcon>
-              <SignOutIcon />
-            </MenuIcon>
-          }
+          prefixIcon={<SignOutIcon />}
           data-testid="share-page-sign-out-option"
           onClick={handleSignOut}
         >
@@ -88,9 +79,7 @@ export const PublishPageUserAvatar = () => {
     <Menu
       items={menuItem}
       contentOptions={{
-        style: {
-          transform: 'translateX(-16px)',
-        },
+        align: 'end',
       }}
     >
       <div className={styles.iconWrapper} data-testid="share-page-user-avatar">

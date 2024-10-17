@@ -1,6 +1,5 @@
-import { mixpanel } from '@affine/core/mixpanel';
-import type { EventProps } from '@affine/core/mixpanel/types';
 import type { QuotaQuery } from '@affine/graphql';
+import { mixpanel } from '@affine/track';
 import type { GlobalContextService } from '@toeverything/infra';
 import { ApplicationStarted, OnEvent, Service } from '@toeverything/infra';
 
@@ -19,7 +18,6 @@ import { UserQuotaChanged } from '../../cloud/services/user-quota';
 export class TelemetryService extends Service {
   private prevQuota: NonNullable<QuotaQuery['currentUser']>['quota'] | null =
     null;
-  private readonly disposables: (() => void)[] = [];
 
   constructor(
     private readonly auth: AuthService,
@@ -73,7 +71,7 @@ export class TelemetryService extends Service {
     );
   }
 
-  extractGlobalContext(): EventProps {
+  extractGlobalContext(): { page?: string } {
     const globalContext = this.globalContextService.globalContext;
     const page = globalContext.isDoc.get()
       ? globalContext.isTrashDoc.get()

@@ -20,7 +20,7 @@ import { TokenService, TokenType } from './token';
     AuthGuard,
     AuthWebsocketOptionsProvider,
   ],
-  exports: [AuthService, AuthGuard, AuthWebsocketOptionsProvider],
+  exports: [AuthService, AuthGuard, AuthWebsocketOptionsProvider, TokenService],
   controllers: [AuthController],
 })
 export class AuthModule {}
@@ -28,4 +28,4 @@ export class AuthModule {}
 export * from './guard';
 export { ClientTokenType } from './resolver';
 export { AuthService, TokenService, TokenType };
-export * from './current-user';
+export * from './session';

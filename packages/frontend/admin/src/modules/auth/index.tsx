@@ -2,61 +2,82 @@ import { Button } from '@affine/admin/components/ui/button';
 import { Input } from '@affine/admin/components/ui/input';
 import { Label } from '@affine/admin/components/ui/label';
 import { FeatureType, getUserFeaturesQuery } from '@affine/graphql';
+import type { FormEvent } from 'react';
 import { useCallback, useRef } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { Navigate } from 'react-router-dom';
 import { toast } from 'sonner';
 
+import { isAdmin, useCurrentUser, useRevalidateCurrentUser } from '../common';
 import logo from './logo.svg';
 
 export function Auth() {
+  const currentUser = useCurrentUser();
+  const revalidate = useRevalidateCurrentUser();
   const emailRef = useRef<HTMLInputElement>(null);
   const passwordRef = useRef<HTMLInputElement>(null);
-  const navigate = useNavigate();
-  const login = useCallback(() => {
-    if (!emailRef.current || !passwordRef.current) return;
-    fetch('/api/auth/sign-in', {
-      method: 'POST',
-      body: JSON.stringify({
-        email: emailRef.current?.value,
-        password: passwordRef.current?.value,
-      }),
-      headers: {
-        'Content-Type': 'application/json',
-      },
-    })
-      .then(() =>
-        fetch('/graphql', {
-          method: 'POST',
-          body: JSON.stringify({
-            operationName: getUserFeaturesQuery.operationName,
-            query: getUserFeaturesQuery.query,
-            variables: {},
-          }),
-          headers: {
-            'Content-Type': 'application/json',
-          },
-        })
-      )
-      .then(res => res.json())
-      .then(
-        ({
-          data: {
-            currentUser: { features },
-          },
-        }) => {
-          if (features.includes(FeatureType.Admin)) {
-            navigate('/admin');
-          } else {
-            toast.error('You are not an admin');
+  const login = useCallback(
+    (e: FormEvent) => {
+      e.preventDefault();
+      e.stopPropagation();
+      if (!emailRef.current || !passwordRef.current) return;
+      fetch('/api/auth/sign-in', {
+        method: 'POST',
+        body: JSON.stringify({
+          email: emailRef.current?.value,
+          password: passwordRef.current?.value,
+        }),
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      })
+        .then(async response => {
+          if (!response.ok) {
+            const data = await response.json();
+            throw new Error(data.message || 'Failed to login');
           }
-        }
-      )
-      .catch(err => {
-        toast.error(`Failed to login: ${err.message}`);
-      });
-  }, [navigate]);
+          return response.json();
+        })
+        .then(() =>
+          fetch('/graphql', {
+            method: 'POST',
+            body: JSON.stringify({
+              operationName: getUserFeaturesQuery.operationName,
+              query: getUserFeaturesQuery.query,
+              variables: {},
+            }),
+            headers: {
+              'Content-Type': 'application/json',
+            },
+          })
+        )
+        .then(res => res.json())
+        .then(
+          async ({
+            data: {
+              currentUser: { features },
+            },
+          }) => {
+            if (features.includes(FeatureType.Admin)) {
+              toast.success('Logged in successfully');
+              await revalidate();
+            } else {
+              toast.error('You are not an admin');
+            }
+          }
+        )
+        .catch(err => {
+          toast.error(`Failed to login: ${err.message}`);
+        });
+    },
+    [revalidate]
+  );
+
+  if (currentUser && isAdmin(currentUser)) {
+    return <Navigate to="/admin" />;
+  }
+
   return (
-    <div className="w-full lg:grid lg:min-h-[600px] lg:grid-cols-2 xl:min-h-[800px]">
+    <div className="w-full lg:grid lg:min-h-[600px] lg:grid-cols-2 xl:min-h-[800px] h-screen">
       <div className="flex items-center justify-center py-12">
         <div className="mx-auto grid w-[350px] gap-6">
           <div className="grid gap-2 text-center">
@@ -65,34 +86,43 @@ export function Auth() {
               Enter your email below to login to your account
             </p>
           </div>
-          <div className="grid gap-4">
-            <div className="grid gap-2">
-              <Label htmlFor="email">Email</Label>
-              <Input
-                id="email"
-                type="email"
-                ref={emailRef}
-                placeholder="m@example.com"
-                required
-              />
-            </div>
-            <div className="grid gap-2">
-              <div className="flex items-center">
-                <Label htmlFor="password">Password</Label>
+          <form onSubmit={login} action="#">
+            <div className="grid gap-4">
+              <div className="grid gap-2">
+                <Label htmlFor="email">Email</Label>
+                <Input
+                  id="email"
+                  type="email"
+                  ref={emailRef}
+                  placeholder="m@example.com"
+                  autoComplete="email"
+                  required
+                />
               </div>
-              <Input id="password" type="password" ref={passwordRef} required />
+              <div className="grid gap-2">
+                <div className="flex items-center">
+                  <Label htmlFor="password">Password</Label>
+                </div>
+                <Input
+                  id="password"
+                  type="password"
+                  ref={passwordRef}
+                  autoComplete="current-password"
+                  required
+                />
+              </div>
+              <Button onClick={login} type="submit" className="w-full">
+                Login
+              </Button>
             </div>
-            <Button onClick={login} type="submit" className="w-full">
-              Login
-            </Button>
-          </div>
+          </form>
         </div>
       </div>
-      <div className="hidden bg-muted lg:block">
+      <div className="hidden bg-muted lg:flex lg:justify-center">
         <img
           src={logo}
           alt="Image"
-          className="w-1/2 h-1/2 object-cover dark:brightness-[0.2] dark:grayscale relative top-1/4 left-1/4"
+          className="h-1/2 object-cover dark:brightness-[0.2] dark:grayscale relative top-1/4 "
         />
       </div>
     </div>

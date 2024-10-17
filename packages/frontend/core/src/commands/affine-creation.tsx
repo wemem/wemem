@@ -1,20 +1,20 @@
 import type { useI18n } from '@affine/i18n';
+import { track } from '@affine/track';
+import type { DocMode } from '@blocksuite/affine/blocks';
 import { ImportIcon, PlusIcon } from '@blocksuite/icons/rc';
-import type { createStore } from 'jotai';
 
-import { openCreateWorkspaceModalAtom } from '../atoms';
 import type { usePageHelper } from '../components/blocksuite/block-suite-page-list/utils';
-import { track } from '../mixpanel';
+import type { CreateWorkspaceDialogService } from '../modules/create-workspace';
 import { registerAffineCommand } from './registry';
 
 export function registerAffineCreationCommands({
-  store,
   pageHelper,
   t,
+  createWorkspaceDialogService,
 }: {
   t: ReturnType<typeof useI18n>;
-  store: ReturnType<typeof createStore>;
   pageHelper: ReturnType<typeof usePageHelper>;
+  createWorkspaceDialogService: CreateWorkspaceDialogService;
 }) {
   const unsubs: Array<() => void> = [];
   unsubs.push(
@@ -23,7 +23,7 @@ export function registerAffineCreationCommands({
       category: 'affine:creation',
       label: t['com.affine.cmdk.affine.new-page'](),
       icon: <PlusIcon />,
-      keyBinding: environment.isDesktop
+      keyBinding: BUILD_CONFIG.isElectron
         ? {
             binding: '$mod+N',
             skipRegister: true,
@@ -32,7 +32,7 @@ export function registerAffineCreationCommands({
       run() {
         track.$.cmdk.creation.createDoc({ mode: 'page' });
 
-        pageHelper.createPage();
+        pageHelper.createPage('page' as DocMode);
       },
     })
   );
@@ -62,7 +62,7 @@ export function registerAffineCreationCommands({
       run() {
         track.$.cmdk.workspace.createWorkspace();
 
-        store.set(openCreateWorkspaceModalAtom, 'new');
+        createWorkspaceDialogService.dialog.open('new');
       },
     })
   );
@@ -73,14 +73,14 @@ export function registerAffineCreationCommands({
       icon: <ImportIcon />,
       label: t['com.affine.cmdk.affine.import-workspace'](),
       preconditionStrategy: () => {
-        return environment.isDesktop;
+        return BUILD_CONFIG.isElectron;
       },
       run() {
         track.$.cmdk.workspace.createWorkspace({
           control: 'import',
         });
 
-        store.set(openCreateWorkspaceModalAtom, 'add');
+        createWorkspaceDialogService.dialog.open('add');
       },
     })
   );

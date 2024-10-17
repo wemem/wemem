@@ -5,8 +5,8 @@ import { fromPromise, Service } from '@toeverything/infra';
 import { BackendError, NetworkError } from '../error';
 
 export function getAffineCloudBaseUrl(): string {
-  if (environment.isDesktop) {
-    return runtimeConfig.serverUrlPrefix;
+  if (BUILD_CONFIG.isElectron) {
+    return BUILD_CONFIG.serverUrlPrefix;
   }
   const { protocol, hostname, port } = window.location;
   return `${protocol}//${hostname}${port ? `:${port}` : ''}`;
@@ -61,7 +61,7 @@ export class FetchService extends Service {
     if (res.status === 504) {
       const error = new Error('Gateway Timeout');
       logger.debug('network error', error);
-      throw new NetworkError(error);
+      throw new NetworkError(error, res.status);
     }
     if (!res.ok) {
       logger.warn(
@@ -72,11 +72,14 @@ export class FetchService extends Service {
       if (res.headers.get('Content-Type')?.includes('application/json')) {
         try {
           reason = await res.json();
-        } catch (err) {
+        } catch {
           // ignore
         }
       }
-      throw new BackendError(UserFriendlyError.fromAnyError(reason));
+      throw new BackendError(
+        UserFriendlyError.fromAnyError(reason),
+        res.status
+      );
     }
     return res;
   };

@@ -2,8 +2,7 @@ import { writeFile } from 'node:fs/promises';
 import { join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
-// eslint-disable-next-line @typescript-eslint/no-restricted-imports
-import { AffineCanvasTextFonts } from '@blocksuite/blocks/dist/surface-block/consts.js';
+import { AffineCanvasTextFonts } from '@blocksuite/blocks';
 
 const fontPath = join(
   fileURLToPath(import.meta.url),
@@ -11,6 +10,7 @@ const fontPath = join(
   '..',
   'packages',
   'frontend',
+  'apps',
   'web',
   'dist',
   'assets'

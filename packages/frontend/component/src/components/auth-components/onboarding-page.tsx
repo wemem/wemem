@@ -45,7 +45,7 @@ function getCallbackUrl(location: Location) {
       const parsedUrl = new URL(url);
       return parsedUrl.pathname + parsedUrl.search;
     }
-  } catch (_) {}
+  } catch {}
   return null;
 }
 
@@ -119,13 +119,15 @@ export const OnboardingPage = ({
     () => questions?.[questionIdx],
     [questionIdx, questions]
   );
-  const isMacosDesktop = environment.isDesktop && environment.isMacOs;
-  const isWindowsDesktop = environment.isDesktop && environment.isWindows;
+  const isMacosDesktop = BUILD_CONFIG.isElectron && environment.isMacOs;
+  const isWindowsDesktop = BUILD_CONFIG.isElectron && environment.isWindows;
 
   if (!questions) {
     return null;
   }
 
+  // deprecated
+  // TODO(@forehalo): remove
   if (callbackUrl?.startsWith('/open-app/signin-redirect')) {
     const url = new URL(callbackUrl, window.location.origin);
     url.searchParams.set('next', 'onboarding');

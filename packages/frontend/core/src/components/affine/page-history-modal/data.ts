@@ -1,12 +1,12 @@
-import { useDocMetaHelper } from '@affine/core/hooks/use-block-suite-page-meta';
-import { useDocCollectionPage } from '@affine/core/hooks/use-block-suite-workspace-page';
+import { useDocMetaHelper } from '@affine/core/components/hooks/use-block-suite-page-meta';
+import { useDocCollectionPage } from '@affine/core/components/hooks/use-block-suite-workspace-page';
 import { DebugLogger } from '@affine/debug';
 import type { ListHistoryQuery } from '@affine/graphql';
 import { listHistoryQuery, recoverDocMutation } from '@affine/graphql';
 import { i18nTime } from '@affine/i18n';
-import { assertEquals } from '@blocksuite/global/utils';
-import { DocCollection } from '@blocksuite/store';
-import { globalBlockSuiteSchema } from '@toeverything/infra';
+import { assertEquals } from '@blocksuite/affine/global/utils';
+import { DocCollection } from '@blocksuite/affine/store';
+import { getAFFiNEWorkspaceSchema } from '@toeverything/infra';
 import { useEffect, useMemo } from 'react';
 import useSWRImmutable from 'swr/immutable';
 import {
@@ -20,8 +20,8 @@ import {
 import {
   useMutateQueryResource,
   useMutation,
-} from '../../../hooks/use-mutation';
-import { useQueryInfinite } from '../../../hooks/use-query';
+} from '../../../components/hooks/use-mutation';
+import { useQueryInfinite } from '../../../components/hooks/use-query';
 import { CloudBlobStorage } from '../../../modules/workspace-engine/impls/engine/blob-cloud';
 
 const logger = new DebugLogger('page-history');
@@ -108,9 +108,7 @@ const getOrCreateShellWorkspace = (workspaceId: string) => {
       blobSources: {
         main: blobStorage,
       },
-      schema: globalBlockSuiteSchema,
-      disableBacklinkIndex: true,
-      disableSearchIndex: true,
+      schema: getAFFiNEWorkspaceSchema(),
     });
     docCollectionMap.set(workspaceId, docCollection);
     docCollection.doc.emit('sync', [true, docCollection.doc]);
@@ -241,7 +239,7 @@ export const useRestorePage = (
   const { trigger: recover, isMutating } = useMutation({
     mutation: recoverDocMutation,
   });
-  const { getDocMeta, setDocTitle } = useDocMetaHelper(docCollection);
+  const { getDocMeta, setDocTitle } = useDocMetaHelper();
 
   const onRestore = useMemo(() => {
     return async (version: string, update: Uint8Array) => {

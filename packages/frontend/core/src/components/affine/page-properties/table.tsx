@@ -1,15 +1,8 @@
 import type { MenuProps } from '@affine/component';
-import {
-  Button,
-  IconButton,
-  Menu,
-  MenuIcon,
-  MenuItem,
-  Tooltip,
-} from '@affine/component';
-import { useCurrentWorkspacePropertiesAdapter } from '@affine/core/hooks/use-affine-adapter';
-import { track } from '@affine/core/mixpanel';
+import { Button, IconButton, Menu, MenuItem, Tooltip } from '@affine/component';
+import { useCurrentWorkspacePropertiesAdapter } from '@affine/core/components/hooks/use-affine-adapter';
 import { DocLinksService } from '@affine/core/modules/doc-link';
+import { EditorSettingService } from '@affine/core/modules/editor-settting';
 import type {
   PageInfoCustomProperty,
   PageInfoCustomPropertyMeta,
@@ -17,7 +10,8 @@ import type {
 } from '@affine/core/modules/properties/services/schema';
 import { FeedTag } from '@affine/core/modules/tag/entities/internal-tag';
 import { i18nTime, useI18n } from '@affine/i18n';
-import { assertExists } from '@blocksuite/global/utils';
+import { track } from '@affine/track';
+import { assertExists } from '@blocksuite/affine/global/utils';
 import {
   ArrowDownSmallIcon,
   DeleteIcon,
@@ -350,9 +344,7 @@ export const PagePropertiesSettingsPopup = ({
                 className={styles.propertySettingRow}
                 data-testid="page-properties-settings-menu-item"
               >
-                <MenuIcon>
-                  <Icon />
-                </MenuIcon>
+                <Icon />
                 <div
                   data-testid="page-property-setting-row-name"
                   className={styles.propertyRowName}
@@ -391,11 +383,10 @@ export const PageBacklinksPopup = ({
   backlinks,
   children,
 }: PageBacklinksPopupProps) => {
-  const manager = useContext(managerContext);
-
   return (
     <Menu
       contentOptions={{
+        className: styles.backLinksMenu,
         onClick(e) {
           e.stopPropagation();
         },
@@ -407,7 +398,6 @@ export const PageBacklinksPopup = ({
               key={link.docId + ':' + link.blockId}
               wrapper={MenuItem}
               pageId={link.docId}
-              docCollection={manager.workspace.docCollection}
             />
           ))}
         </div>
@@ -601,16 +591,23 @@ export const PagePropertiesTableHeader = ({
   const manager = useContext(managerContext);
 
   const t = useI18n();
-  const { docLinksServices } = useServices({
+  const {
+    docLinksServices,
+    docService,
+    workspaceService,
+    editorSettingService,
+  } = useServices({
     DocLinksServices: DocLinksService,
+    DocService,
+    WorkspaceService,
+    EditorSettingService,
   });
   const docBacklinks = docLinksServices.backlinks;
   const backlinks = useLiveData(docBacklinks.backlinks$);
 
-  const { docService, workspaceService } = useServices({
-    DocService,
-    WorkspaceService,
-  });
+  const displayDocInfo = useLiveData(
+    editorSettingService.editorSetting.settings$.selector(s => s.displayDocInfo)
+  );
 
   const { syncing, retrying, serverClock } = useLiveData(
     workspaceService.workspace.engine.doc.docState$(docService.doc.id)
@@ -703,31 +700,33 @@ export const PagePropertiesTableHeader = ({
         {dTimestampElement}
       </div>
       <Divider />
-      <div className={styles.tableHeaderSecondaryRow}>
-        <div className={clsx(!open ? styles.pageInfoDimmed : null)}>
-          {t['com.affine.page-properties.page-info']()}
-        </div>
-        {properties.length === 0 || manager.readonly ? null : (
-          <PagePropertiesSettingsPopup>
-            <IconButton data-testid="page-info-show-more" size="20">
-              <MoreHorizontalIcon />
-            </IconButton>
-          </PagePropertiesSettingsPopup>
-        )}
-        <Collapsible.Trigger asChild role="button" onClick={handleCollapse}>
-          <div
-            className={styles.tableHeaderCollapseButtonWrapper}
-            data-testid="page-info-collapse"
-          >
-            <IconButton size="20">
-              <ToggleExpandIcon
-                className={styles.collapsedIcon}
-                data-collapsed={!open}
-              />
-            </IconButton>
+      {displayDocInfo ? (
+        <div className={styles.tableHeaderSecondaryRow}>
+          <div className={clsx(!open ? styles.pageInfoDimmed : null)}>
+            {t['com.affine.page-properties.page-info']()}
           </div>
-        </Collapsible.Trigger>
-      </div>
+          {properties.length === 0 || manager.readonly ? null : (
+            <PagePropertiesSettingsPopup>
+              <IconButton data-testid="page-info-show-more" size="20">
+                <MoreHorizontalIcon />
+              </IconButton>
+            </PagePropertiesSettingsPopup>
+          )}
+          <Collapsible.Trigger asChild role="button" onClick={handleCollapse}>
+            <div
+              className={styles.tableHeaderCollapseButtonWrapper}
+              data-testid="page-info-collapse"
+            >
+              <IconButton size="20">
+                <ToggleExpandIcon
+                  className={styles.collapsedIcon}
+                  data-collapsed={!open}
+                />
+              </IconButton>
+            </div>
+          </Collapsible.Trigger>
+        </div>
+      ) : null}
     </div>
   );
 };
@@ -765,6 +764,11 @@ export const PagePropertyRow = ({
     setEditingMeta(false);
     setEditingItem(null);
   }, [setEditingItem]);
+
+  // NOTE: if we define a new property type, the value render may not exists in old client
+  //       skip rendering if value render is not define yet
+  if (!ValueRenderer || typeof ValueRenderer !== 'function') return null;
+
   return (
     <SortablePropertyRow property={property} data-testid="page-property-row">
       {({ attributes, listeners }) => (
@@ -1115,7 +1119,7 @@ export const PagePropertiesTable = ({
   // eg. when it is in history modal
 
   const hasSubscriptionTag = page.meta?.tags.some(tag => tag === FeedTag.id);
-  if (!manager.page || (!hasSubscriptionTag && manager.readonly)) {
+  if (!manager.page || !hasSubscriptionTag) {
     return null;
   }
 

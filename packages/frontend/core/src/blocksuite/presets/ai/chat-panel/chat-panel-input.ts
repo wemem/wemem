@@ -1,9 +1,8 @@
-import type { EditorHost } from '@blocksuite/block-std';
-import { WithDisposable } from '@blocksuite/block-std';
-import { type AIError, openFileOrFiles } from '@blocksuite/blocks';
-import { assertExists } from '@blocksuite/global/utils';
+import type { EditorHost } from '@blocksuite/affine/block-std';
+import { type AIError, openFileOrFiles } from '@blocksuite/affine/blocks';
+import { assertExists, WithDisposable } from '@blocksuite/affine/global/utils';
 import { css, html, LitElement, nothing } from 'lit';
-import { customElement, property, query, state } from 'lit/decorators.js';
+import { property, query, state } from 'lit/decorators.js';
 import { repeat } from 'lit/directives/repeat.js';
 
 import {
@@ -25,7 +24,6 @@ function getFirstTwoLines(text: string) {
   return lines.slice(0, 2);
 }
 
-@customElement('chat-panel-input')
 export class ChatPanelInput extends WithDisposable(LitElement) {
   static override styles = css`
     .chat-panel-input {

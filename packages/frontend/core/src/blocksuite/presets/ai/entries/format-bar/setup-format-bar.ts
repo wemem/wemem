@@ -4,12 +4,12 @@ import { I18n } from '@affine/i18n';
 import {
   type AffineFormatBarWidget,
   toolbarDefaultConfig,
-} from '@blocksuite/blocks';
+} from '@blocksuite/affine/blocks';
 import { html, type TemplateResult } from 'lit';
 
 import { getDocAIActionGroups } from '../../_common/readease-ai-action-config';
 
-export function setupFormatBarEntry(formatBar: AffineFormatBarWidget) {
+export function setupFormatBarAIEntry(formatBar: AffineFormatBarWidget) {
   toolbarDefaultConfig(formatBar);
   formatBar.addRawConfigItems(
     [

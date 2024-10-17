@@ -1,16 +1,16 @@
 import './ask-ai-panel';
 
-import { type EditorHost, WithDisposable } from '@blocksuite/block-std';
+import { type EditorHost } from '@blocksuite/affine/block-std';
 import {
   type AIItemGroupConfig,
   AIStarIcon,
   EdgelessRootService,
-} from '@blocksuite/blocks';
-import { createLitPortal, HoverController } from '@blocksuite/blocks';
-import { assertExists } from '@blocksuite/global/utils';
+} from '@blocksuite/affine/blocks';
+import { createLitPortal, HoverController } from '@blocksuite/affine/blocks';
+import { assertExists, WithDisposable } from '@blocksuite/affine/global/utils';
 import { flip, offset } from '@floating-ui/dom';
 import { css, html, LitElement, nothing } from 'lit';
-import { customElement, property, query } from 'lit/decorators.js';
+import { property, query } from 'lit/decorators.js';
 import { ref } from 'lit/directives/ref.js';
 import { styleMap } from 'lit/directives/style-map.js';
 
@@ -38,7 +38,6 @@ export type AskAIButtonOptions = {
   panelWidth?: number;
 };
 
-@customElement('ask-ai-button')
 export class AskAIButton extends WithDisposable(LitElement) {
   get _edgeless() {
     const rootService = getRootService(this.host);
@@ -52,6 +51,7 @@ export class AskAIButton extends WithDisposable(LitElement) {
     .ask-ai-button {
       border-radius: 4px;
       position: relative;
+      user-select: none;
     }
 
     .ask-ai-icon-button {
@@ -110,7 +110,10 @@ export class AskAIButton extends WithDisposable(LitElement) {
         },
       };
     },
-    { allowMultiple: true }
+    {
+      allowMultiple: true,
+      enterDelay: 100,
+    }
   );
 
   @property({ attribute: false })

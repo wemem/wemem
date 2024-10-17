@@ -3,21 +3,29 @@ import type {
   BlockSelection,
   EditorHost,
   TextSelection,
-} from '@blocksuite/block-std';
+} from '@blocksuite/affine/block-std';
 import type {
   DocMode,
   EdgelessRootService,
   ImageSelection,
-  PageRootService,
-} from '@blocksuite/blocks';
+  RootService,
+} from '@blocksuite/affine/blocks';
 import {
   BlocksUtils,
-  getElementsBound,
+  DocModeProvider,
+  EditPropsStore,
   NoteDisplayMode,
-} from '@blocksuite/blocks';
-import { Bound, type SerializedXYWH } from '@blocksuite/global/utils';
-import { type ChatMessage } from '@blocksuite/presets';
-import type { Doc } from '@blocksuite/store';
+  NotificationProvider,
+  RefNodeSlotsProvider,
+  TelemetryProvider,
+} from '@blocksuite/affine/blocks';
+import {
+  Bound,
+  getElementsBound,
+  type SerializedXYWH,
+} from '@blocksuite/affine/global/utils';
+import { type ChatMessage } from '@blocksuite/affine/presets';
+import type { Doc } from '@blocksuite/affine/store';
 import type { TemplateResult } from 'lit';
 
 import { AIProvider, type AIUserInfo } from '../provider';
@@ -106,13 +114,10 @@ export async function constructRootChatBlockMessages(
   return constructUserInfoWithMessages(forkMessages, userInfo);
 }
 
-function getViewportCenter(
-  mode: DocMode,
-  rootService: PageRootService | EdgelessRootService
-) {
+function getViewportCenter(mode: DocMode, rootService: RootService) {
   const center = { x: 400, y: 50 };
   if (mode === 'page') {
-    const viewport = rootService.editPropsStore.getStorage('viewport');
+    const viewport = rootService.std.get(EditPropsStore).getStorage('viewport');
     if (viewport) {
       if ('xywh' in viewport) {
         const bound = Bound.deserialize(viewport.xywh);
@@ -176,8 +181,7 @@ function addAIChatBlock(
 }
 
 export function promptDocTitle(host: EditorHost, autofill?: string) {
-  const notification =
-    host.std.spec.getService('affine:page').notificationService;
+  const notification = host.std.getOptional(NotificationProvider);
   if (!notification) return Promise.resolve(undefined);
 
   return notification.prompt({
@@ -297,19 +301,23 @@ const SAVE_CHAT_TO_BLOCK_ACTION: ChatAction = {
       return false;
     }
 
-    const rootService = host.spec.getService('affine:page');
-    const surfaceService = host.spec.getService('affine:surface');
+    const rootService = host.std.getService('affine:page');
+    const surfaceService = host.std.getService('affine:surface');
     if (!rootService || !surfaceService) return false;
 
-    const { docModeService, notificationService } = rootService;
+    const notificationService = host.std.getOptional(NotificationProvider);
+    const docModeService = host.std.get(DocModeProvider);
     const { layer } = surfaceService;
-    const curMode = docModeService.getMode();
-    const viewportCenter = getViewportCenter(curMode, rootService);
-    const newBlockIndex = layer.generateIndex('affine:embed-ai-chat');
+    const curMode = docModeService.getEditorMode() || 'page';
+    const viewportCenter = getViewportCenter(
+      curMode,
+      rootService as RootService
+    );
+    const newBlockIndex = layer.generateIndex();
     // If current mode is not edgeless, switch to edgeless mode first
     if (curMode !== 'edgeless') {
       // Set mode to edgeless
-      docModeService.setMode('edgeless');
+      docModeService.setEditorMode('edgeless' as DocMode);
       // Notify user to switch to edgeless mode
       notificationService?.notify({
         title: 'Save chat to a block',
@@ -350,7 +358,8 @@ const SAVE_CHAT_TO_BLOCK_ACTION: ChatAction = {
         return false;
       }
 
-      rootService.telemetryService?.track('CanvasElementAdded', {
+      const telemetryService = host.std.getOptional(TelemetryProvider);
+      telemetryService?.track('CanvasElementAdded', {
         control: 'manually save',
         page: 'whiteboard editor',
         module: 'ai chat panel',
@@ -379,7 +388,9 @@ const ADD_TO_EDGELESS_AS_NOTE = {
   handler: async (host: EditorHost, content: string) => {
     reportResponse('result:add-note');
     const { doc } = host;
-    const service = host.spec.getService<EdgelessRootService>('affine:page');
+    const service = host.std.getService<EdgelessRootService>('affine:page');
+    if (!service) return;
+
     const elements = service.selection.selectedElements;
 
     const props: { displayMode: NoteDisplayMode; xywh?: SerializedXYWH } = {
@@ -420,8 +431,8 @@ const CREATE_AS_DOC = {
     newDoc.addBlock('affine:surface', {}, rootId);
     const noteId = newDoc.addBlock('affine:note', {}, rootId);
 
-    host.spec.getService('affine:page').slots.docLinkClicked.emit({
-      docId: newDoc.id,
+    host.std.getOptional(RefNodeSlotsProvider)?.docLinkClicked.emit({
+      pageId: newDoc.id,
     });
     let complete = false;
     (function addContent() {
@@ -457,8 +468,12 @@ const CREATE_AS_LINKED_DOC = {
       return false;
     }
 
-    const service = host.spec.getService<EdgelessRootService>('affine:page');
-    const mode = service.docModeService.getMode();
+    const service = host.std.getService<EdgelessRootService>('affine:page');
+    if (!service) {
+      return false;
+    }
+    const docModeService = host.std.get(DocModeProvider);
+    const mode = docModeService.getEditorMode();
     if (mode !== 'edgeless') {
       return false;
     }

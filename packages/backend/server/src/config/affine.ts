@@ -102,6 +102,15 @@ AFFiNE.use('payment', {
   },
 });
 //
+// /* Captcha Plugin Default Config */
+// AFFiNE.plugins.use('captcha', {
+//   turnstile: {},
+//   challenge: {
+//     bits: 20,
+//   },
+// });
+//
+//
 // /* Cloudflare R2 Plugin */
 // /* Enable if you choose to store workspace blobs or user avatars in Cloudflare R2 Storage Service */
 if (process.env.R2_OBJECT_STORAGE_ACCOUNT_ID) {

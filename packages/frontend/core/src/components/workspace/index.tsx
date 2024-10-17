@@ -1,4 +1,5 @@
-import { useAppSettingHelper } from '@affine/core/hooks/affine/use-app-setting-helper';
+import { useAppSettingHelper } from '@affine/core/components/hooks/affine/use-app-setting-helper';
+import { AppSidebarService } from '@affine/core/modules/app-sidebar';
 import {
   DocsService,
   GlobalContextService,
@@ -6,37 +7,35 @@ import {
   useService,
 } from '@toeverything/infra';
 import { clsx } from 'clsx';
-import { useAtomValue } from 'jotai';
 import type { HTMLAttributes, PropsWithChildren, ReactElement } from 'react';
 import { forwardRef } from 'react';
 
-import { appSidebarOpenAtom } from '../app-sidebar';
 import { appStyle, mainContainerStyle, toolStyle } from './index.css';
 
 export type WorkspaceRootProps = PropsWithChildren<{
-  resizing?: boolean;
+  className?: string;
   useNoisyBackground?: boolean;
   useBlurBackground?: boolean;
 }>;
 
 export const AppContainer = ({
-  resizing,
   useNoisyBackground,
   useBlurBackground,
   children,
+  className,
   ...rest
 }: WorkspaceRootProps) => {
-  const noisyBackground = useNoisyBackground && environment.isDesktop;
-  const blurBackground = environment.isDesktop && useBlurBackground;
+  const noisyBackground = BUILD_CONFIG.isElectron && useNoisyBackground;
+  const blurBackground =
+    BUILD_CONFIG.isElectron && environment.isMacOs && useBlurBackground;
   return (
     <div
       {...rest}
-      className={clsx(appStyle, {
+      className={clsx(appStyle, className, {
         'noisy-background': noisyBackground,
         'blur-background': blurBackground,
       })}
       data-noise-background={noisyBackground}
-      data-is-resizing={resizing}
       data-blur-background={blurBackground}
     >
       {children}
@@ -50,17 +49,18 @@ export const MainContainer = forwardRef<
   HTMLDivElement,
   PropsWithChildren<MainContainerProps>
 >(function MainContainer({ className, children, ...props }, ref): ReactElement {
-  const appSideBarOpen = useAtomValue(appSidebarOpenAtom);
   const { appSettings } = useAppSettingHelper();
+  const appSidebarService = useService(AppSidebarService).sidebar;
+  const open = useLiveData(appSidebarService.open$);
 
   return (
     <div
       {...props}
       className={clsx(mainContainerStyle, className)}
-      data-is-desktop={environment.isDesktop}
+      data-is-desktop={BUILD_CONFIG.isElectron}
       data-transparent={false}
       data-client-border={appSettings.clientBorder}
-      data-side-bar-open={appSideBarOpen}
+      data-side-bar-open={open}
       data-testid="main-container"
       ref={ref}
     >
@@ -70,6 +70,11 @@ export const MainContainer = forwardRef<
 });
 
 MainContainer.displayName = 'MainContainer';
+
+export const MainContainerFallback = ({ children }: PropsWithChildren) => {
+  // todo: default app fallback?
+  return <MainContainer>{children}</MainContainer>;
+};
 
 export const ToolContainer = (
   props: PropsWithChildren<{ className?: string }>

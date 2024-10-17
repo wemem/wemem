@@ -1,3 +1,4 @@
+// credits: tab overlay impl inspired by Figma desktop
 import {
   type DropTargetDropEvent,
   type DropTargetOptions,
@@ -6,18 +7,12 @@ import {
   useDraggable,
   useDropTarget,
 } from '@affine/component';
-import {
-  appSidebarOpenAtom,
-  appSidebarResizingAtom,
-} from '@affine/core/components/app-sidebar';
-import { appSidebarWidthAtom } from '@affine/core/components/app-sidebar/index.jotai';
-import { WindowsAppControls } from '@affine/core/components/pure/header/windows-app-controls';
-import { useAsyncCallback } from '@affine/core/hooks/affine-async-hooks';
-import { useCatchEventCallback } from '@affine/core/hooks/use-catch-event-hook';
-import { track } from '@affine/core/mixpanel';
+import { useAsyncCallback } from '@affine/core/components/hooks/affine-async-hooks';
+import { useCatchEventCallback } from '@affine/core/components/hooks/use-catch-event-hook';
 import type { AffineDNDData } from '@affine/core/types/dnd';
 import { apis, events } from '@affine/electron-api';
 import { useI18n } from '@affine/i18n';
+import { track } from '@affine/track';
 import { CloseIcon, PlusIcon, RightSidebarIcon } from '@blocksuite/icons/rc';
 import {
   useLiveData,
@@ -25,7 +20,6 @@ import {
   useServiceOptional,
 } from '@toeverything/infra';
 import clsx from 'clsx';
-import { useAtomValue } from 'jotai';
 import { partition } from 'lodash-es';
 import {
   Fragment,
@@ -35,6 +29,7 @@ import {
   useState,
 } from 'react';
 
+import { AppSidebarService } from '../../app-sidebar';
 import { iconNameToIcon } from '../../workbench/constants';
 import { DesktopStateSynchronizer } from '../../workbench/services/desktop-state-synchronizer';
 import {
@@ -132,6 +127,9 @@ const WorkbenchTab = ({
   );
   const onActivateView = useAsyncCallback(
     async (viewIdx: number) => {
+      if (viewIdx === activeViewIndex && tabActive) {
+        return;
+      }
       await tabsHeaderService.activateView?.(workbench.id, viewIdx);
       if (tabActive) {
         track.$.appTabsHeader.$.tabAction({
@@ -145,7 +143,7 @@ const WorkbenchTab = ({
         });
       }
     },
-    [tabActive, tabsHeaderService, workbench.id]
+    [activeViewIndex, tabActive, tabsHeaderService, workbench.id]
   );
   const handleAuxClick: MouseEventHandler = useCatchEventCallback(
     async e => {
@@ -234,8 +232,12 @@ const WorkbenchTab = ({
                     <Loading />
                   )}
                 </div>
-                {workbench.pinned || !view.title ? null : (
-                  <div title={view.title} className={styles.splitViewLabelText}>
+                {!view.title ? null : (
+                  <div
+                    title={view.title}
+                    className={styles.splitViewLabelText}
+                    data-padding-right={tabsLength > 1 && !workbench.pinned}
+                  >
                     {view.title}
                   </div>
                 )}
@@ -247,19 +249,17 @@ const WorkbenchTab = ({
             </Fragment>
           );
         })}
-        {!workbench.pinned ? (
-          <div className={styles.tabCloseButtonWrapper}>
-            {tabsLength > 1 ? (
-              <button
-                data-testid="close-tab-button"
-                className={styles.tabCloseButton}
-                onClick={handleCloseTab}
-              >
-                <CloseIcon />
-              </button>
-            ) : null}
-          </div>
-        ) : null}
+        <div className={styles.tabCloseButtonWrapper}>
+          {tabsLength > 1 && !workbench.pinned ? (
+            <button
+              data-testid="close-tab-button"
+              className={styles.tabCloseButton}
+              onClick={handleCloseTab}
+            >
+              <CloseIcon />
+            </button>
+          ) : null}
+        </div>
       </div>
       <div className={styles.dropIndicator} data-edge={closestEdge} />
     </div>
@@ -293,10 +293,13 @@ export const AppTabsHeader = ({
   left?: ReactNode;
 }) => {
   const t = useI18n();
-  const sidebarWidth = useAtomValue(appSidebarWidthAtom);
-  const sidebarOpen = useAtomValue(appSidebarOpenAtom);
-  const sidebarResizing = useAtomValue(appSidebarResizingAtom);
-  const isMacosDesktop = environment.isDesktop && environment.isMacOs;
+  const appSidebarService = useService(AppSidebarService).sidebar;
+  const sidebarWidth = useLiveData(appSidebarService.width$);
+  const sidebarOpen = useLiveData(appSidebarService.open$);
+  const sidebarResizing = useLiveData(appSidebarService.resizing$);
+
+  const isMacosDesktop = BUILD_CONFIG.isElectron && environment.isMacOs;
+  const isWindowsDesktop = BUILD_CONFIG.isElectron && environment.isWindows;
   const fullScreen = useIsFullScreen();
 
   const tabsHeaderService = useService(AppTabsHeaderService);
@@ -405,7 +408,7 @@ export const AppTabsHeader = ({
       className={clsx(styles.root, className)}
       style={style}
       data-mode={mode}
-      data-is-windows={environment.isDesktop && environment.isWindows}
+      data-is-windows={isWindowsDesktop}
     >
       <div
         style={{
@@ -466,9 +469,9 @@ export const AppTabsHeader = ({
       <IconButton size="24" onClick={onToggleRightSidebar}>
         <RightSidebarIcon />
       </IconButton>
-      {environment.isDesktop && environment.isWindows ? (
-        <WindowsAppControls />
-      ) : null}
+      {isWindowsDesktop && (
+        <div className={styles.windowsAppControlsPlaceholder} />
+      )}
     </div>
   );
 };

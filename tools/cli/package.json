@@ -6,7 +6,7 @@
     "@affine/env": "workspace:*",
     "@affine/templates": "workspace:*",
     "@aws-sdk/client-s3": "^3.620.0",
-    "@blocksuite/presets": "0.17.0-canary-202408080742-0cbcb73",
+    "@blocksuite/affine": "0.17.18",
     "@clack/core": "^0.3.4",
     "@clack/prompts": "^0.7.0",
     "@magic-works/i18n-codegen": "^0.6.0",
@@ -15,6 +15,7 @@
     "@pmmmwh/react-refresh-webpack-plugin": "^0.5.11",
     "@sentry/webpack-plugin": "^2.16.1",
     "@types/jscodeshift": "^0",
+    "@types/mime-types": "^2.1.4",
     "@types/webpack-env": "^1.18.4",
     "@vanilla-extract/webpack-plugin": "^2.3.7",
     "autoprefixer": "^10.4.19",
@@ -29,23 +30,21 @@
     "mini-css-extract-plugin": "^2.8.1",
     "postcss": "^8.4.38",
     "postcss-loader": "^8.1.1",
-    "raw-loader": "^4.0.2",
+    "react-refresh": "^0.14.2",
     "source-map-loader": "^5.0.0",
     "style-loader": "^4.0.0",
     "swc-loader": "^0.2.6",
     "tailwindcss": "^3.4.4",
     "terser-webpack-plugin": "^5.3.10",
-    "thread-loader": "^4.0.2",
     "ts-node": "^10.9.2",
     "vite": "^5.2.8",
     "webpack": "^5.91.0",
-    "webpack-cli": "^5.1.4",
     "webpack-dev-server": "^5.0.4",
     "webpack-merge": "^6.0.0"
   },
   "scripts": {
-    "build": "node --loader ts-node/esm/transpile-only.mjs ./src/bin/build.ts",
+    "bundle": "node --loader ts-node/esm/transpile-only.mjs ./src/bin/build.ts",
     "dev": "node --loader ts-node/esm/transpile-only.mjs ./src/bin/dev.ts"
   },
-  "version": "0.16.0"
+  "version": "0.17.0"
 }

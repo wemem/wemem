@@ -75,7 +75,7 @@ export function effect<T, A, B, C, D, E, F>(
 export function effect(...args: any[]) {
   const subject$ = new Subject<any>();
 
-  const effectLocation = environment.isDebug
+  const effectLocation = BUILD_CONFIG.debug
     ? `(${new Error().stack?.split('\n')[2].trim()})`
     : '';
 
@@ -84,7 +84,7 @@ export function effect(...args: any[]) {
       logger.error(`effect ${effectLocation} ${message}`, value);
       super(
         `effect ${effectLocation} ${message}` +
-          ` ${value ? (value instanceof Error ? value.stack ?? value.message : value + '') : ''}`
+          ` ${value ? (value instanceof Error ? (value.stack ?? value.message) : value + '') : ''}`
       );
     }
   }
@@ -93,21 +93,24 @@ export function effect(...args: any[]) {
   const subscription = subject$.pipe.apply(subject$, args as any).subscribe({
     next(value) {
       const error = new EffectError('should not emit value', value);
-      setImmediate(() => {
+      // make a uncaught exception
+      setTimeout(() => {
         throw error;
-      });
+      }, 0);
     },
     complete() {
       const error = new EffectError('effect unexpected complete');
-      setImmediate(() => {
+      // make a uncaught exception
+      setTimeout(() => {
         throw error;
-      });
+      }, 0);
     },
     error(error) {
       const effectError = new EffectError('effect uncaught error', error);
-      setImmediate(() => {
+      // make a uncaught exception
+      setTimeout(() => {
         throw effectError;
-      });
+      }, 0);
     },
   });
 

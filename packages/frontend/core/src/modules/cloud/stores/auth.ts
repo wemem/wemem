@@ -1,10 +1,9 @@
 import {
-  getUserQuery,
   removeAvatarMutation,
   updateUserProfileMutation,
   uploadAvatarMutation,
 } from '@affine/graphql';
-import type { GlobalStateService } from '@toeverything/infra';
+import type { GlobalState } from '@toeverything/infra';
 import { Store } from '@toeverything/infra';
 
 import type { AuthSessionInfo } from '../entities/session';
@@ -24,19 +23,21 @@ export class AuthStore extends Store {
   constructor(
     private readonly fetchService: FetchService,
     private readonly gqlService: GraphQLService,
-    private readonly globalStateService: GlobalStateService
+    private readonly globalState: GlobalState
   ) {
     super();
   }
 
   watchCachedAuthSession() {
-    return this.globalStateService.globalState.watch<AuthSessionInfo>(
-      'affine-cloud-auth'
-    );
+    return this.globalState.watch<AuthSessionInfo>('affine-cloud-auth');
+  }
+
+  getCachedAuthSession() {
+    return this.globalState.get<AuthSessionInfo>('affine-cloud-auth');
   }
 
   setCachedAuthSession(session: AuthSessionInfo | null) {
-    this.globalStateService.globalState.set('affine-cloud-auth', session);
+    this.globalState.set('affine-cloud-auth', session);
   }
 
   async fetchSession() {
@@ -83,15 +84,23 @@ export class AuthStore extends Store {
   }
 
   async checkUserByEmail(email: string) {
-    const data = await this.gqlService.gql({
-      query: getUserQuery,
-      variables: {
-        email,
+    const res = await this.fetchService.fetch('/api/auth/preflight', {
+      method: 'POST',
+      body: JSON.stringify({ email }),
+      headers: {
+        'content-type': 'application/json',
       },
     });
-    return {
-      isExist: !!data.user,
-      hasPassword: !!data.user?.hasPassword,
+
+    if (!res.ok) {
+      throw new Error(`Failed to check user by email: ${email}`);
+    }
+
+    const data = (await res.json()) as {
+      registered: boolean;
+      hasPassword: boolean;
     };
+
+    return data;
   }
 }

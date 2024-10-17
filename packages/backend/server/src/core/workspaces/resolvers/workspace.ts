@@ -1,8 +1,10 @@
 import { Logger } from '@nestjs/common';
 import {
   Args,
+  Field,
   Int,
   Mutation,
+  ObjectType,
   Parent,
   Query,
   ResolveField,
@@ -11,36 +13,60 @@ import {
 import { PrismaClient } from '@prisma/client';
 import { getStreamAsBuffer } from 'get-stream';
 import GraphQLUpload from 'graphql-upload/GraphQLUpload.mjs';
-import { applyUpdate, Doc } from 'yjs';
 
 import type { FileUpload } from '../../../fundamentals';
 import {
-  CantChangeWorkspaceOwner,
+  CantChangeSpaceOwner,
+  DocNotFound,
   EventEmitter,
   InternalServerError,
   MailService,
   MemberQuotaExceeded,
-  MutexService,
+  RequestMutex,
+  SpaceAccessDenied,
+  SpaceNotFound,
   Throttle,
   TooManyRequest,
   UserNotFound,
-  WorkspaceAccessDenied,
-  WorkspaceNotFound,
-  WorkspaceOwnerNotFound,
 } from '../../../fundamentals';
 import { CurrentUser, Public } from '../../auth';
+import { type Editor, PgWorkspaceDocStorageAdapter } from '../../doc';
+import { DocContentService } from '../../doc-renderer';
+import { Permission, PermissionService } from '../../permission';
 import { QuotaManagementService, QuotaQueryType } from '../../quota';
 import { WorkspaceBlobStorage } from '../../storage';
 import { UserService, UserType } from '../../user';
-import { PermissionService } from '../permission';
 import {
   InvitationType,
   InviteUserType,
-  Permission,
   UpdateWorkspaceInput,
   WorkspaceType,
 } from '../types';
 import { defaultWorkspaceAvatar } from '../utils';
+
+@ObjectType()
+export class EditorType implements Partial<Editor> {
+  @Field()
+  name!: string;
+
+  @Field(() => String, { nullable: true })
+  avatarUrl!: string | null;
+}
+
+@ObjectType()
+class WorkspacePageMeta {
+  @Field(() => Date)
+  createdAt!: Date;
+
+  @Field(() => Date)
+  updatedAt!: Date;
+
+  @Field(() => EditorType, { nullable: true })
+  createdBy!: EditorType | null;
+
+  @Field(() => EditorType, { nullable: true })
+  updatedBy!: EditorType | null;
+}
 
 /**
  * Workspace resolver
@@ -59,7 +85,9 @@ export class WorkspaceResolver {
     private readonly users: UserService,
     private readonly event: EventEmitter,
     private readonly blobStorage: WorkspaceBlobStorage,
-    private readonly mutex: MutexService
+    private readonly mutex: RequestMutex,
+    private readonly doc: DocContentService,
+    private readonly workspaceStorage: PgWorkspaceDocStorageAdapter
   ) {}
 
   @ResolveField(() => Permission, {
@@ -78,7 +106,7 @@ export class WorkspaceResolver {
     const permission = await this.permissions.get(workspace.id, user.id);
 
     if (!permission) {
-      throw new WorkspaceAccessDenied({ workspaceId: workspace.id });
+      throw new SpaceAccessDenied({ spaceId: workspace.id });
     }
 
     return permission;
@@ -89,11 +117,22 @@ export class WorkspaceResolver {
     complexity: 2,
   })
   memberCount(@Parent() workspace: WorkspaceType) {
-    return this.prisma.workspaceUserPermission.count({
-      where: {
-        workspaceId: workspace.id,
-      },
-    });
+    return this.permissions.getWorkspaceMemberCount(workspace.id);
+  }
+
+  @ResolveField(() => Boolean, {
+    description: 'is current workspace initialized',
+    complexity: 2,
+  })
+  async initialized(@Parent() workspace: WorkspaceType) {
+    return this.prisma.snapshot
+      .count({
+        where: {
+          id: workspace.id,
+          workspaceId: workspace.id,
+        },
+      })
+      .then(count => count > 0);
   }
 
   @ResolveField(() => UserType, {
@@ -101,9 +140,7 @@ export class WorkspaceResolver {
     complexity: 2,
   })
   async owner(@Parent() workspace: WorkspaceType) {
-    const data = await this.permissions.getWorkspaceOwner(workspace.id);
-
-    return data.user;
+    return this.permissions.getWorkspaceOwner(workspace.id);
   }
 
   @ResolveField(() => [InviteUserType], {
@@ -142,6 +179,35 @@ export class WorkspaceResolver {
         inviteId: id,
         accepted,
       }));
+  }
+
+  @ResolveField(() => WorkspacePageMeta, {
+    description: 'Cloud page metadata of workspace',
+    complexity: 2,
+  })
+  async pageMeta(
+    @Parent() workspace: WorkspaceType,
+    @Args('pageId') pageId: string
+  ) {
+    const metadata = await this.prisma.snapshot.findFirst({
+      where: { workspaceId: workspace.id, id: pageId },
+      select: {
+        createdAt: true,
+        updatedAt: true,
+        createdByUser: { select: { name: true, avatarUrl: true } },
+        updatedByUser: { select: { name: true, avatarUrl: true } },
+      },
+    });
+    if (!metadata) {
+      throw new DocNotFound({ spaceId: workspace.id, docId: pageId });
+    }
+
+    return {
+      createdAt: metadata.createdAt,
+      updatedAt: metadata.updatedAt,
+      createdBy: metadata.createdByUser || null,
+      updatedBy: metadata.updatedByUser || null,
+    };
   }
 
   @ResolveField(() => QuotaQueryType, {
@@ -197,7 +263,7 @@ export class WorkspaceResolver {
     const workspace = await this.prisma.workspace.findUnique({ where: { id } });
 
     if (!workspace) {
-      throw new WorkspaceNotFound({ workspaceId: id });
+      throw new SpaceNotFound({ spaceId: id });
     }
 
     return workspace;
@@ -287,6 +353,7 @@ export class WorkspaceResolver {
         id,
       },
     });
+    await this.workspaceStorage.deleteSpace(id);
 
     this.event.emit('workspace.deleted', id);
 
@@ -308,7 +375,7 @@ export class WorkspaceResolver {
     );
 
     if (permission === Permission.Owner) {
-      throw new CantChangeWorkspaceOwner();
+      throw new CantChangeSpaceOwner();
     }
 
     try {
@@ -320,13 +387,8 @@ export class WorkspaceResolver {
       }
 
       // member limit check
-      const [memberCount, quota] = await Promise.all([
-        this.prisma.workspaceUserPermission.count({
-          where: { workspaceId },
-        }),
-        this.quota.getWorkspaceUsage(workspaceId),
-      ]);
-      if (memberCount >= quota.memberLimit) {
+      const quota = await this.quota.getWorkspaceUsage(workspaceId);
+      if (quota.memberCount >= quota.memberLimit) {
         return new MemberQuotaExceeded();
       }
 
@@ -412,17 +474,7 @@ export class WorkspaceResolver {
       })
       .then(({ workspaceId }) => workspaceId);
 
-    const snapshot = await this.prisma.snapshot.findFirstOrThrow({
-      where: {
-        id: workspaceId,
-        workspaceId,
-      },
-    });
-
-    const doc = new Doc();
-
-    applyUpdate(doc, new Uint8Array(snapshot.blob));
-    const metaJSON = doc.getMap('meta').toJSON();
+    const workspaceContent = await this.doc.getWorkspaceContent(workspaceId);
 
     const owner = await this.permissions.getWorkspaceOwner(workspaceId);
     const invitee = await this.permissions.getWorkspaceInvitation(
@@ -431,11 +483,10 @@ export class WorkspaceResolver {
     );
 
     let avatar = '';
-
-    if (metaJSON.avatar) {
+    if (workspaceContent?.avatarKey) {
       const avatarBlob = await this.blobStorage.get(
         workspaceId,
-        metaJSON.avatar
+        workspaceContent.avatarKey
       );
 
       if (avatarBlob.body) {
@@ -445,11 +496,11 @@ export class WorkspaceResolver {
 
     return {
       workspace: {
-        name: metaJSON.name || '',
+        name: workspaceContent?.name ?? '',
         avatar: avatar || defaultWorkspaceAvatar,
         id: workspaceId,
       },
-      user: owner.user,
+      user: owner,
       invitee: invitee.user,
     };
   }
@@ -507,12 +558,8 @@ export class WorkspaceResolver {
 
     const owner = await this.permissions.getWorkspaceOwner(workspaceId);
 
-    if (!owner.user) {
-      throw new WorkspaceOwnerNotFound({ workspaceId: workspaceId });
-    }
-
     if (sendLeaveMail) {
-      await this.mailer.sendLeaveWorkspaceEmail(owner.user.email, {
+      await this.mailer.sendLeaveWorkspaceEmail(owner.email, {
         workspaceName,
         inviteeName: user.name,
       });

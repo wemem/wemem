@@ -23,12 +23,11 @@
       "groupName": "oxlint"
     },
     {
-      "groupName": "blocksuite-canary",
+      "groupName": "blocksuite",
       "matchPackagePatterns": ["^@blocksuite"],
       "excludePackageNames": ["@blocksuite/icons"],
       "rangeStrategy": "replace",
-      "followTag": "canary",
-      "enabled": false
+      "changelogUrl": "https://github.com/toeverything/blocksuite/blob/master/packages/blocks/CHANGELOG.md"
     },
     {
       "groupName": "all non-major dependencies",
@@ -41,6 +40,10 @@
       "groupName": "rust toolchain",
       "matchManagers": ["custom.regex"],
       "matchDepNames": ["rustc"]
+    },
+    {
+      "groupName": "nestjs",
+      "matchPackagePatterns": ["^@nestjs"]
     }
   ],
   "commitMessagePrefix": "chore: ",

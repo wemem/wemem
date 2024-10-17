@@ -1,6 +1,6 @@
 import { apis } from '@affine/electron-api';
 import { WorkspaceFlavour } from '@affine/env/workspace';
-import { DocCollection } from '@blocksuite/store';
+import { DocCollection } from '@blocksuite/affine/store';
 import type {
   BlobStorage,
   DocStorage,
@@ -9,7 +9,11 @@ import type {
   WorkspaceMetadata,
   WorkspaceProfileInfo,
 } from '@toeverything/infra';
-import { globalBlockSuiteSchema, LiveData, Service } from '@toeverything/infra';
+import {
+  getAFFiNEWorkspaceSchema,
+  LiveData,
+  Service,
+} from '@toeverything/infra';
 import { isEqual } from 'lodash-es';
 import { nanoid } from 'nanoid';
 import { Observable } from 'rxjs';
@@ -47,7 +51,7 @@ export class LocalWorkspaceFlavourProvider
       JSON.stringify(allWorkspaceIDs.filter(x => x !== id))
     );
 
-    if (apis && environment.isDesktop) {
+    if (BUILD_CONFIG.isElectron && apis) {
       await apis.workspace.delete(id);
     }
 
@@ -70,10 +74,8 @@ export class LocalWorkspaceFlavourProvider
     const docCollection = new DocCollection({
       id: id,
       idGenerator: () => nanoid(),
-      schema: globalBlockSuiteSchema,
+      schema: getAFFiNEWorkspaceSchema(),
       blobSources: { main: blobStorage },
-      disableBacklinkIndex: true,
-      disableSearchIndex: true,
     });
 
     // apply initial state
@@ -125,7 +127,7 @@ export class LocalWorkspaceFlavourProvider
     }),
     []
   );
-  isLoading$ = new LiveData(false);
+  isRevalidating$ = new LiveData(false);
   revalidate(): void {
     // notify livedata to re-scan workspaces
     this.notifyChannel.postMessage(null);
@@ -145,9 +147,7 @@ export class LocalWorkspaceFlavourProvider
 
     const bs = new DocCollection({
       id,
-      schema: globalBlockSuiteSchema,
-      disableBacklinkIndex: true,
-      disableSearchIndex: true,
+      schema: getAFFiNEWorkspaceSchema(),
     });
 
     if (localData) applyUpdate(bs.doc, localData);

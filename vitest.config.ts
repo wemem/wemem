@@ -62,7 +62,7 @@ export default defineConfig({
       '**/dist',
       '**/build',
       '**/out,',
-      '**/packages/frontend/electron',
+      '**/packages/frontend/apps/electron',
     ],
     testTimeout: 5000,
     coverage: {
@@ -73,7 +73,7 @@ export default defineConfig({
     },
     server: {
       deps: {
-        inline: ['@blocksuite/blocks'],
+        inline: ['@blocksuite/affine/blocks'],
       },
     },
   },

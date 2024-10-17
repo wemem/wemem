@@ -2,7 +2,6 @@ import {
   AnimatedCollectionsIcon,
   type DropTargetDropEvent,
   type DropTargetOptions,
-  MenuIcon,
   MenuItem,
   toast,
 } from '@affine/component';
@@ -10,16 +9,16 @@ import {
   filterPage,
   useEditCollection,
 } from '@affine/core/components/page-list';
-import { track } from '@affine/core/mixpanel';
 import { CollectionService } from '@affine/core/modules/collection';
 import { CompatibleFavoriteItemsAdapter } from '@affine/core/modules/properties';
-import { ShareDocsService } from '@affine/core/modules/share-doc';
+import { ShareDocsListService } from '@affine/core/modules/share-doc';
 import type { AffineDNDData } from '@affine/core/types/dnd';
 import type { Collection } from '@affine/env/filter';
 import { PublicPageMode } from '@affine/graphql';
 import { useI18n } from '@affine/i18n';
+import { track } from '@affine/track';
+import type { DocMeta } from '@blocksuite/affine/store';
 import { FilterMinusIcon } from '@blocksuite/icons/rc';
-import type { DocMeta } from '@blocksuite/store';
 import {
   DocsService,
   GlobalContextService,
@@ -63,8 +62,7 @@ export const ExplorerCollectionNode = ({
   const { globalContextService } = useServices({
     GlobalContextService,
   });
-  const { open: openEditCollectionModal, node: editModal } =
-    useEditCollection();
+  const { open: openEditCollectionModal } = useEditCollection();
   const active =
     useLiveData(globalContextService.globalContext.collectionId.$) ===
     collectionId;
@@ -201,7 +199,7 @@ export const ExplorerCollectionNode = ({
     () => args => {
       const entityType = args.source.data.entity?.type;
       return args.treeInstruction?.type !== 'make-child'
-        ? (typeof canDrop === 'function' ? canDrop(args) : canDrop) ?? true
+        ? ((typeof canDrop === 'function' ? canDrop(args) : canDrop) ?? true)
         : entityType === 'doc';
     },
     [canDrop]
@@ -212,29 +210,26 @@ export const ExplorerCollectionNode = ({
   }
 
   return (
-    <>
-      <ExplorerTreeNode
-        icon={CollectionIcon}
-        name={collection.name || t['Untitled']()}
-        dndData={dndData}
-        onDrop={handleDropOnCollection}
-        renameable
-        collapsed={collapsed}
-        setCollapsed={setCollapsed}
-        to={`/collection/${collection.id}`}
-        active={active}
-        canDrop={handleCanDrop}
-        reorderable={reorderable}
-        onRename={handleRename}
-        childrenPlaceholder={<Empty onDrop={handleDropOnPlaceholder} />}
-        operations={finalOperations}
-        dropEffect={handleDropEffectOnCollection}
-        data-testid={`explorer-collection-${collectionId}`}
-      >
-        <ExplorerCollectionNodeChildren collection={collection} />
-      </ExplorerTreeNode>
-      {editModal}
-    </>
+    <ExplorerTreeNode
+      icon={CollectionIcon}
+      name={collection.name || t['Untitled']()}
+      dndData={dndData}
+      onDrop={handleDropOnCollection}
+      renameable
+      collapsed={collapsed}
+      setCollapsed={setCollapsed}
+      to={`/collection/${collection.id}`}
+      active={active}
+      canDrop={handleCanDrop}
+      reorderable={reorderable}
+      onRename={handleRename}
+      childrenPlaceholder={<Empty onDrop={handleDropOnPlaceholder} />}
+      operations={finalOperations}
+      dropEffect={handleDropEffectOnCollection}
+      data-testid={`explorer-collection-${collectionId}`}
+    >
+      <ExplorerCollectionNodeChildren collection={collection} />
+    </ExplorerTreeNode>
   );
 };
 
@@ -247,19 +242,19 @@ const ExplorerCollectionNodeChildren = ({
   const {
     docsService,
     compatibleFavoriteItemsAdapter,
-    shareDocsService,
+    shareDocsListService,
     collectionService,
   } = useServices({
     DocsService,
     CompatibleFavoriteItemsAdapter,
-    ShareDocsService,
+    ShareDocsListService,
     CollectionService,
   });
 
   useEffect(() => {
     // TODO(@eyhn): loading & error UI
-    shareDocsService.shareDocs?.revalidate();
-  }, [shareDocsService]);
+    shareDocsListService.shareDocs?.revalidate();
+  }, [shareDocsListService]);
 
   const docMetas = useLiveData(
     useMemo(
@@ -277,7 +272,7 @@ const ExplorerCollectionNodeChildren = ({
     () => new Set(collection.allowList),
     [collection.allowList]
   );
-  const shareDocs = useLiveData(shareDocsService.shareDocs?.list$);
+  const shareDocs = useLiveData(shareDocsListService.shareDocs?.list$);
 
   const handleRemoveFromAllowList = useCallback(
     (id: string) => {
@@ -320,11 +315,7 @@ const ExplorerCollectionNodeChildren = ({
                 index: 99,
                 view: (
                   <MenuItem
-                    preFix={
-                      <MenuIcon>
-                        <FilterMinusIcon />
-                      </MenuIcon>
-                    }
+                    prefixIcon={<FilterMinusIcon />}
                     onClick={() => handleRemoveFromAllowList(doc.id)}
                   >
                     {t['Remove special filter']()}

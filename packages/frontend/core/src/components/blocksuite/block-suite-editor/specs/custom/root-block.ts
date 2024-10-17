@@ -2,72 +2,80 @@ import {
   AIEdgelessRootBlockSpec,
   AIPageRootBlockSpec,
 } from '@affine/core/blocksuite/presets/ai';
-import { mixpanel } from '@affine/core/mixpanel';
-import type {
-  EdgelessRootBlockSpecType,
-  PageRootBlockSpecType,
-  RootService,
-  TelemetryEventMap,
-} from '@blocksuite/blocks';
+import { EditorSettingService } from '@affine/core/modules/editor-settting';
+import { mixpanel } from '@affine/track';
 import {
-  AffineCanvasTextFonts,
-  EdgelessRootService,
-  PageRootService,
-} from '@blocksuite/blocks';
+  ConfigExtension,
+  type ExtensionType,
+} from '@blocksuite/affine/block-std';
+import {
+  EdgelessRootBlockSpec,
+  EditorSettingExtension,
+  FontLoaderService,
+  PageRootBlockSpec,
+} from '@blocksuite/affine/blocks';
+import {
+  type TelemetryEventMap,
+  TelemetryProvider,
+} from '@blocksuite/affine/blocks';
 import { type FrameworkProvider } from '@toeverything/infra';
 
-import { createLinkedWidgetConfig } from './linked-widget';
+import { getFontConfigExtension } from '../font-extension';
+import { createDatabaseOptionsConfig } from './database-block';
+import { createLinkedWidgetConfig } from './widgets/linked';
+import { createToolbarMoreMenuConfig } from './widgets/toolbar';
 
-function customLoadFonts(service: RootService): void {
-  if (runtimeConfig.isSelfHosted) {
-    const fonts = AffineCanvasTextFonts.map(font => ({
-      ...font,
-      // self-hosted fonts are served from /assets
-      url: '/assets/' + new URL(font.url).pathname.split('/').pop(),
-    }));
-    service.fontLoader.load(fonts);
-  } else {
-    service.fontLoader.load(AffineCanvasTextFonts);
-  }
+function getTelemetryExtension(): ExtensionType {
+  return {
+    setup: di => {
+      di.addImpl(TelemetryProvider, () => ({
+        track: <T extends keyof TelemetryEventMap>(
+          eventName: T,
+          props: TelemetryEventMap[T]
+        ) => {
+          mixpanel.track(eventName as string, props as Record<string, unknown>);
+        },
+      }));
+    },
+  };
 }
 
-function withAffineRootService(Service: typeof RootService) {
-  return class extends Service {
-    override loadFonts(): void {
-      customLoadFonts(this);
-    }
-
-    override telemetryService = {
-      track: <T extends keyof TelemetryEventMap>(
-        eventName: T,
-        props: TelemetryEventMap[T]
-      ) => {
-        mixpanel.track(eventName as string, props as Record<string, unknown>);
-      },
-    };
-  };
+function getEditorConfigExtension(
+  framework: FrameworkProvider
+): ExtensionType[] {
+  const editorSettingService = framework.get(EditorSettingService);
+  return [
+    EditorSettingExtension(editorSettingService.editorSetting.settingSignal),
+    ConfigExtension('affine:page', {
+      linkedWidget: createLinkedWidgetConfig(framework),
+      toolbarMoreMenu: createToolbarMoreMenuConfig(framework),
+      databaseOptions: createDatabaseOptionsConfig(framework),
+    }),
+  ];
 }
 
 export function createPageRootBlockSpec(
-  framework: FrameworkProvider
-): PageRootBlockSpecType {
-  return {
-    ...AIPageRootBlockSpec,
-    service: withAffineRootService(PageRootService),
-    config: {
-      linkedWidget: createLinkedWidgetConfig(framework),
-    },
-  };
+  framework: FrameworkProvider,
+  enableAI: boolean
+): ExtensionType[] {
+  return [
+    enableAI ? AIPageRootBlockSpec : PageRootBlockSpec,
+    FontLoaderService,
+    getFontConfigExtension(),
+    getTelemetryExtension(),
+    getEditorConfigExtension(framework),
+  ].flat();
 }
 
 export function createEdgelessRootBlockSpec(
-  framework: FrameworkProvider
-): EdgelessRootBlockSpecType {
-  return {
-    ...AIEdgelessRootBlockSpec,
-    service: withAffineRootService(EdgelessRootService),
-    config: {
-      linkedWidget: createLinkedWidgetConfig(framework),
-    },
-  };
+  framework: FrameworkProvider,
+  enableAI: boolean
+): ExtensionType[] {
+  return [
+    enableAI ? AIEdgelessRootBlockSpec : EdgelessRootBlockSpec,
+    FontLoaderService,
+    getFontConfigExtension(),
+    getTelemetryExtension(),
+    getEditorConfigExtension(framework),
+  ].flat();
 }

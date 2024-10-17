@@ -6,12 +6,12 @@ import {
 import { Avatar } from '@affine/component/ui/avatar';
 import { Tooltip } from '@affine/component/ui/tooltip';
 import { WorkspaceAvatar } from '@affine/component/workspace-avatar';
-import { useWorkspaceInfo } from '@affine/core/hooks/use-workspace-info';
-import { track } from '@affine/core/mixpanel';
+import { useWorkspaceInfo } from '@affine/core/components/hooks/use-workspace-info';
 import { AuthService } from '@affine/core/modules/cloud';
 import { UserFeatureService } from '@affine/core/modules/cloud/services/user-feature';
 import { UNTITLED_WORKSPACE_NAME } from '@affine/env/constant';
 import { useI18n } from '@affine/i18n';
+import { track } from '@affine/track';
 import type { WorkspaceMetadata } from '@toeverything/infra';
 import {
   useLiveData,
@@ -21,7 +21,7 @@ import {
   WorkspacesService,
 } from '@toeverything/infra';
 import clsx from 'clsx';
-import { useAtom } from 'jotai/react';
+import { useSetAtom } from 'jotai/react';
 import {
   type MouseEvent,
   Suspense,
@@ -30,7 +30,7 @@ import {
   useMemo,
 } from 'react';
 
-import { authAtom } from '../../../../atoms';
+import { authAtom } from '../../../atoms';
 import { UserPlanButton } from '../../auth/user-plan-button';
 import { useGeneralSettingList } from '../general-setting';
 import type { ActiveTab, WorkspaceSubTab } from '../types';
@@ -81,7 +81,7 @@ export const UserInfo = ({ onAccountSettingClick, active }: UserInfoProps) => {
 
 export const SignInButton = () => {
   const t = useI18n();
-  const [, setAuthModal] = useAtom(authAtom);
+  const setAuthModal = useSetAtom(authAtom);
 
   return (
     <div

@@ -1,7 +1,6 @@
 import { Button, RadioButton, RadioButtonGroup } from '@affine/component';
 import { PageDisplayMenu } from '@affine/core/components/page-list';
 import { FeedPageListOperationsMenu } from '@affine/core/components/page-list/docs/page-list-header-feed-operations-menu';
-import { useNavigateHelper } from '@affine/core/hooks/use-navigate-helper';
 import {
   SeenTag,
   UnseenTag,
@@ -12,6 +11,7 @@ import type { DocCollection, DocMeta } from '@blocksuite/store';
 import { useCallback, useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
 
+import { useNavigateHelper } from '../../hooks/use-navigate-helper';
 import * as styles from './page-list-header.css';
 import * as feedStyles from './page-list-header-feed.css';
 
@@ -32,11 +32,11 @@ export const FeedDocsPageListHeader = ({
   const params = useParams();
   const propertiesMeta = docCollection.meta.properties;
   const { jumpToFeedsDocs } = useNavigateHelper();
-  const onStatusChange = (status: 'true' | 'false') => {
+  const onStatusChange = (status: 'unseen' | 'seen') => {
     jumpToFeedsDocs(workspaceId, status);
   };
 
-  const [floating, setFloating] = useState(false);
+  const [_floating, setFloating] = useState(false);
   useEffect(() => {
     const onResize = () => setFloating(!!(window.innerWidth < 768));
     onResize();
@@ -72,13 +72,13 @@ export const FeedDocsPageListHeader = ({
             onValueChange={onStatusChange}
           >
             <RadioButton
-              value="false"
+              value="unseen"
               data-testid="workspace-feed-docs-unseen-button"
             >
               {t['ai.wemem.feed-docs.unseen']()}
             </RadioButton>
             <RadioButton
-              value="true"
+              value="seen"
               data-testid="workspace-feed-docs-seen-button"
             >
               {t['ai.wemem.feed-docs.seen']()}

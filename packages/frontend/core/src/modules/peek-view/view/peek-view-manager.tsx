@@ -1,6 +1,6 @@
 import { toReactNode } from '@affine/component';
 import { AIChatBlockPeekViewTemplate } from '@affine/core/blocksuite/presets/ai';
-import { BlockComponent } from '@blocksuite/block-std';
+import { BlockComponent } from '@blocksuite/affine/block-std';
 import { useLiveData, useService } from '@toeverything/infra';
 import { useEffect, useMemo } from 'react';
 
@@ -27,13 +27,16 @@ function renderPeekView({ info }: ActivePeekView) {
         mode={info.mode}
         xywh={info.xywh}
         docId={info.docId}
-        blockId={info.blockId}
+        blockIds={info.blockIds}
+        elementIds={info.elementIds}
       />
     );
   }
 
   if (info.type === 'image') {
-    return <ImagePreviewPeekView docId={info.docId} blockId={info.blockId} />;
+    return (
+      <ImagePreviewPeekView docId={info.docId} blockId={info.blockIds[0]} />
+    );
   }
 
   if (info.type === 'ai-chat-block') {
@@ -50,7 +53,8 @@ const renderControls = ({ info }: ActivePeekView) => {
       <DocPeekViewControls
         mode={info.mode}
         docId={info.docId}
-        blockId={info.docId}
+        blockIds={info.blockIds}
+        elementIds={info.elementIds}
       />
     );
   }
@@ -60,6 +64,13 @@ const renderControls = ({ info }: ActivePeekView) => {
   }
 
   return <DefaultPeekViewControls />;
+};
+
+const getMode = (info: ActivePeekView['info']) => {
+  if (info.type === 'image') {
+    return 'full';
+  }
+  return 'fit';
 };
 
 const getRendererProps = (
@@ -78,7 +89,7 @@ const getRendererProps = (
       activePeekView?.target instanceof HTMLElement
         ? activePeekView.target
         : undefined,
-    padding: activePeekView.info.type !== 'image',
+    mode: getMode(activePeekView.info),
     dialogFrame: activePeekView.info.type !== 'image',
   };
 };

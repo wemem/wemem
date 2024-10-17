@@ -1,8 +1,20 @@
-import { Button, Checkbox, Loading, Switch } from '@affine/component';
+import { Button, Checkbox, Loading, Switch, Tooltip } from '@affine/component';
 import { SettingHeader } from '@affine/component/setting-components';
-import { useAppSettingHelper } from '@affine/core/hooks/affine/use-app-setting-helper';
-import { useAsyncCallback } from '@affine/core/hooks/affine-async-hooks';
+import { useAsyncCallback } from '@affine/core/components/hooks/affine-async-hooks';
 import { useI18n } from '@affine/i18n';
+import {
+  ArrowRightSmallIcon,
+  DiscordIcon,
+  EmailIcon,
+  GithubIcon,
+} from '@blocksuite/icons/rc';
+import {
+  AFFINE_FLAGS,
+  FeatureFlagService,
+  type Flag,
+  useLiveData,
+  useServices,
+} from '@toeverything/infra';
 import { useAtom } from 'jotai';
 import { atomWithStorage } from 'jotai/utils';
 import { Suspense, useCallback, useState } from 'react';
@@ -75,95 +87,76 @@ const ExperimentalFeaturesPrompt = ({
   );
 };
 
-const ExperimentalFeaturesItem = ({
-  title,
-  isMutating,
-  checked,
-  onChange,
-  testId,
-}: {
-  title: React.ReactNode;
-  isMutating?: boolean;
-  checked: boolean;
-  onChange: (checked: boolean) => void;
-  testId?: string;
-}) => {
-  return (
-    <div className={styles.switchRow}>
-      {title}
-      <Switch
-        checked={checked}
-        onChange={onChange}
-        className={isMutating ? styles.switchDisabled : ''}
-        data-testid={testId}
-      />
-    </div>
-  );
+const FeedbackIcon = ({ type }: { type: Flag['feedbackType'] }) => {
+  switch (type) {
+    case 'discord':
+      return <DiscordIcon fontSize={16} />;
+    case 'email':
+      return <EmailIcon fontSize={16} />;
+    case 'github':
+      return <GithubIcon fontSize={16} />;
+    default:
+      return null;
+  }
 };
 
-const SplitViewSettingRow = () => {
-  const { appSettings, updateSettings } = useAppSettingHelper();
+const feedbackLink: Record<NonNullable<Flag['feedbackType']>, string> = {
+  discord: 'https://discord.gg/whd5mjYqVw',
+  email: 'mailto:support@toeverything.info',
+  github: 'https://github.com/toeverything/AFFiNE/issues',
+};
 
-  const onToggle = useCallback(
+const ExperimentalFeaturesItem = ({ flag }: { flag: Flag }) => {
+  const value = useLiveData(flag.$);
+  const onChange = useCallback(
     (checked: boolean) => {
-      updateSettings('enableMultiView', checked);
+      flag.set(checked);
     },
-    [updateSettings]
+    [flag]
   );
+  const link = flag.feedbackType
+    ? flag.feedbackLink
+      ? flag.feedbackLink
+      : feedbackLink[flag.feedbackType]
+    : undefined;
 
-  if (!environment.isDesktop) {
-    return null; // only enable on desktop
+  if (flag.configurable === false || flag.hide) {
+    return null;
   }
 
   return (
-    <ExperimentalFeaturesItem
-      title="Split View"
-      checked={appSettings.enableMultiView}
-      onChange={onToggle}
-    />
-  );
-};
-
-// feature flag -> display name
-const blocksuiteFeatureFlags: Partial<Record<keyof BlockSuiteFlags, string>> = {
-  enable_expand_database_block: 'Enable Expand Database Block',
-  enable_database_attachment_note: 'Enable Database Attachment Note',
-  enable_database_statistics: 'Enable Database Block Statistics',
-  enable_block_query: 'Enable Todo Block Query',
-};
-
-const BlocksuiteFeatureFlagSettings = () => {
-  const { appSettings, updateSettings } = useAppSettingHelper();
-  const toggleSetting = useCallback(
-    (flag: keyof BlockSuiteFlags, checked: boolean) => {
-      updateSettings('editorFlags', {
-        ...appSettings.editorFlags,
-        [flag]: checked,
-      });
-    },
-    [appSettings.editorFlags, updateSettings]
-  );
-
-  type EditorFlag = keyof typeof appSettings.editorFlags;
-
-  return (
-    <>
-      {Object.entries(blocksuiteFeatureFlags).map(([flag, displayName]) => (
-        <ExperimentalFeaturesItem
-          key={flag}
-          title={'Block Suite: ' + displayName}
-          checked={!!appSettings.editorFlags?.[flag as EditorFlag]}
-          onChange={checked =>
-            toggleSetting(flag as keyof BlockSuiteFlags, checked)
-          }
-        />
-      ))}
-    </>
+    <div className={styles.rowContainer}>
+      <div className={styles.switchRow}>
+        {flag.displayName}
+        <Switch checked={value} onChange={onChange} />
+      </div>
+      {!!flag.description && (
+        <Tooltip content={flag.description}>
+          <div className={styles.description}>{flag.description}</div>
+        </Tooltip>
+      )}
+      {!!flag.feedbackType && (
+        <a
+          className={styles.feedback}
+          href={link}
+          target="_blank"
+          rel="noreferrer"
+        >
+          <FeedbackIcon type={flag.feedbackType} />
+          <span>Discussion about this feature</span>
+          <ArrowRightSmallIcon
+            fontSize={20}
+            className={styles.arrowRightIcon}
+          />
+        </a>
+      )}
+    </div>
   );
 };
 
 const ExperimentalFeaturesMain = () => {
   const t = useI18n();
+  const { featureFlagService } = useServices({ FeatureFlagService });
 
   return (
     <>
@@ -171,13 +164,20 @@ const ExperimentalFeaturesMain = () => {
         title={t[
           'com.affine.settings.workspace.experimental-features.header.plugins'
         ]()}
+        subtitle={t[
+          'com.affine.settings.workspace.experimental-features.header.subtitle'
+        ]()}
       />
       <div
         className={styles.settingsContainer}
         data-testid="experimental-settings"
       >
-        <SplitViewSettingRow />
-        <BlocksuiteFeatureFlagSettings />
+        {Object.keys(AFFINE_FLAGS).map(key => (
+          <ExperimentalFeaturesItem
+            key={key}
+            flag={featureFlagService.flags[key as keyof AFFINE_FLAGS]}
+          />
+        ))}
       </div>
     </>
   );

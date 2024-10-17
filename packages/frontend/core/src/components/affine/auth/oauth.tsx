@@ -1,14 +1,13 @@
-import { notify, Skeleton } from '@affine/component';
+import { Skeleton } from '@affine/component';
 import { Button } from '@affine/component/ui/button';
-import { useAsyncCallback } from '@affine/core/hooks/affine-async-hooks';
-import { track } from '@affine/core/mixpanel';
+import { popupWindow } from '@affine/core/utils';
+import { appInfo } from '@affine/electron-api';
 import { OAuthProviderType } from '@affine/graphql';
 import { GithubIcon, GoogleDuotoneIcon } from '@blocksuite/icons/rc';
 import { useLiveData, useService } from '@toeverything/infra';
-import type { ReactElement } from 'react';
-import { useState } from 'react';
+import { type ReactElement, useCallback } from 'react';
 
-import { AuthService, ServerConfigService } from '../../../modules/cloud';
+import { ServerConfigService } from '../../../modules/cloud';
 
 const OAuthProviderMap: Record<
   OAuthProviderType,
@@ -30,7 +29,7 @@ const OAuthProviderMap: Record<
   },
 };
 
-export function OAuth({ redirectUri }: { redirectUri?: string | null }) {
+export function OAuth() {
   const serverConfig = useService(ServerConfigService).serverConfig;
   const oauth = useLiveData(serverConfig.features$.map(r => r?.oauth));
   const oauthProviders = useLiveData(
@@ -38,46 +37,28 @@ export function OAuth({ redirectUri }: { redirectUri?: string | null }) {
   );
 
   if (!oauth) {
-    return (
-      <>
-        <br />
-        <Skeleton height={50} />
-      </>
-    );
+    return <Skeleton height={50} />;
   }
 
   return oauthProviders?.map(provider => (
-    <OAuthProvider
-      key={provider}
-      provider={provider}
-      redirectUri={redirectUri}
-    />
+    <OAuthProvider key={provider} provider={provider} />
   ));
 }
 
-function OAuthProvider({
-  provider,
-  redirectUri,
-}: {
-  provider: OAuthProviderType;
-  redirectUri?: string | null;
-}) {
+function OAuthProvider({ provider }: { provider: OAuthProviderType }) {
   const { icon } = OAuthProviderMap[provider];
-  const authService = useService(AuthService);
-  const [isConnecting, setIsConnecting] = useState(false);
 
-  const onClick = useAsyncCallback(async () => {
-    try {
-      setIsConnecting(true);
-      await authService.signInOauth(provider, redirectUri);
-    } catch (err) {
-      console.error(err);
-      notify.error({ title: 'Failed to sign in, please try again.' });
-    } finally {
-      setIsConnecting(false);
-      track.$.$.auth.oauth({ provider });
+  const onClick = useCallback(() => {
+    let oauthUrl =
+      (BUILD_CONFIG.isElectron ? BUILD_CONFIG.serverUrlPrefix : '') +
+      `/oauth/login?provider=${provider}`;
+
+    if (BUILD_CONFIG.isElectron) {
+      oauthUrl += `&client=${appInfo?.schema}`;
     }
-  }, [authService, provider, redirectUri]);
+
+    popupWindow(oauthUrl);
+  }, [provider]);
 
   return (
     <Button
@@ -90,7 +71,6 @@ function OAuthProvider({
       onClick={onClick}
     >
       Continue with {provider}
-      {isConnecting && '...'}
     </Button>
   );
 }

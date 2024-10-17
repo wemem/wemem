@@ -9,7 +9,7 @@ import request from 'supertest';
 import { AppModule } from '../../src/app.module';
 import { CurrentUser } from '../../src/core/auth';
 import { AuthService } from '../../src/core/auth/service';
-import { DocHistoryManager, DocManager } from '../../src/core/doc';
+import { PgWorkspaceDocStorageAdapter } from '../../src/core/doc';
 import { WorkspaceBlobStorage } from '../../src/core/storage';
 import { createTestingApp, internalSignIn } from '../utils';
 
@@ -18,30 +18,28 @@ const test = ava as TestFn<{
   db: PrismaClient;
   app: INestApplication;
   storage: Sinon.SinonStubbedInstance<WorkspaceBlobStorage>;
-  doc: Sinon.SinonStubbedInstance<DocManager>;
+  workspace: Sinon.SinonStubbedInstance<PgWorkspaceDocStorageAdapter>;
 }>;
 
-test.beforeEach(async t => {
+test.before(async t => {
   const { app } = await createTestingApp({
     imports: [AppModule],
     tapModule: m => {
       m.overrideProvider(WorkspaceBlobStorage)
         .useValue(Sinon.createStubInstance(WorkspaceBlobStorage))
-        .overrideProvider(DocManager)
-        .useValue(Sinon.createStubInstance(DocManager))
-        .overrideProvider(DocHistoryManager)
-        .useValue(Sinon.createStubInstance(DocHistoryManager));
+        .overrideProvider(PgWorkspaceDocStorageAdapter)
+        .useValue(Sinon.createStubInstance(PgWorkspaceDocStorageAdapter));
     },
   });
 
   const auth = app.get(AuthService);
-  t.context.u1 = await auth.signUp('u1', 'u1@affine.pro', '1');
+  t.context.u1 = await auth.signUp('u1@affine.pro', '1');
   const db = app.get(PrismaClient);
 
   t.context.db = db;
   t.context.app = app;
   t.context.storage = app.get(WorkspaceBlobStorage);
-  t.context.doc = app.get(DocManager);
+  t.context.workspace = app.get(PgWorkspaceDocStorageAdapter);
 
   await db.workspacePage.create({
     data: {
@@ -83,7 +81,7 @@ test.beforeEach(async t => {
   });
 });
 
-test.afterEach.always(async t => {
+test.after.always(async t => {
   await t.context.app.close();
 });
 
@@ -227,10 +225,12 @@ test('should not be able to get private workspace with private page', async t =>
 });
 
 test('should be able to get doc', async t => {
-  const { app, doc } = t.context;
+  const { app, workspace: doc } = t.context;
 
-  doc.getBinary.resolves({
-    binary: Buffer.from([0, 0]),
+  doc.getDoc.resolves({
+    spaceId: '',
+    docId: '',
+    bin: Buffer.from([0, 0]),
     timestamp: Date.now(),
   });
 
@@ -244,10 +244,12 @@ test('should be able to get doc', async t => {
 });
 
 test('should be able to change page publish mode', async t => {
-  const { app, doc, db } = t.context;
+  const { app, workspace: doc, db } = t.context;
 
-  doc.getBinary.resolves({
-    binary: Buffer.from([0, 0]),
+  doc.getDoc.resolves({
+    spaceId: '',
+    docId: '',
+    bin: Buffer.from([0, 0]),
     timestamp: Date.now(),
   });
 

@@ -1,16 +1,16 @@
 import { Tooltip } from '@affine/component/ui/tooltip';
-import { useCatchEventCallback } from '@affine/core/hooks/use-catch-event-hook';
+import { useCatchEventCallback } from '@affine/core/components/hooks/use-catch-event-hook';
 import { SubscriptionPlan } from '@affine/graphql';
 import { useI18n } from '@affine/i18n';
 import { useLiveData, useServices } from '@toeverything/infra';
 import { useSetAtom } from 'jotai';
 import { useEffect } from 'react';
 
-import { openSettingModalAtom } from '../../../atoms';
 import {
   ServerConfigService,
   SubscriptionService,
 } from '../../../modules/cloud';
+import { openSettingModalAtom } from '../../atoms';
 import * as styles from './style.css';
 
 export const UserPlanButton = () => {
@@ -56,7 +56,7 @@ export const UserPlanButton = () => {
     return;
   }
 
-  const planLabel = isBeliever ? 'Believer' : plan ?? SubscriptionPlan.Free;
+  const planLabel = isBeliever ? 'Believer' : (plan ?? SubscriptionPlan.Free);
 
   return (
     <Tooltip content={t['com.affine.payment.tag-tooltips']()} side="top">
