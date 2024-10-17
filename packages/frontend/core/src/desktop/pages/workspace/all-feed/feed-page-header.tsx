@@ -10,20 +10,13 @@ import {
   useToggleFavoritePage,
 } from '@affine/core/components/page-list/feeds-page-list/feeds-hooks';
 import { PageOperationCell } from '@affine/core/components/page-list/feeds-page-list/feeds-operation-cell';
-import { DocInfoService } from '@affine/core/modules/doc-info';
 import { CompatibleFavoriteItemsAdapter } from '@affine/core/modules/properties';
 import { getRefPageId } from '@affine/core/modules/tag/entities/internal-tag';
 import { WorkbenchService } from '@affine/core/modules/workbench';
 import { ToggleButton } from '@affine/core/modules/workbench/view/route-container';
 import { useI18n } from '@affine/i18n';
-import track from '@affine/track';
 import type { DocMeta } from '@blocksuite/store';
-import {
-  type Doc,
-  useLiveData,
-  useService,
-  WorkspaceService,
-} from '@toeverything/infra';
+import { type Doc, useLiveData, useService } from '@toeverything/infra';
 import { useAtomValue } from 'jotai';
 import { useCallback, useMemo } from 'react';
 
@@ -46,20 +39,6 @@ export function FeedPageHeader({ page }: { page: Doc }) {
 
   const deepReading = useDeepReading(pageMeta);
   const toggleFavoritePage = useToggleFavoritePage(pageMeta);
-
-  const currentWorkspace = useService(WorkspaceService).workspace;
-  // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-  // @ts-expect-error
-  const _blocksuiteDoc = currentWorkspace.docCollection.getDoc(page.id);
-
-  const docInfoModal = useService(DocInfoService).modal;
-
-  // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-  // @ts-expect-error
-  const _openInfoModal = useCallback(() => {
-    track.$.header.pageInfo.open();
-    docInfoModal.open(page.id);
-  }, [docInfoModal, page.id]);
 
   const adapter = useCurrentWorkspacePropertiesAdapter();
   const originalUrl = useMemo(() => {

@@ -11,8 +11,10 @@ import { useI18n } from '@affine/i18n';
 import { RefNodeSlotsProvider } from '@blocksuite/affine/blocks';
 import { DisposableGroup } from '@blocksuite/affine/global/utils';
 import { type AffineEditorContainer } from '@blocksuite/affine/presets';
+import { AiIcon, TocIcon } from '@blocksuite/icons/rc';
 import {
   DocService,
+  FeatureFlagService,
   FrameworkScope,
   GlobalContextService,
   useLiveData,
@@ -32,8 +34,11 @@ import { PageDetailEditor } from '../../../../components/page-detail-editor';
 import { TopTip } from '../../../../components/top-tip';
 import {
   useIsActiveView,
+  ViewSidebarTab,
   WorkbenchService,
 } from '../../../../modules/workbench';
+import { EditorChatPanel } from '../detail-page/tabs/chat';
+import { EditorOutlinePanel } from '../detail-page/tabs/outline';
 import * as styles from './feed-detail-page.css';
 import { FeedPageHeader } from './feed-page-header';
 
@@ -45,6 +50,7 @@ export const FeedDetailPage = memo(function DetailPageImpl() {
     docService,
     workspaceService,
     globalContextService,
+    featureFlagService,
   } = useServices({
     WorkbenchService,
     ViewService,
@@ -52,6 +58,7 @@ export const FeedDetailPage = memo(function DetailPageImpl() {
     DocService,
     WorkspaceService,
     GlobalContextService,
+    FeatureFlagService,
   });
   const workbench = workbenchService.workbench;
   const editor = editorService.editor;
@@ -248,6 +255,20 @@ export const FeedDetailPage = memo(function DetailPageImpl() {
           />
         </AffineErrorBoundary>
       </div>
+      {featureFlagService.flags.enable_ai.value && (
+        <ViewSidebarTab
+          tabId="chat"
+          icon={<AiIcon />}
+          unmountOnInactive={false}
+        >
+          <EditorChatPanel editor={editorContainer} ref={chatPanelRef} />
+        </ViewSidebarTab>
+      )}
+
+      <ViewSidebarTab tabId="outline" icon={<TocIcon />}>
+        <EditorOutlinePanel editor={editorContainer} />
+      </ViewSidebarTab>
+
       <GlobalPageHistoryModal />
       <PageAIOnboarding />
     </FrameworkScope>

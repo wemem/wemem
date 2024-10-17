@@ -1,7 +1,9 @@
 import { IconButton, Menu, MenuItem } from '@affine/component';
+import { DocInfoService } from '@affine/core/modules/doc-info';
 import { CompatibleFavoriteItemsAdapter } from '@affine/core/modules/properties';
 import { getRefPageId } from '@affine/core/modules/tag/entities/internal-tag';
 import { useI18n } from '@affine/i18n';
+import track from '@affine/track';
 import {
   FavoritedIcon,
   FavoriteIcon,
@@ -10,10 +12,9 @@ import {
   PageIcon,
 } from '@blocksuite/icons/rc';
 import type { DocMeta } from '@blocksuite/store';
-import { useLiveData, useService, WorkspaceService } from '@toeverything/infra';
-import { useCallback, useState } from 'react';
+import { useLiveData, useService } from '@toeverything/infra';
+import { useCallback } from 'react';
 
-import { InfoModal } from '../../affine/page-properties';
 import { useTrashModalHelper } from '../../hooks/affine/use-trash-modal-helper';
 import { MoveToTrash } from '../operation-menu-items';
 import { ColWrapper } from '../utils';
@@ -27,18 +28,18 @@ export interface PageOperationCellProps {
 
 export const PageOperationCell = ({ page }: PageOperationCellProps) => {
   const t = useI18n();
-  const currentWorkspace = useService(WorkspaceService).workspace;
   const { setTrashModal } = useTrashModalHelper();
-  const blocksuiteDoc = currentWorkspace.docCollection.getDoc(page.id);
 
   const refPageId = getRefPageId(page.tags) as string;
   const favAdapter = useService(CompatibleFavoriteItemsAdapter);
   const favourite = useLiveData(favAdapter.isFavorite$(refPageId, 'doc'));
 
-  const [openInfoModal, setOpenInfoModal] = useState(false);
-  const onOpenInfoModal = () => {
-    setOpenInfoModal(true);
-  };
+  const modal = useService(DocInfoService).modal;
+
+  const onOpenInfoModal = useCallback(() => {
+    track.$.header.actions.openDocInfo();
+    modal.open(page.id);
+  }, [page.id, modal]);
 
   const onRemoveToTrash = useCallback(() => {
     setTrashModal({
@@ -86,26 +87,17 @@ export const PageOperationCell = ({ page }: PageOperationCellProps) => {
     </>
   );
   return (
-    <>
-      <ColWrapper alignment="start">
-        <Menu
-          items={OperationMenu}
-          contentOptions={{
-            align: 'end',
-          }}
-        >
-          <IconButton variant="plain" data-testid="page-list-operation-button">
-            <MoreVerticalIcon />
-          </IconButton>
-        </Menu>
-      </ColWrapper>
-      {blocksuiteDoc ? (
-        <InfoModal
-          open={openInfoModal}
-          onOpenChange={setOpenInfoModal}
-          docId={blocksuiteDoc.id}
-        />
-      ) : null}
-    </>
+    <ColWrapper alignment="start">
+      <Menu
+        items={OperationMenu}
+        contentOptions={{
+          align: 'end',
+        }}
+      >
+        <IconButton variant="plain" data-testid="page-list-operation-button">
+          <MoreVerticalIcon />
+        </IconButton>
+      </Menu>
+    </ColWrapper>
   );
 };

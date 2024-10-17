@@ -1,5 +1,5 @@
-import { AllFeedsPage } from './all-feeds-page';
+import { FeedArticlesPage } from './feed-articles-page';
 
 export const Component = () => {
-  return <AllFeedsPage />;
+  return <FeedArticlesPage />;
 };

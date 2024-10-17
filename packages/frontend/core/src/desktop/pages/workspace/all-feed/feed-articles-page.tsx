@@ -60,12 +60,12 @@ const SubscriptionSeenFilter: Filter = {
   ],
 };
 
-export const subscriptionSidebarWidthAtom = atomWithStorage(
-  'subscription-sidebar-width',
+export const FeedsSidebarWidthAtom = atomWithStorage(
+  'feeds-sidebar-width',
   480 /* px */
 );
 
-export const AllFeedsPage = memo(() => {
+export const FeedArticlesPage = memo(() => {
   const params = useParams();
   const pageId = params.pageId;
   const feedId = params.feedId;
@@ -107,7 +107,7 @@ export const AllFeedsPage = memo(() => {
   const [currentFilters, setCurrentFilters] = useState<Filter[]>([]);
 
   const [open, setOpen] = useAtom(feedSidebarOpen);
-  const [width, setWidth] = useAtom(subscriptionSidebarWidthAtom);
+  const [width, setWidth] = useAtom(FeedsSidebarWidthAtom);
   const [resizing, setResizing] = useState(false);
   const clientBorder = true;
   const hasRightBorder = true;
