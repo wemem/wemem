@@ -30,6 +30,18 @@ export const workbenchRoutes = [
     lazy: () => import('./pages/workspace/detail-page/detail-page'),
   },
   {
+    path: '/feed/:feedId?/:status/:pageId?',
+    lazy: () => import('./pages/workspace/all-feed/index'),
+  },
+  {
+    path: '/feed/:feedId/page/:pageId',
+    lazy: () => import('./pages/workspace/detail-page/detail-page'),
+  },
+  {
+    path: '/home',
+    lazy: () => import('./pages/workspace/home'),
+  },
+  {
     path: '*',
     lazy: () => import('./pages/404'),
   },

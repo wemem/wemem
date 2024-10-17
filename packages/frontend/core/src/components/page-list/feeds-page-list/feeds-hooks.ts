@@ -1,12 +1,12 @@
 import { toast } from '@affine/component';
-import { useDuplicateDoc } from '@affine/core/hooks/affine/use-duplicate-doc';
-import { mixpanel } from '@affine/core/mixpanel';
 import { CompatibleFavoriteItemsAdapter } from '@affine/core/modules/properties';
 import {
-  getRefPageId,
   FeedTag,
+  getRefPageId,
 } from '@affine/core/modules/tag/entities/internal-tag';
+import { useDuplicateDoc } from '@affine/core/wemem/hooks/use-duplicate-doc';
 import { useI18n } from '@affine/i18n';
+import { mixpanel } from '@affine/track';
 import type { Doc, DocMeta } from '@blocksuite/store';
 import { useService, WorkspaceService } from '@toeverything/infra';
 import { useAtom } from 'jotai';
@@ -25,9 +25,7 @@ import type {
 } from '../types';
 
 export const useDeepReading = (page: DocMeta) => {
-  const currentWorkspace = useService(WorkspaceService).workspace;
-  const duplicate = useDuplicateDoc(currentWorkspace.docCollection);
-
+  const duplicate = useDuplicateDoc();
   return useCallback(async () => {
     await duplicate(page.id, true, {
       applyTags: (tags: string[]) => {
@@ -48,7 +46,7 @@ export const useDeepReading = (page: DocMeta) => {
 export const useToggleFavoritePage = (page: DocMeta) => {
   const t = useI18n();
   const currentWorkspace = useService(WorkspaceService).workspace;
-  const duplicate = useDuplicateDoc(currentWorkspace.docCollection);
+  const duplicate = useDuplicateDoc();
   const refPageId = getRefPageId(page.tags) as string;
   const favAdapter = useService(CompatibleFavoriteItemsAdapter);
 

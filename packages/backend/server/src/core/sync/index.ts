@@ -7,5 +7,6 @@ import { SpaceSyncGateway } from './gateway';
 @Module({
   imports: [DocStorageModule, PermissionModule],
   providers: [SpaceSyncGateway],
+  // controllers: [SyncController],
 })
 export class SyncModule {}

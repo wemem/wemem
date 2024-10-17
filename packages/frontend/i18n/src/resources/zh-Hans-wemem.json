@@ -70,5 +70,6 @@
   "emptyAllPages": "点击<1></1>按钮创建您的第一篇文档。",
   "emptyAllPagesClient": "点击 <1></1> 按钮或按 <3>{{shortcut}}</3> 以创建您的第一篇文档。",
   "com.affine.journal.app-sidebar-title": "随手记",
-  "com.affine.journal.cmdk.append-to-today": "添加到随手记"
+  "com.affine.journal.cmdk.append-to-today": "添加到随手记",
+  "com.affine.rootAppSidebar.organize": "目录"
 }

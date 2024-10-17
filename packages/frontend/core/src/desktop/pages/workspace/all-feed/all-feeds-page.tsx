@@ -3,10 +3,11 @@ import { FeedsFilterContainer } from '@affine/core/components/page-list/feeds-pa
 import { FeedsPageList } from '@affine/core/components/page-list/feeds-page-list/feeds-page-list';
 import { FeedsService } from '@affine/core/modules/feed/services/feeds-service';
 import {
-  SeenTag,
   FeedTag,
+  SeenTag,
   UnseenTag,
 } from '@affine/core/modules/tag/entities/internal-tag';
+import { ViewBody, ViewHeader } from '@affine/core/modules/workbench';
 import type { Filter } from '@affine/env/filter';
 import {
   GlobalContextService,
@@ -18,11 +19,10 @@ import { atomWithStorage } from 'jotai/utils';
 import { useEffect, useMemo, useState } from 'react';
 import { useParams } from 'react-router-dom';
 
-import { ViewBody, ViewHeader } from '../../../modules/workbench';
-import * as styles from './index.css';
-import { FeedPageEmpty } from './feed-page-empty';
 import { FeedDetailPage } from './feed-detail-page';
+import { FeedPageEmpty } from './feed-page-empty';
 import { feedSidebarOpen } from './feed-sidebar-switch';
+import * as styles from './index.css';
 
 const MAX_WIDTH = 745;
 const MIN_WIDTH = 256;
@@ -94,10 +94,7 @@ export const AllFeedsPage = () => {
         args: [
           {
             ...filter.args[0],
-            value: [
-              ...(filter.args[0].value as string[]),
-              feed.subscription?.url,
-            ],
+            value: [...(filter.args[0].value as string[]), feed.feed?.url],
           },
         ],
       };

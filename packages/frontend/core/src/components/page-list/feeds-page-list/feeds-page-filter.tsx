@@ -7,7 +7,7 @@ import {
   FilterList,
   SaveAsCollectionButton,
 } from '../../../components/page-list';
-import { useNavigateHelper } from '../../../hooks/use-navigate-helper';
+import { useNavigateHelper } from '../../hooks/use-navigate-helper';
 import { filterContainerStyle } from './feeds-page-filter.css';
 
 export const FeedsFilterContainer = ({

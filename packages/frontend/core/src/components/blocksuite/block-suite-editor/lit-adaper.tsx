@@ -232,7 +232,7 @@ export const BlocksuiteDocEditor = forwardRef<
         ) : (
           <BlocksuiteEditorJournalDocTitle page={page} />
         )}
-        {!shared ? <PagePropertiesTable docId={page.id} /> : null}
+        {!shared ? <PagePropertiesTable docId={page.id} page={page} /> : null}
         <adapted.DocEditor
           className={styles.docContainer}
           ref={onDocRef}

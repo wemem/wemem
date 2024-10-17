@@ -1,4 +1,4 @@
-import { MenuIcon, MenuItem, MenuSeparator } from '@affine/component';
+import { MenuItem, MenuSeparator } from '@affine/component';
 import type { Filter, PropertiesMeta, VariableMap } from '@affine/env/filter';
 import { useI18n } from '@affine/i18n';
 import { CreatedIcon, TagsIcon } from '@blocksuite/icons/rc';
@@ -106,7 +106,7 @@ export const VariableSelect = ({
           <MenuItem
             // eslint-disable-next-line react/jsx-no-bind, @typescript-eslint/ban-ts-comment
             // @ts-expect-error
-            preFix={<MenuIcon>{variableDefineMap[v.name].icon}</MenuIcon>}
+            prefixIcon={variableDefineMap[v.name].icon}
             key={v.name}
             onClick={() => {
               onSelect(createDefaultFilter(v, propertiesMeta));

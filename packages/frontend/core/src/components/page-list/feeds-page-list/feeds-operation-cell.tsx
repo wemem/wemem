@@ -1,5 +1,4 @@
-import { IconButton, Menu, MenuIcon, MenuItem } from '@affine/component';
-import { useTrashModalHelper } from '@affine/core/hooks/affine/use-trash-modal-helper';
+import { IconButton, Menu, MenuItem } from '@affine/component';
 import { CompatibleFavoriteItemsAdapter } from '@affine/core/modules/properties';
 import { getRefPageId } from '@affine/core/modules/tag/entities/internal-tag';
 import { useI18n } from '@affine/i18n';
@@ -15,6 +14,7 @@ import { useLiveData, useService, WorkspaceService } from '@toeverything/infra';
 import { useCallback, useState } from 'react';
 
 import { InfoModal } from '../../affine/page-properties';
+import { useTrashModalHelper } from '../../hooks/affine/use-trash-modal-helper';
 import { MoveToTrash } from '../operation-menu-items';
 import { ColWrapper } from '../utils';
 import { useDeepReading, useToggleFavoritePage } from './feeds-hooks';
@@ -28,7 +28,7 @@ export interface PageOperationCellProps {
 export const PageOperationCell = ({ page }: PageOperationCellProps) => {
   const t = useI18n();
   const currentWorkspace = useService(WorkspaceService).workspace;
-  const { setTrashModal } = useTrashModalHelper(currentWorkspace.docCollection);
+  const { setTrashModal } = useTrashModalHelper();
   const blocksuiteDoc = currentWorkspace.docCollection.getDoc(page.id);
 
   const refPageId = getRefPageId(page.tags) as string;
@@ -58,11 +58,7 @@ export const PageOperationCell = ({ page }: PageOperationCellProps) => {
         onClick={async () => {
           await deepReading();
         }}
-        preFix={
-          <MenuIcon>
-            <PageIcon />
-          </MenuIcon>
-        }
+        prefixIcon={<PageIcon />}
       >
         {t['ai.wemem.feeds.deep-reading']()}
       </MenuItem>
@@ -71,33 +67,21 @@ export const PageOperationCell = ({ page }: PageOperationCellProps) => {
         onClick={async () => {
           await toggleFavoritePage();
         }}
-        preFix={
-          <MenuIcon>
-            {favourite ? (
-              <FavoritedIcon style={{ color: 'var(--affine-primary-color)' }} />
-            ) : (
-              <FavoriteIcon />
-            )}
-          </MenuIcon>
+        prefixIcon={
+          favourite ? (
+            <FavoritedIcon style={{ color: 'var(--affine-primary-color)' }} />
+          ) : (
+            <FavoriteIcon />
+          )
         }
       >
         {favourite
           ? t['com.affine.favoritePageOperation.remove']()
           : t['com.affine.favoritePageOperation.add']()}
       </MenuItem>
-      {runtimeConfig.enableInfoModal ? (
-        <MenuItem
-          onClick={onOpenInfoModal}
-          preFix={
-            <MenuIcon>
-              <InformationIcon />
-            </MenuIcon>
-          }
-        >
-          {t['com.affine.page-properties.page-info.view']()}
-        </MenuItem>
-      ) : null}
-
+      <MenuItem onClick={onOpenInfoModal} prefixIcon={<InformationIcon />}>
+        {t['com.affine.page-properties.page-info.view']()}
+      </MenuItem>
       <MoveToTrash data-testid="move-to-trash" onSelect={onRemoveToTrash} />
     </>
   );

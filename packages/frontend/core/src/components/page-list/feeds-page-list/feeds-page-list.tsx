@@ -1,6 +1,4 @@
 import { toast } from '@affine/component';
-import { useTrashModalHelper } from '@affine/core/hooks/affine/use-trash-modal-helper';
-import { useBlockSuiteDocMeta } from '@affine/core/hooks/use-block-suite-page-meta';
 import { CollectionService } from '@affine/core/modules/collection';
 import type { Filter } from '@affine/env/filter';
 import { Trans, useI18n } from '@affine/i18n';
@@ -8,7 +6,8 @@ import type { DocMeta } from '@blocksuite/store';
 import { useService, WorkspaceService } from '@toeverything/infra';
 import { useCallback, useMemo, useRef, useState } from 'react';
 
-import { usePageHelper } from '../../blocksuite/block-suite-page-list/utils';
+import { useTrashModalHelper } from '../../hooks/affine/use-trash-modal-helper';
+import { useBlockSuiteDocMeta } from '../../hooks/use-block-suite-page-meta';
 import { ListFloatingToolbar } from '../components/list-floating-toolbar';
 import { ListTableHeader } from '../page-header';
 import type { ItemListHandle, ListItem } from '../types';
@@ -62,7 +61,6 @@ export const FeedsPageList = ({
   const currentWorkspace = useService(WorkspaceService).workspace;
   const pageMetas = useBlockSuiteDocMeta(currentWorkspace.docCollection);
   const pageOperations = usePageOperationsRenderer();
-  const { isPreferredEdgeless } = usePageHelper(currentWorkspace.docCollection);
   const pageHeaderColsDef = usePageHeaderColsDef();
   const filteredPageMetas = useFilteredPageMetas(pageMetas, {
     filters,
@@ -116,7 +114,7 @@ export const FeedsPageList = ({
     onChangeCurrentFilters,
   ]);
 
-  const { setTrashModal } = useTrashModalHelper(currentWorkspace.docCollection);
+  const { setTrashModal } = useTrashModalHelper();
 
   const handleMultiDelete = useCallback(() => {
     if (filteredSelectedPageIds.length === 0) {
@@ -154,7 +152,6 @@ export const FeedsPageList = ({
         items={pageMetasToRender}
         rowAsLink
         wrapTo={wrapTo}
-        isPreferredEdgeless={isPreferredEdgeless}
         docCollection={currentWorkspace.docCollection}
         operationsRenderer={pageOperationRenderer}
         itemRenderer={pageItemRenderer}

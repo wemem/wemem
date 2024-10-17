@@ -1,8 +1,7 @@
-import { useJournalInfoHelper } from '@affine/core/hooks/use-journal';
+import { DocDisplayMetaService } from '@affine/core/modules/doc-display-meta';
 import type { Tag } from '@affine/env/filter';
 import { useI18n } from '@affine/i18n';
 import { assertExists } from '@blocksuite/global/utils';
-import { EdgelessIcon, PageIcon, TodayIcon } from '@blocksuite/icons/rc';
 import type { DocCollection, DocMeta } from '@blocksuite/store';
 import { DocsService, useLiveData, useService } from '@toeverything/infra';
 import { selectAtom } from 'jotai/utils';
@@ -41,7 +40,7 @@ export const listsPropsAtom = selectAtom(
   listPropsAtom,
   props => {
     return Object.fromEntries(
-      requiredPropNames.map(name => [name, props[name]])
+      requiredPropNames.map(name => [name, props?.[name]])
     ) as RequiredProps<ListItem>;
   },
   shallowEqual
@@ -85,21 +84,10 @@ const PageTitle = ({ id }: { id: string }) => {
   return title || t['Untitled']();
 };
 
-const UnifiedPageIcon = ({
-  id,
-  docCollection,
-  isPreferredEdgeless,
-}: {
-  id: string;
-  docCollection: DocCollection;
-  isPreferredEdgeless?: (id: string) => boolean;
-}) => {
-  const isEdgeless = isPreferredEdgeless ? isPreferredEdgeless(id) : false;
-  const { isJournal } = useJournalInfoHelper(docCollection, id);
-  if (isJournal) {
-    return <TodayIcon />;
-  }
-  return isEdgeless ? <EdgelessIcon /> : <PageIcon />;
+const UnifiedPageIcon = ({ id }: { id: string }) => {
+  const docDisplayMetaService = useService(DocDisplayMetaService);
+  const Icon = useLiveData(docDisplayMetaService.icon$(id));
+  return <Icon />;
 };
 
 function pageMetaToListItemProp(
@@ -135,13 +123,7 @@ function pageMetaToListItemProp(
     updatedDate: item.updatedDate ? new Date(item.updatedDate) : undefined,
     to: props.rowAsLink && !props.selectable ? `${to}` : undefined,
     onClick: toggleSelection,
-    icon: (
-      <UnifiedPageIcon
-        id={item.id}
-        docCollection={props.docCollection}
-        isPreferredEdgeless={props.isPreferredEdgeless}
-      />
-    ),
+    icon: <UnifiedPageIcon id={item.id} />,
     tags:
       item.tags
         ?.map(id => tagIdToTagOption(id, props.docCollection))

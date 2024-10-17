@@ -6,6 +6,7 @@ import { useWorkspace } from '@affine/core/components/hooks/use-workspace';
 import { useWorkspaceInfo } from '@affine/core/components/hooks/use-workspace-info';
 import { UNTITLED_WORKSPACE_NAME } from '@affine/env/constant';
 import { WorkspaceFlavour } from '@affine/env/workspace';
+import { useI18n } from '@affine/i18n';
 import {
   ArrowDownSmallIcon,
   CloudWorkspaceIcon,
@@ -262,6 +263,7 @@ export const WorkspaceCard = forwardRef<
     const information = useWorkspaceInfo(workspaceMetadata);
 
     const name = information?.name ?? UNTITLED_WORKSPACE_NAME;
+    const t = useI18n();
 
     const onEnableCloud = useCatchEventCallback(() => {
       onClickEnableCloud?.(workspaceMetadata);
@@ -317,7 +319,7 @@ export const WorkspaceCard = forwardRef<
               className={styles.enableCloudButton}
               onClick={onEnableCloud}
             >
-              Enable Cloud
+              {t['ai.wemem.workspaceCard.enableCloud']()}
             </Button>
           ) : null}
           {hideCollaborationIcon || information?.isOwner ? null : (

@@ -102,8 +102,6 @@ interface IDetailPageProps {
   docId: string;
 }
 
-const mode = 'page';
-
 export const FeedDetailPage = ({ docId }: IDetailPageProps) => {
   const [page, setPage] = useState<Doc | null>(null);
   const [_, setActiveBlocksuiteEditor] = useActiveBlocksuiteEditor();
@@ -168,11 +166,7 @@ export const FeedDetailPage = ({ docId }: IDetailPageProps) => {
         <div className={styles.root}>
           <div className={styles.mainContainer}>
             <AIIsland />
-            <FeedPageHeader
-              page={page}
-              publishMode={mode}
-              docCollection={page.blockSuiteDoc.collection}
-            />
+            <FeedPageHeader page={page} />
             <Scrollable.Root>
               <Scrollable.Viewport
                 className={clsx('affine-page-viewport', styles.editorContainer)}
