@@ -1,13 +1,10 @@
 import { GraphQLService } from '@affine/core/modules/cloud';
-import { FeedsService } from '@affine/core/modules/feed/services/feeds-service';
+import { FeedsService } from '@affine/core/modules/feeds/services/feeds';
 import { TagService } from '@affine/core/modules/tag';
-import {
-  FeedTag,
-  UnseenTag,
-} from '@affine/core/modules/tag/entities/internal-tag';
+import { FeedTag } from '@affine/core/modules/tag/entities/internal-tag';
 import { DebugLogger } from '@affine/debug';
 import { searchQuery, type SearchSuccess } from '@affine/graphql';
-import { importMarkDown } from '@blocksuite/affine';
+import { importMarkDown } from '@blocksuite/affine/blocks';
 import type { JobMiddleware } from '@blocksuite/affine/store';
 import { useService, WorkspaceService } from '@toeverything/infra';
 import { useEffect, useRef, useState } from 'react';
@@ -27,7 +24,7 @@ const logger = new DebugLogger('usePullFeedItemsInterval');
 export const usePullFeedItemsInterval = () => {
   const currentWorkspace = useService(WorkspaceService).workspace;
   const graphQLService = useService(GraphQLService);
-  const subscriptionService = useService(FeedsService);
+  const feedsService = useService(FeedsService);
   const tagList = useService(TagService).tagList;
   const timerRef = useRef<NodeJS.Timeout | null>(null);
   const isRunning = useRef(false);
@@ -56,12 +53,13 @@ export const usePullFeedItemsInterval = () => {
 
       isRunning.current = true;
       try {
-        if (subscriptionService.feeds$.getValue().length === 0) {
-          return;
-        }
+        // if (feedsService.feeds$.getValue().length === 0) {
+        //   return;
+        // }
 
         const input = {
-          after: subscriptionService.afterCursor$.getValue(),
+          after: feedsService.afterCursor$.getValue(),
+          // after: null,
           first: 10,
           query: 'in:sucess',
           includeContent: true,
@@ -97,27 +95,36 @@ export const usePullFeedItemsInterval = () => {
                   return;
                 }
                 payload.snapshot.meta.id = libraryItem.id;
+                payload.snapshot.meta.tags = [FeedTag.id];
+                payload.snapshot.meta.feedUrl =
+                  libraryItem.subscription ?? undefined;
                 payload.snapshot.meta.createDate = new Date(
                   libraryItem.publishedAt || libraryItem.createdAt
                 ).getTime();
               });
             };
 
-            const docId = await importMarkDown(
+            logger.info('start import feed item', {
+              title: libraryItem.title,
+              url: libraryItem.url,
+              subscription: libraryItem.subscription,
+            });
+
+            const importStartTime = Date.now();
+            const docId = (await importMarkDown(
               currentWorkspace.docCollection,
               libraryItem.readableContent,
               libraryItem.title,
               jobMiddleware
-            );
+            )) as string;
 
-            const tags = [FeedTag.id, UnseenTag.id];
-            if (libraryItem.subscription) {
-              tags.push(libraryItem.subscription);
-            }
-            currentWorkspace.docCollection.setDocMeta(docId, {
-              tags,
-              createDate: new Date(libraryItem.createdAt).getTime(),
-            });
+            // currentWorkspace.docCollection.setDocMeta(docId, {
+            //   tags: [FeedTag.id],
+            //   feedUrl: libraryItem.subscription ?? undefined,
+            //   createDate: new Date(
+            //     libraryItem.publishedAt || libraryItem.createdAt
+            //   ).getTime(),
+            // });
 
             const propertiesManager = new PagePropertiesManager(adapter, docId);
 
@@ -132,13 +139,51 @@ export const usePullFeedItemsInterval = () => {
                 libraryItem.url
               );
 
-            logger.debug('import feed item to doc', {
-              subscription: libraryItem.subscription,
-              url: libraryItem.url,
+            const importDuration = Date.now() - importStartTime;
+
+            logger.debug('end import feed item', {
               docId,
+              title: libraryItem.title,
+              url: libraryItem.url,
+              subscription: libraryItem.subscription,
+              importDuration: `${importDuration}ms`,
+            });
+            // const feed = feedsService.feedTree.feedNodeByUrl(
+            //   libraryItem.subscription as string
+            // );
+            // if (!feed) {
+            //   logger.info('feed not found', {
+            //     subscription: libraryItem.subscription,
+            //   });
+            //   continue;
+            // }
+
+            // logger.debug(
+            //   'create feed doc',
+            //   feed.createFeedDoc(
+            //     docId,
+            //     libraryItem.title,
+            //     libraryItem.url,
+            //     libraryItem.description,
+            //     libraryItem.author,
+            //     libraryItem.image,
+            //     new Date(libraryItem.createdAt).getTime()
+            //   )
+            // );
+
+            // logger.debug('import feed item to doc', {
+            //   subscription: libraryItem.subscription,
+            //   url: libraryItem.url,
+            //   docId,
+            // });
+          } else {
+            // const feed = feedsService.feedTree.feedNodeByUrl(libraryItem.subscription as string);
+            // logger.info('feed doc', feed?.createFeedDoc(libraryItem.id, libraryItem.title, libraryItem.url, libraryItem.description, libraryItem.author, libraryItem.image, new Date(libraryItem.createdAt).getTime()));
+            logger.info('doc already exists', {
+              id: libraryItem.id,
             });
           }
-          subscriptionService.updateAfterCursor(item.cursor);
+          feedsService.updateAfterCursor(item.cursor);
         }
         logger.debug('finish pulling');
       } catch (error) {

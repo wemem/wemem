@@ -20,7 +20,11 @@ export interface AffineDNDData extends DNDData {
           id: string;
         }
       | {
-          type: 'subscription';
+          type: 'feedFolder';
+          id: string;
+        }
+      | {
+          type: 'feed';
           id: string;
         };
     from?:
@@ -62,6 +66,14 @@ export interface AffineDNDData extends DNDData {
         }
       | {
           at: 'explorer:tags:docs';
+        }
+      | {
+          at: 'explorer:feeds:feed-folder';
+          nodeId: string;
+        }
+      | {
+          at: 'explorer:feeds:feed';
+          nodeId: string;
         }
       | {
           at: 'app-header:tabs';

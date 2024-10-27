@@ -9,6 +9,7 @@ import { nanoid } from 'nanoid';
 import type { WorkbenchNewTabHandler } from '../services/workbench-new-tab-handler';
 import type { WorkbenchDefaultState } from '../services/workbench-view-state';
 import { View } from './view';
+import type { ReadStatus } from '../../feeds/types';
 
 export type WorkbenchPosition = 'beside' | 'active' | 'head' | 'tail' | number;
 
@@ -165,11 +166,7 @@ export class Workbench extends Entity {
     this.open(`/tag/${tagId}`, options);
   }
 
-  openFeed(
-    feedId: string,
-    status: 'unseen' | 'seen',
-    options?: WorkbenchOpenOptions
-  ) {
+  openFeed(feedId: string, status: ReadStatus, options?: WorkbenchOpenOptions) {
     this.open(`/feed/${feedId}/${status}`, options);
   }
 

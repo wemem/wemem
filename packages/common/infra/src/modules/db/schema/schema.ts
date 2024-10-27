@@ -10,6 +10,18 @@ export const AFFiNE_WORKSPACE_DB_SCHEMA = {
     type: f.string(),
     index: f.string(),
   },
+  feedNodes: {
+    id: f.string().primaryKey().optional().default(nanoid),
+    parentId: f.string().optional(),
+    type: f.string(),
+    name: f.string(),
+    description: f.string().optional(),
+    url: f.string().optional(),
+    icon: f.string().optional(),
+    index: f.string(),
+    createdAt: f.number(),
+    updatedAt: f.number().optional(),
+  },
   docProperties: t.document({
     // { [`custom:{customPropertyId}`]: any }
     id: f.string().primaryKey(),

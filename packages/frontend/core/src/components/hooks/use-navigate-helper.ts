@@ -107,8 +107,8 @@ export function useNavigateHelper() {
   const jumpToFeedsDocs = useCallback(
     (
       workspaceId: string,
-      status: 'seen' | 'unseen' = 'unseen',
-      feedId?: string,
+      status: 'all' | 'unread' | 'read' = 'all',
+      feedId: string,
       logic: RouteLogic = RouteLogic.PUSH
     ) => {
       if (feedId) {
@@ -118,19 +118,6 @@ export function useNavigateHelper() {
       }
 
       return navigate(`/workspace/${workspaceId}/feed/${status}`, {
-        replace: logic === RouteLogic.REPLACE,
-      });
-    },
-    [navigate]
-  );
-
-  const jumpToFeed = useCallback(
-    (
-      workspaceId: string,
-      feedId: string,
-      logic: RouteLogic = RouteLogic.PUSH
-    ) => {
-      return navigate(`/workspace/${workspaceId}/feed/${feedId}/unseen`, {
         replace: logic === RouteLogic.REPLACE,
       });
     },
@@ -228,7 +215,6 @@ export function useNavigateHelper() {
       jumpToExpired,
       jumpToSignIn,
       jumpToCollection,
-      jumpToFeed,
       jumpToFeedsDocs,
       jumpToManageFeeds,
       jumpToCollections,
@@ -246,7 +232,6 @@ export function useNavigateHelper() {
       jumpToExpired,
       jumpToSignIn,
       jumpToCollection,
-      jumpToFeed,
       jumpToFeedsDocs,
       jumpToManageFeeds,
       jumpToCollections,

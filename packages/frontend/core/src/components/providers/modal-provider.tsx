@@ -1,4 +1,5 @@
 import { NotificationCenter, notify } from '@affine/component';
+import { FeedInfoModal } from '@affine/core/wemem/components/feed-info-modal/feed-info-modal';
 import { events } from '@affine/electron-api';
 import { WorkspaceFlavour } from '@affine/env/workspace';
 import {
@@ -128,6 +129,7 @@ export function CurrentWorkspaceModals() {
         titles={deletePageTitles}
       />
       {currentWorkspace ? <InfoModal /> : null}
+      {currentWorkspace ? <FeedInfoModal /> : null}
     </>
   );
 }

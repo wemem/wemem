@@ -1,5 +1,5 @@
 import { Checkbox, useDraggable } from '@affine/component';
-import { useTagI18N } from '@affine/core/modules/tag/entities/internal-tag';
+import { useTagI18n } from '@affine/core/modules/tag/entities/internal-tag';
 import { WorkbenchLink } from '@affine/core/modules/workbench';
 import type { AffineDNDData } from '@affine/core/types/dnd';
 import { stopPropagation } from '@affine/core/utils';
@@ -14,7 +14,7 @@ import * as styles from './tag-list-item.css';
 const TagListTitleCell = ({
   title,
 }: Pick<TagListItemProps, 'title' | 'pageCount'>) => {
-  const tt = useTagI18N();
+  const tt = useTagI18n();
   return (
     <div data-testid="tag-list-item-title" className={styles.titleCell}>
       <div

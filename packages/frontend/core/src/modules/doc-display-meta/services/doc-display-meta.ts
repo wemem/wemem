@@ -39,7 +39,7 @@ interface DocDisplayIconOptions<T extends IconType> {
   referenceToNode?: boolean;
 }
 
-const rcIcons = {
+export const rcIcons = {
   BlockLinkIcon,
   EdgelessIcon,
   LinkedEdgelessIcon,

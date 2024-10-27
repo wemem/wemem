@@ -41,14 +41,14 @@ export const ExplorerOrganize = () => {
 
   const handleCreateFolder = useCallback(() => {
     const newFolderId = rootFolder.createFolder(
-      'New Folder',
+      t['com.affine.rootAppSidebar.organize.new-folders'](),
       rootFolder.indexAt('before')
     );
     track.$.navigationPanel.organize.createOrganizeItem({ type: 'folder' });
     setNewFolderId(newFolderId);
     explorerSection.setCollapsed(false);
     return newFolderId;
-  }, [explorerSection, rootFolder]);
+  }, [explorerSection, rootFolder, t]);
 
   const handleOnChildrenDrop = useCallback(
     (data: DropTargetDropEvent<AffineDNDData>, node?: FolderNode) => {

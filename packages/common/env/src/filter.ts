@@ -82,7 +82,6 @@ export const tagSchema = z.object({
   value: z.string(),
   color: z.string(),
   parentId: z.string().optional(),
-  ghost: z.boolean().optional(),
   createDate: z.union([z.date(), z.number()]).optional(),
   updateDate: z.union([z.date(), z.number()]).optional(),
 });

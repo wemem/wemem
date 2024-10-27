@@ -60,7 +60,22 @@ export class DocRecord extends Entity<{ id: string }> {
     return this.setMeta({ trash: false, trashDate: undefined });
   }
 
+  toggleRead() {
+    return this.read$.value
+      ? this.setMeta({ read: false, readDate: undefined })
+      : this.setMeta({ read: true, readDate: Date.now() });
+  }
+
+  markAsRead() {
+    if (this.read$.value) {
+      return;
+    }
+    return this.setMeta({ read: true, readDate: Date.now() });
+  }
+
   title$ = this.meta$.map(meta => meta.title ?? '');
 
   trash$ = this.meta$.map(meta => meta.trash ?? false);
+
+  read$ = this.meta$.map(meta => meta.read ?? false);
 }

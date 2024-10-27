@@ -1,3 +1,4 @@
+import { HomeIcon } from '@affine/component';
 import { openSettingModalAtom } from '@affine/core/components/atoms';
 import { useAsyncCallback } from '@affine/core/components/hooks/affine-async-hooks';
 import {
@@ -12,14 +13,13 @@ import {
   SidebarScrollableContainer,
 } from '@affine/core/modules/app-sidebar/views';
 import { ExternalMenuLinkItem } from '@affine/core/modules/app-sidebar/views/menu-item/external-menu-link-item';
-import { HomeIcon } from '@affine/component';
 import {
   ExplorerCollections,
   ExplorerFavorites,
+  ExplorerFeeds,
   ExplorerMigrationFavorites,
   ExplorerOrganize,
 } from '@affine/core/modules/explorer';
-import { ExplorerFeeds } from '@affine/core/modules/explorer/views/sections/feeds';
 import { ExplorerTags } from '@affine/core/modules/explorer/views/sections/tags';
 import { CMDKQuickSearchService } from '@affine/core/modules/quicksearch/services/cmdk';
 import { isNewTabTrigger } from '@affine/core/utils';

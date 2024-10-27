@@ -70,7 +70,12 @@ type FolderEvents =
   | 'deleteFolder';
 type TagEvents = 'createTag' | 'deleteTag' | 'renameTag' | 'tagDoc';
 type FavoriteEvents = 'toggleFavorite';
-type FeedsEvents = 'renameFeed';
+type FeedsEvents =
+  | 'renameFeed'
+  | 'createFeedsItem'
+  | 'moveFeedNode'
+  | 'renameFeedFolder'
+  | 'toggleFavoriteFeedNode';
 type OrganizeItemEvents = // doc, link, folder, collection, tag
 
     | 'createOrganizeItem'
@@ -152,6 +157,9 @@ const PageEvents = {
     docInfoPanel: {
       $: ['open'],
     },
+    feedInfoPanel: {
+      $: ['open'],
+    },
     settingsPanel: {
       menu: ['openSettings'],
       workspace: ['viewPlans'],
@@ -205,7 +213,13 @@ const PageEvents = {
         'toggleFavorite',
       ],
       docs: ['createDoc', 'deleteDoc', 'linkDoc'],
-      feeds: ['renameFeed'],
+      feeds: [
+        'renameFeed',
+        'createFeedsItem',
+        'moveFeedNode',
+        'renameFeedFolder',
+        'toggleFavoriteFeedNode',
+      ],
       collections: ['createDoc', 'addDocToCollection', 'removeOrganizeItem'],
       folders: ['createDoc'],
       tags: ['createDoc', 'tagDoc'],
@@ -325,7 +339,11 @@ type OrganizeItemType =
   | 'collection'
   | 'tag'
   | 'favorite'
-  | 'subscription';
+  | 'feed'
+  | 'feedFolder';
+
+type FeedsItemType = 'feed' | 'feedFolder';
+
 type OrganizeItemArgs =
   | {
       type: 'link';
@@ -334,6 +352,10 @@ type OrganizeItemArgs =
   | {
       type: OrganizeItemType;
     };
+
+type FeedsItemArgs = {
+  type: FeedsItemType;
+};
 
 type PaymentEventArgs = {
   plan: string;
@@ -387,6 +409,9 @@ export type EventArgs = {
   removeOrganizeItem: OrganizeItemArgs;
   deleteOrganizeItem: OrganizeItemArgs;
   orderOrganizeItem: OrganizeItemArgs;
+  createFeedsItem: FeedsItemArgs;
+  moveFeedNode: FeedsItemArgs;
+  toggleFavoriteFeedNode: FeedsItemArgs;
   openInNewTab: { type: OrganizeItemType };
   openInSplitView: { type: OrganizeItemType };
   tabAction: {

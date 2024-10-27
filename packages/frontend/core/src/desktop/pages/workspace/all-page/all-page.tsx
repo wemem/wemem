@@ -4,7 +4,6 @@ import {
   useFilteredPageMetas,
   VirtualizedPageList,
 } from '@affine/core/components/page-list';
-import { FeedTag } from '@affine/core/modules/tag/entities/internal-tag';
 import type { Filter } from '@affine/env/filter';
 import { useI18n } from '@affine/i18n';
 import {
@@ -12,7 +11,7 @@ import {
   useService,
   WorkspaceService,
 } from '@toeverything/infra';
-import { useMemo, useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 
 import {
   useIsActiveView,
@@ -26,21 +25,6 @@ import * as styles from './all-page.css';
 import { FilterContainer } from './all-page-filter';
 import { AllPageHeader } from './all-page-header';
 
-const FeedFilter: Filter = {
-  type: 'filter',
-  left: {
-    type: 'ref',
-    name: 'Tags',
-  },
-  funcName: 'does not contains all',
-  args: [
-    {
-      type: 'literal',
-      value: [FeedTag.id],
-    },
-  ],
-};
-
 export const AllPage = () => {
   const currentWorkspace = useService(WorkspaceService).workspace;
   const globalContext = useService(GlobalContextService).globalContext;
@@ -48,11 +32,8 @@ export const AllPage = () => {
   const [hideHeaderCreateNew, setHideHeaderCreateNew] = useState(true);
 
   const [filters, setFilters] = useState<Filter[]>([]);
-  const mergedFilters = useMemo(() => {
-    return [...filters, FeedFilter];
-  }, [filters]);
   const filteredPageMetas = useFilteredPageMetas(pageMetas, {
-    filters: mergedFilters,
+    filters: filters,
   });
 
   const isActiveView = useIsActiveView();
@@ -87,9 +68,7 @@ export const AllPage = () => {
           {filteredPageMetas.length > 0 ? (
             <VirtualizedPageList
               setHideHeaderCreateNewPage={setHideHeaderCreateNew}
-              filters={mergedFilters}
-              currentFilters={filters}
-              onChangeCurrentFilters={setFilters}
+              filters={filters}
             />
           ) : (
             <EmptyPageList type="all" heading={<PageListHeader />} />

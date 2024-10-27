@@ -28,6 +28,14 @@ declare module '@blocksuite/affine/store' {
     favorite?: boolean;
     trash?: boolean;
     trashDate?: number;
+
+    // feed url
+    feedUrl?: string;
+    // read status
+    read?: boolean;
+    // read date
+    readDate?: number;
+
     updatedDate?: number;
     mode?: 'page' | 'edgeless';
     // todo: support `number` in the future

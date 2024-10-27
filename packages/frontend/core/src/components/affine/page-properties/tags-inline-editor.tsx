@@ -447,6 +447,7 @@ export const TagsInlineEditor = ({
 }: TagsInlineEditorProps) => {
   const tagList = useService(TagService).tagList;
   const tagIds = useLiveData(tagList.tagIdsByPageId$(pageId));
+  console.log('tagIds', tagIds);
   const empty = !tagIds || tagIds.length === 0;
   return (
     <Menu

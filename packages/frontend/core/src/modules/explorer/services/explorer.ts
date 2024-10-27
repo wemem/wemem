@@ -9,7 +9,7 @@ const allSectionName: Array<CollapsibleSectionName> = [
   'organize',
   'collections',
   'tags',
-  'subscriptions',
+  'feeds',
   'favoritesOld',
   'migrationFavorites',
 ];

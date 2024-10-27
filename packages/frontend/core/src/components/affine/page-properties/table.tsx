@@ -8,7 +8,6 @@ import type {
   PageInfoCustomPropertyMeta,
   PagePropertyType,
 } from '@affine/core/modules/properties/services/schema';
-import { FeedTag } from '@affine/core/modules/tag/entities/internal-tag';
 import { i18nTime, useI18n } from '@affine/i18n';
 import { track } from '@affine/track';
 import { assertExists } from '@blocksuite/affine/global/utils';
@@ -22,6 +21,7 @@ import {
   ToggleExpandIcon,
   ViewIcon,
 } from '@blocksuite/icons/rc';
+import type { Doc } from '@blocksuite/store';
 import type { DragEndEvent, DraggableAttributes } from '@dnd-kit/core';
 import {
   DndContext,
@@ -83,7 +83,6 @@ import {
   TagsValue,
 } from './property-row-value-renderer';
 import * as styles from './styles.css';
-import type { Doc } from '@blocksuite/store';
 
 type PagePropertiesSettingsPopupProps = PropsWithChildren<{
   className?: string;
@@ -1108,7 +1107,6 @@ export const usePagePropertiesManager = (docId: string) => {
 // the page title
 export const PagePropertiesTable = ({
   docId,
-  page,
 }: {
   docId: string;
   page: Doc;
@@ -1118,8 +1116,8 @@ export const PagePropertiesTable = ({
   // if the given page is not in the current workspace, then we don't render anything
   // eg. when it is in history modal
 
-  const hasSubscriptionTag = page.meta?.tags.some(tag => tag === FeedTag.id);
-  if (!manager.page || !hasSubscriptionTag) {
+  // const hasSubscriptionTag = page.meta?.tags.some(tag => tag === FeedTag.id);
+  if (!manager.page) {
     return null;
   }
 

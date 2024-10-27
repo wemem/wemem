@@ -1,8 +1,26 @@
-import { RssIcon2 } from '@affine/component';
-import { ExplorerEmptySection } from '@affine/core/modules/explorer/views/layouts/empty-section';
+import {
+  type DropTargetDropEvent,
+  RssIcon2,
+  Skeleton,
+} from '@affine/component';
+import type { AffineDNDData } from '@affine/core/types/dnd';
 import { useI18n } from '@affine/i18n';
 
-export const RootEmpty = ({ onActionClick }: { onActionClick: () => void }) => {
+import { ExplorerEmptySection } from '../../layouts/empty-section';
+
+interface RootEmptyProps {
+  onClickCreate?: () => void;
+  isLoading?: boolean;
+  onDrop?: (data: DropTargetDropEvent<AffineDNDData>) => void;
+}
+
+export const RootEmptyLoading = () => {
+  return <Skeleton />;
+};
+
+export const RootEmptyReady = ({
+  onClickCreate,
+}: Omit<RootEmptyProps, 'isLoading'>) => {
   const t = useI18n();
   return (
     <ExplorerEmptySection
@@ -10,7 +28,11 @@ export const RootEmpty = ({ onActionClick }: { onActionClick: () => void }) => {
       message={t['ai.wemem.rootAppSidebar.feeds.empty']()}
       messageTestId="slider-bar-subscription-empty-message"
       actionText={t['ai.wemem.rootAppSidebar.feeds.action']()}
-      onActionClick={onActionClick}
+      onActionClick={onClickCreate}
     />
   );
+};
+
+export const RootEmpty = ({ isLoading, ...props }: RootEmptyProps) => {
+  return isLoading ? <RootEmptyLoading /> : <RootEmptyReady {...props} />;
 };

@@ -27,7 +27,7 @@ const makers = [
       config: {
         format: 'ULFO',
         icon: icnsPath,
-        name: 'AFFiNE',
+        name: 'Wemem',
         'icon-size': 128,
         background: path.join(
           __dirname,

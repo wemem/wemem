@@ -1,4 +1,4 @@
-import { FeedsService } from '@affine/core/modules/feed/services/feeds-service';
+import { FeedsService } from '@affine/core/modules/feeds/services/feeds';
 import type { Collection } from '@affine/env/filter';
 import { useI18n } from '@affine/i18n';
 import { useService } from '@toeverything/infra';

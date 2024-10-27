@@ -1,7 +1,7 @@
 import { Menu } from '@affine/component';
 import { useCatchEventCallback } from '@affine/core/components/hooks/use-catch-event-hook';
 import type { Tag } from '@affine/core/modules/tag';
-import { useTagI18N } from '@affine/core/modules/tag/entities/internal-tag';
+import { useTagI18n } from '@affine/core/modules/tag/entities/internal-tag';
 import { stopPropagation } from '@affine/core/utils';
 import { CloseIcon, MoreHorizontalIcon } from '@blocksuite/icons/rc';
 import { LiveData, useLiveData } from '@toeverything/infra';
@@ -63,7 +63,7 @@ export const TagItem = ({
 }: TagItemProps) => {
   const value = useLiveData(tag?.value$);
   const color = useLiveData(tag?.color$);
-  const t = useTagI18N();
+  const t = useTagI18n();
   const handleRemove = useCatchEventCallback(() => {
     onRemoved?.();
   }, [onRemoved]);

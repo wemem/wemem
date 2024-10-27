@@ -91,7 +91,7 @@ export const createConfiguration: (
   buildFlags: BuildFlags,
   buildConfig: BUILD_CONFIG_TYPE
 ) => webpack.Configuration = (cwd, buildFlags, buildConfig) => {
-  const blocksuiteBaseDir = buildFlags.localBlockSuite;
+  // const blocksuiteBaseDir = buildFlags.localBlockSuite;
   const config = {
     name: 'affine',
     // to set a correct base path for the source map
@@ -149,15 +149,6 @@ export const createConfiguration: (
       alias: {
         yjs: join(workspaceRoot, 'node_modules', 'yjs'),
         lit: join(workspaceRoot, 'node_modules', 'lit'),
-        '@blocksuite/affine': blocksuiteBaseDir
-          ? join(blocksuiteBaseDir, 'packages', 'affine', 'all', 'src')
-          : join(
-              workspaceRoot,
-              'node_modules',
-              '@blocksuite',
-              'affine',
-              'dist'
-            ),
       },
     },
 

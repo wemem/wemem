@@ -12,7 +12,7 @@ import type { Tag } from '@affine/core/modules/tag';
 import { TagService } from '@affine/core/modules/tag';
 import { isNewTabTrigger } from '@affine/core/utils';
 import type { Collection } from '@affine/env/filter';
-import { useTagI18N } from '@affine/core/modules/tag/entities/internal-tag';
+import { useTagI18n } from '@affine/core/modules/tag/entities/internal-tag';
 import { useI18n } from '@affine/i18n';
 import { track } from '@affine/track';
 import type { DocMode } from '@blocksuite/affine/blocks';
@@ -200,7 +200,7 @@ export const TagPageListHeader = ({
   const tagColor = useLiveData(tag.color$);
   const tagTitle = useLiveData(tag.value$);
 
-  const tt = useTagI18N();
+  const tt = useTagI18n();
   const t = useI18n();
   const { jumpToTags, jumpToCollection } = useNavigateHelper();
   const collectionService = useService(CollectionService);
@@ -334,7 +334,7 @@ export const SwitchTag = ({ onClick }: SwitchTagProps) => {
 const TagLink = ({ tag, onClick }: { tag: Tag; onClick: () => void }) => {
   const tagColor = useLiveData(tag.color$);
   const tagTitle = useLiveData(tag.value$);
-  const tt = useTagI18N();
+  const tt = useTagI18n();
   return (
     <Link
       key={tag.id}

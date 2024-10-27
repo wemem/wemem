@@ -3,7 +3,7 @@ export type CollapsibleSectionName =
   | 'collections'
   | 'favorites'
   | 'tags'
-  | 'subscriptions'
+  | 'feeds'
   | 'organize'
   | 'favoritesOld'
   | 'migrationFavorites';

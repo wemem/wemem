@@ -1,11 +1,7 @@
 import './page-detail-editor.css';
 
-import {
-  SeenTag,
-  UnseenTag,
-} from '@affine/core/modules/tag/entities/internal-tag';
 import type { AffineEditorContainer } from '@blocksuite/affine/presets';
-import type { Doc, DocCollection } from '@blocksuite/affine/store';
+import type { DocCollection } from '@blocksuite/affine/store';
 import { useLiveData, useService } from '@toeverything/infra';
 import { cssVar } from '@toeverything/theme';
 import clsx from 'clsx';
@@ -18,6 +14,7 @@ import {
   fontStyleOptions,
 } from '../modules/editor-settting';
 import { BlockSuiteEditor as Editor } from './blocksuite/block-suite-editor';
+import { useDocReadStatus } from './feeds-page-list/feeds-hooks';
 import * as styles from './page-detail-editor.css';
 
 declare global {
@@ -34,26 +31,7 @@ export interface PageDetailEditorProps {
   docCollection?: DocCollection;
 }
 
-// when the page is opened, we need to set the page as seen
-// for the feed page
-const setPageAsSeen = (docCollection: DocCollection, blockSuiteDoc?: Doc) => {
-  if (!blockSuiteDoc) {
-    return;
-  }
-  if (blockSuiteDoc.meta?.tags.includes(UnseenTag.id)) {
-    const tags = blockSuiteDoc.meta.tags.filter(tag => tag !== UnseenTag.id);
-    tags.push(SeenTag.id);
-    docCollection.setDocMeta(blockSuiteDoc.id, {
-      ...blockSuiteDoc.meta,
-      tags,
-    });
-  }
-};
-
-export const PageDetailEditor = ({
-  onLoad,
-  docCollection,
-}: PageDetailEditorProps) => {
+export const PageDetailEditor = ({ onLoad }: PageDetailEditorProps) => {
   const editor = useService(EditorService).editor;
   const mode = useLiveData(editor.mode$);
 
@@ -81,11 +59,14 @@ export const PageDetailEditor = ({
       : fontStyle.value;
   }, [settings.customFontFamily, settings.fontFamily]);
 
+  // when the page is opened, we need to set the page as read
+  // for the feed page
+  const { read, toggleRead } = useDocReadStatus(editor.doc.blockSuiteDoc.id);
   useEffect(() => {
-    if (docCollection) {
-      setPageAsSeen(docCollection, editor.doc.blockSuiteDoc);
+    if (!read) {
+      toggleRead();
     }
-  }, [editor.doc.blockSuiteDoc, docCollection]);
+  }, [editor.doc.blockSuiteDoc, read, toggleRead]);
 
   return (
     <Editor

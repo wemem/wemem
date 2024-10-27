@@ -1,7 +1,6 @@
 import { Divider, RssIcon } from '@affine/component';
 import { Button } from '@affine/component/ui/button';
 import { usePageHelper } from '@affine/core/components/blocksuite/block-suite-page-list/utils';
-import { NewFeedService } from '@affine/core/modules/feed-newly';
 import { ViewBody, ViewTitle } from '@affine/core/modules/workbench';
 import { isNewTabTrigger } from '@affine/core/utils';
 import { useI18n } from '@affine/i18n';
@@ -12,6 +11,7 @@ import { useService, WorkspaceService } from '@toeverything/infra';
 import { type ReactNode, useCallback, useRef } from 'react';
 
 import * as styles from './style.css';
+import { FeedsService } from '@affine/core/modules/feeds/services/feeds';
 
 export const HomePage = () => {
   const workspace = useService(WorkspaceService).workspace;
@@ -23,14 +23,14 @@ export const HomePage = () => {
 
   const scrollWrapper = useRef<HTMLDivElement | null>(null);
 
-  const newSubscriptionService = useService(NewFeedService);
+  const feedsService = useService(FeedsService);
   const handleOpenNewFeedModal = useCallback(() => {
-    newSubscriptionService.subscribeFeed.show();
+    feedsService.searchModal.show();
     mixpanel.track('NewOpened', {
       segment: 'navigation panel',
       control: 'new feeds button',
     });
-  }, [newSubscriptionService]);
+  }, [feedsService]);
 
   return (
     <>

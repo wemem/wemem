@@ -12,6 +12,7 @@ export { CollapsibleSection } from './views/layouts/collapsible-section';
 export { ExplorerMobileContext } from './views/mobile.context';
 export { ExplorerCollections } from './views/sections/collections';
 export { ExplorerFavorites } from './views/sections/favorites';
+export { ExplorerFeeds } from './views/sections/feeds';
 export { ExplorerMigrationFavorites } from './views/sections/migration-favorites';
 export { ExplorerOrganize } from './views/sections/organize';
 

@@ -14,6 +14,10 @@ export const useFilteredPageMetas = (
     trash?: boolean;
     filters?: Filter[];
     collection?: Collection;
+    feedFilter?: {
+      feedUrl: string;
+      read?: boolean;
+    };
   } = {}
 ) => {
   const shareDocsListService = useService(ShareDocsListService);
@@ -65,6 +69,22 @@ export const useFilteredPageMetas = (
           return false;
         }
 
+        // Add feed filter logic
+        if (options.feedFilter) {
+          const { feedUrl, read } = options.feedFilter;
+          // Check if page has matching feed URL
+          if (pageMeta.feedUrl !== feedUrl) {
+            return false;
+          }
+          // If read status is specified, filter by it
+          if (read !== undefined) {
+            const isRead = Boolean(pageMeta.read);
+            if (isRead !== read) {
+              return false;
+            }
+          }
+        }
+
         return true;
       }),
     [
@@ -72,6 +92,7 @@ export const useFilteredPageMetas = (
       options.trash,
       options.filters,
       options.collection,
+      options.feedFilter,
       favoriteItems,
       getPublicMode,
     ]

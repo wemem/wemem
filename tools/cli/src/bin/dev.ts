@@ -18,7 +18,6 @@ const flags: BuildFlags = {
   static: false,
   channel: 'canary',
   coverage: process.env.COVERAGE === 'true',
-  localBlockSuite: `${projectRoot}/submodules/blocksuite`,
 };
 
 const files = ['.env', '.env.local'];

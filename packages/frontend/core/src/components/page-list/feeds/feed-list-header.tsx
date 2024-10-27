@@ -12,7 +12,7 @@ export const FeedListHeader = ({ onCreate }: { onCreate: () => void }) => {
         {t['ai.wemem.feeds.header']()}
       </div>
       <Button className={styles.newFeedButton} onClick={onCreate}>
-        {t['ai.wemem.feeds.new-feed-button']()}
+        {t['ai.wemem.feeds.feed-search.modal-title']()}
       </Button>
     </div>
   );

@@ -1,7 +1,7 @@
 import type { MenuItemProps } from '@affine/component';
 import { Menu, MenuItem } from '@affine/component';
 import { useUnsubscribe } from '@affine/core/components/page-list';
-import { FeedsService } from '@affine/core/modules/feed/services/feeds-service';
+import { FeedsService } from '@affine/core/modules/feeds/services/feeds';
 import { WorkbenchService } from '@affine/core/modules/workbench';
 import type { Collection } from '@affine/env/filter';
 import { useI18n } from '@affine/i18n';

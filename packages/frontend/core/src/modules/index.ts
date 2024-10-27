@@ -1,4 +1,3 @@
-import { configureSubscribeFeedModule } from '@affine/core/modules/feed-newly';
 import { configureQuotaModule } from '@affine/core/modules/quota';
 import { configureInfraModules, type Framework } from '@toeverything/infra';
 
@@ -14,7 +13,7 @@ import { configureEditorModule } from './editor';
 import { configureEditorSettingModule } from './editor-settting';
 import { configureExplorerModule } from './explorer';
 import { configureFavoriteModule } from './favorite';
-import { configureFeedModule } from './feed';
+import { configureFeedsModule } from './feeds';
 import { configureFindInPageModule } from './find-in-page';
 import { configureImportTemplateModule } from './import-template';
 import { configureNavigationModule } from './navigation';
@@ -34,9 +33,8 @@ import { configureUserspaceModule } from './userspace';
 export function configureCommonModules(framework: Framework) {
   configureInfraModules(framework);
   configureCollectionModule(framework);
-  configureFeedModule(framework);
+  configureFeedsModule(framework);
   configureNavigationModule(framework);
-  configureSubscribeFeedModule(framework);
   configureTagModule(framework);
   configureWorkspacePropertiesModule(framework);
   configureCloudModule(framework);

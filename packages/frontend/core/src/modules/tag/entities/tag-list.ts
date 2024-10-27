@@ -38,19 +38,8 @@ export class TagList extends Entity {
     return newTag;
   }
 
-  createTagWithId(
-    newId: string,
-    value: string,
-    color: string,
-    ghost?: boolean
-  ) {
-    this.store.createNewTagWithId(newId, value, color, ghost);
-    const newTag = this.framework.createEntity(Tag, { id: newId });
-    return newTag;
-  }
-
-  createGhostTagWithId(newId: string, value: string, color: string) {
-    this.store.createNewTagWithId(newId, value, color, true);
+  createTagWithId(newId: string, value: string, color: string) {
+    this.store.createNewTagWithId(newId, value, color);
     const newTag = this.framework.createEntity(Tag, { id: newId });
     return newTag;
   }
@@ -64,7 +53,6 @@ export class TagList extends Entity {
       const docRecord = get(this.docs.list.doc$(pageId));
       if (!docRecord) return [];
       const tagIds = get(docRecord.meta$).tags;
-
       return get(this.tags$).filter(tag => (tagIds ?? []).includes(tag.id));
     });
   }
@@ -120,7 +108,13 @@ export class TagList extends Entity {
   initInternalTags() {
     InternalTags.forEach(tag => {
       if (!this.tagByTagId$(tag.id).getValue()) {
-        this.createTagWithId(tag.id, tag.value, tag.color, tag.ghost);
+        this.createTagWithId(tag.id, tag.value, tag.color);
+      } else {
+        this.store.updateTagInfo(tag.id, {
+          value: tag.value,
+          color: tag.color,
+          updateDate: tag.updateDate,
+        });
       }
     });
   }

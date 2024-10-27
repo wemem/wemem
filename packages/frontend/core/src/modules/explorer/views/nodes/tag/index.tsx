@@ -4,7 +4,7 @@ import {
   toast,
 } from '@affine/component';
 import type { Tag } from '@affine/core/modules/tag';
-import { TagService } from '@affine/core/modules/tag';
+import { TagService, useTagI18n } from '@affine/core/modules/tag';
 import type { AffineDNDData } from '@affine/core/types/dnd';
 import { useI18n } from '@affine/i18n';
 import { track } from '@affine/track';
@@ -48,6 +48,7 @@ export const ExplorerTagNode = ({
   const tagRecord = useLiveData(tagService.tagList.tagByTagId$(tagId));
   const tagColor = useLiveData(tagRecord?.color$);
   const tagName = useLiveData(tagRecord?.value$);
+  const tt = useTagI18n();
 
   const Icon = useCallback(
     ({ className }: { className?: string }) => {
@@ -171,7 +172,7 @@ export const ExplorerTagNode = ({
   return (
     <ExplorerTreeNode
       icon={Icon}
-      name={tagName || t['Untitled']()}
+      name={tt(tagName) || t['Untitled']()}
       dndData={dndData}
       onDrop={handleDropOnTag}
       renameable

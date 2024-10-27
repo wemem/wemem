@@ -268,7 +268,7 @@ export const TagListItemRenderer = (item: ListItem) => {
   );
 };
 
-function tagIdToTagOption(
+export function tagIdToTagOption(
   tagId: string,
   docCollection: DocCollection
 ): Tag | undefined {

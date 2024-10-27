@@ -27,7 +27,7 @@ export function AddFeedButton({
       onClick={onClick}
     >
       <PlusIcon className={styles.icon} />{' '}
-      {t['ai.wemem.feeds.new-feed-button']()}
+      {t['ai.wemem.feeds.feed-search.modal-title']()}
       <Spotlight />
     </button>
   );

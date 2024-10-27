@@ -5,13 +5,12 @@ import { useCallback } from 'react';
 
 export const InternalTagPrefix = 'ai.wemem.internal-tags.';
 
-export const RefPageTagPrefix = `${InternalTagPrefix}ref-page.`;
+export const InternalGhostTagPrefix = `${InternalTagPrefix}ghost.`;
 
 export const FeedTag: Tag = {
   id: 'Feed',
   value: `${InternalTagPrefix}feed`,
   color: tagColors[5][0],
-  ghost: true,
   createDate: Date.now(),
   updateDate: Date.now(),
 };
@@ -27,25 +26,7 @@ export const WeChatTag: Tag = {
 export const RSSTag: Tag = {
   id: 'RSS',
   value: `${InternalTagPrefix}rss`,
-  color: tagColors[4][0],
-  createDate: Date.now(),
-  updateDate: Date.now(),
-};
-
-export const SeenTag: Tag = {
-  id: 'Seen',
-  value: `${InternalTagPrefix}seen`,
-  color: tagColors[4][0],
-  ghost: true,
-  createDate: Date.now(),
-  updateDate: Date.now(),
-};
-
-export const UnseenTag: Tag = {
-  id: 'Unseen',
-  value: `${InternalTagPrefix}unseen`,
-  color: tagColors[5][0],
-  ghost: true,
+  color: tagColors[2][0],
   createDate: Date.now(),
   updateDate: Date.now(),
 };
@@ -53,7 +34,7 @@ export const UnseenTag: Tag = {
 export const isInternalTag = (tagName: any) =>
   (tagName as string).startsWith(InternalTagPrefix);
 
-export const useTagI18N = () => {
+export const useTagI18n = () => {
   const t = useI18n();
   return useCallback(
     (tagName: any): string => {
@@ -71,20 +52,8 @@ export const useTagI18N = () => {
   );
 };
 
-export const InternalTags = [FeedTag, SeenTag, UnseenTag];
+export const InternalTags = [FeedTag, WeChatTag, RSSTag];
 
 export const isGhostTag = (tagId: string) => {
-  return (
-    InternalTags.some(tag => tag.id === tagId && tag.ghost) || // 明确表明是幽灵标签
-    tagId.includes(RefPageTagPrefix) || // 精读文章时的引用标签
-    tagId.includes('http')
-  ); //RSS 地址
-};
-
-export const getRefPageId = (tags?: string[]) => {
-  const refPageTag = tags?.findLast(tag => tag.startsWith(RefPageTagPrefix));
-  if (refPageTag) {
-    return refPageTag.slice(RefPageTagPrefix.length);
-  }
-  return;
+  return tagId.includes(InternalGhostTagPrefix);
 };

@@ -1,4 +1,4 @@
-import { FeedsService } from '@affine/core/modules/feed/services/feeds-service';
+import { FeedsService } from '@affine/core/modules/feeds/services/feeds';
 import { TagService } from '@affine/core/modules/tag';
 import { useService } from '@toeverything/infra';
 import { useCallback } from 'react';

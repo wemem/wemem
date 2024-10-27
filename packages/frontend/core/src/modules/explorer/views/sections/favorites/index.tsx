@@ -30,6 +30,7 @@ import { ExplorerService } from '../../../services/explorer';
 import { CollapsibleSection } from '../../layouts/collapsible-section';
 import { ExplorerCollectionNode } from '../../nodes/collection';
 import { ExplorerDocNode } from '../../nodes/doc';
+import { ExplorerFeedFolderNode, ExplorerFeedNode } from '../../nodes/feed';
 import { ExplorerFolderNode } from '../../nodes/folder';
 import { ExplorerTagNode } from '../../nodes/tag';
 import {
@@ -267,6 +268,24 @@ const ExplorerFavoriteNode = ({
     />
   ) : favorite.type === 'folder' ? (
     <ExplorerFolderNode
+      key={favorite.id}
+      nodeId={favorite.id}
+      location={childLocation}
+      onDrop={handleOnChildrenDrop}
+      dropEffect={favoriteChildrenDropEffect}
+      canDrop={favoriteChildrenCanDrop}
+    />
+  ) : favorite.type === 'feedFolder' ? (
+    <ExplorerFeedFolderNode
+      key={favorite.id}
+      nodeId={favorite.id}
+      location={childLocation}
+      onDrop={handleOnChildrenDrop}
+      dropEffect={favoriteChildrenDropEffect}
+      canDrop={favoriteChildrenCanDrop}
+    />
+  ) : favorite.type === 'feed' ? (
+    <ExplorerFeedNode
       key={favorite.id}
       nodeId={favorite.id}
       location={childLocation}

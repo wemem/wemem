@@ -4,7 +4,8 @@ import {
   resolveGlobalLoadingEventAtom,
 } from '@affine/component/global-loading';
 import { SidebarSwitch } from '@affine/core/modules/app-sidebar/views';
-import { NewFeedModalComponent } from '@affine/core/modules/feed-newly/views';
+import { FeedSearchContainer } from '../../modules/feeds/views';
+import { useCleanDuplicateOnDocRemove } from '@affine/core/modules/feeds';
 import { useI18n } from '@affine/i18n';
 import { type DocMode, ZipTransformer } from '@blocksuite/affine/blocks';
 import {
@@ -43,6 +44,7 @@ import { AppContainer } from '../affine/app-container';
 import { SyncAwareness } from '../affine/awareness';
 import { useRegisterFindInPageCommands } from '../hooks/affine/use-register-find-in-page-commands';
 import { useSubscriptionNotifyReader } from '../hooks/affine/use-subscription-notify';
+import { usePullFeedItemsInterval } from '../hooks/use-pull-feed-items-interval';
 import { useRegisterNewFeedCommands } from '../hooks/use-register-new-feed-commands';
 import { useRegisterWorkspaceCommands } from '../hooks/use-register-workspace-commands';
 import { OverCapacityNotification } from '../over-capacity';
@@ -147,6 +149,8 @@ export const WorkspaceLayoutProviders = ({ children }: PropsWithChildren) => {
   useRegisterNavigationCommands();
   useRegisterFindInPageCommands();
   useRegisterNewFeedCommands();
+  usePullFeedItemsInterval();
+  useCleanDuplicateOnDocRemove();
 
   useEffect(() => {
     // hotfix for blockVersions
@@ -174,7 +178,7 @@ export const WorkspaceLayoutProviders = ({ children }: PropsWithChildren) => {
       {/* This DndContext is used for drag page from all-pages list into a folder in sidebar */}
       {children}
       <QuickSearchContainer />
-      <NewFeedModalComponent />
+      <FeedSearchContainer />
       <SyncAwareness />
       <OverCapacityNotification />
     </>

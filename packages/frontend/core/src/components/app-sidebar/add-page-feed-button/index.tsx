@@ -34,7 +34,7 @@ export function AddPageFeedButton({
         icon={<RssIcon />}
         onClick={onOpenNewFeedModal}
       >
-        {t['ai.wemem.feeds.new-feed-button']()}
+        {t['ai.wemem.feeds.feed-search.modal-title']()}
       </IconButton>
       <Spotlight />
     </div>
