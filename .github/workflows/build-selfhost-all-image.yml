@@ -72,7 +72,7 @@ jobs:
           SELF_HOSTED: true
           MIXPANEL_TOKEN: ${{ secrets.MIXPANEL_TOKEN }}
       - name: Download selfhost fonts
-        run: node ./scripts/download-blocksuite-fonts.mjs
+        run: npx tsx ./scripts/download-blocksuite-fonts.mjs
       - name: Upload web artifact
         uses: actions/upload-artifact@v4
         with:
@@ -93,6 +93,8 @@ jobs:
         uses: ./.github/actions/setup-version
       - name: Setup Node.js
         uses: ./.github/actions/setup-node
+      - name: Setup Blocksuite
+        uses: ./.github/actions/setup-blocksuite
       - name: Build Core
         run: yarn nx build @affine/admin --skip-nx-cache
         env:

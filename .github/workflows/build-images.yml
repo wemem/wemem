@@ -156,7 +156,7 @@ jobs:
           SELF_HOSTED: true
           MIXPANEL_TOKEN: ${{ secrets.MIXPANEL_TOKEN }}
       - name: Download selfhost fonts
-        run: node ./scripts/download-blocksuite-fonts.mjs
+        run: npx tsx ./scripts/download-blocksuite-fonts.mjs
       - name: Upload web artifact
         uses: actions/upload-artifact@v4
         with:
