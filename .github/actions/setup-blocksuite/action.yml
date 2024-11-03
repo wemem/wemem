@@ -9,9 +9,6 @@ runs:
         node-version-file: '.nvmrc'
         registry-url: https://registry.npmjs.org
         scope: '@toeverything'
-    - name: Install YARN
-      shell: bash
-      run: npm install -g yarn
     - name: Install Dependencies for blocksuite
       shell: bash
-      run: cd submodules/blocksuite && yarn install
+      run: cd submodules/blocksuite && yarn --immutable --inline-builds

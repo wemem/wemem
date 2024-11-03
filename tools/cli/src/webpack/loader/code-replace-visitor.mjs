@@ -40,7 +40,7 @@ class ReplaceVisitor {
     n.expressions = n.expressions.map(expr => this.visitExpression(expr));
     n.quasis = n.quasis.map(quasi => {
       if (this.includesAnyKeyword(quasi.raw) || matchAffinePro(quasi.raw)) {
-        console.log(`模板字符串替换: ${quasi.raw}`);
+        console.log(`template string replace: ${quasi.raw}`);
         quasi.raw = this.replaceAllKeywords(quasi.raw);
         quasi.cooked = quasi.cooked
           ? this.replaceAllKeywords(quasi.cooked)
@@ -53,7 +53,7 @@ class ReplaceVisitor {
 
   visitStringLiteral(n, parent) {
     if (matchAffinePro(n.value)) {
-      console.log(`域名替换: ${n.value}`);
+      console.log(`domain replace: ${n.value}`);
       n.value = this.replaceAllKeywords(n.value);
       n.raw = n.raw ? this.replaceAllKeywords(n.raw) : n.raw;
     }
@@ -78,7 +78,7 @@ class ReplaceVisitor {
         isObjValue ||
         isCompoentProperty
       ) {
-        console.log(`字符串替换: ${n.value}`);
+        console.log(`string replace: ${n.value}`);
         n.value = this.replaceAllKeywords(n.value);
         n.raw = n.raw ? this.replaceAllKeywords(n.raw) : n.raw;
       }
@@ -88,7 +88,7 @@ class ReplaceVisitor {
 
   visitTemplateElement(n) {
     if (this.includesAnyKeyword(n.raw)) {
-      console.log(`模板替换: ${n.raw}`);
+      console.log(`template replace: ${n.raw}`);
       n.raw = this.replaceAllKeywords(n.raw);
       n.cooked = n.cooked ? this.replaceAllKeywords(n.cooked) : n.cooked;
     }
