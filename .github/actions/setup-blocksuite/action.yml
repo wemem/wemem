@@ -1,5 +1,5 @@
 name: 'AFFiNE Blocksuite Setup'
-description: 'pnpm install for blocksuite'
+description: 'yarn install for blocksuite'
 runs:
   using: 'composite'
   steps:
@@ -9,9 +9,9 @@ runs:
         node-version-file: '.nvmrc'
         registry-url: https://registry.npmjs.org
         scope: '@toeverything'
-    - name: Install PNPM
+    - name: Install YARN
       shell: bash
-      run: npm install -g pnpm
+      run: npm install -g yarn
     - name: Install Dependencies for blocksuite
       shell: bash
-      run: cd submodules/blocksuite && pnpm install
+      run: cd submodules/blocksuite && yarn install

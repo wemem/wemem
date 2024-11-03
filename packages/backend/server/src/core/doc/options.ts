@@ -95,7 +95,7 @@ export class DocStorageOptions implements IDocStorageOptions {
   }
 
   @CallTimer('doc', 'yjs_recover_updates_to_doc')
-  private recoverDoc(updates: Uint8Array[]): Promise<Y.Doc> {
+  public recoverDoc(updates: Uint8Array[]): Promise<Y.Doc> {
     const doc = new Y.Doc();
     const chunks = chunk(updates, 10);
     let i = 0;

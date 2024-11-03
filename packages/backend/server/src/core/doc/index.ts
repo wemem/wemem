@@ -17,7 +17,11 @@ import { DocStorageOptions } from './options';
     PgUserspaceDocStorageAdapter,
     DocStorageCronJob,
   ],
-  exports: [PgWorkspaceDocStorageAdapter, PgUserspaceDocStorageAdapter],
+  exports: [
+    PgWorkspaceDocStorageAdapter,
+    PgUserspaceDocStorageAdapter,
+    DocStorageOptions,
+  ],
 })
 export class DocStorageModule {}
 export { PgUserspaceDocStorageAdapter, PgWorkspaceDocStorageAdapter };

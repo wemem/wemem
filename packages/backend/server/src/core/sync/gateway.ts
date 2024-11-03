@@ -611,7 +611,7 @@ abstract class SyncSocketAdapter {
   }
 }
 
-class WorkspaceSyncAdapter extends SyncSocketAdapter {
+export class WorkspaceSyncAdapter extends SyncSocketAdapter {
   constructor(
     client: Socket,
     storage: DocStorageAdapter,
