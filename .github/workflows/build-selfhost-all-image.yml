@@ -257,7 +257,7 @@ jobs:
         uses: actions/download-artifact@v4
         with:
           name: selfhost-web
-          path: ./packages/frontend/web/dist
+          path: ./packages/frontend/apps/web/dist
       - name: Download admin artifact
         uses: actions/download-artifact@v4
         with:
