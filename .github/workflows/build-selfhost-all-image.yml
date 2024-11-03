@@ -283,6 +283,7 @@ jobs:
     needs:
       - build-web-selfhost
       - build-admin-selfhost
+      - build-mobile-selfhost
     steps:
       - uses: actions/checkout@v4
       - name: Download web artifact
