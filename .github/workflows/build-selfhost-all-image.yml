@@ -61,6 +61,8 @@ jobs:
         uses: ./.github/actions/setup-version
       - name: Setup Node.js
         uses: ./.github/actions/setup-node
+      - name: Setup Blocksuite
+        uses: ./.github/actions/setup-blocksuite
       - name: Build Core
         run: yarn nx build @affine/web --skip-nx-cache
         env:
