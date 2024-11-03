@@ -77,7 +77,7 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: selfhost-web
-          path: ./packages/frontend/web/dist
+          path: ./packages/frontend/apps/web/dist
           if-no-files-found: error
 
   build-admin-selfhost:
@@ -107,7 +107,7 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: selfhost-admin
-          path: ./packages/frontend/admin/dist
+          path: ./packages/frontend/apps/admin/dist
           if-no-files-found: error
 
   build-server-native:
