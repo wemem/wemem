@@ -94,7 +94,7 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: admin
-          path: ./packages/frontend/apps/admin/dist
+          path: ./packages/frontend/admin/dist
           if-no-files-found: error
 
   build-frontend-image:
