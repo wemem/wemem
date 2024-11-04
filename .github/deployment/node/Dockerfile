@@ -10,4 +10,4 @@ RUN apt-get update && \
   apt-get install -y --no-install-recommends openssl && \
   rm -rf /var/lib/apt/lists/*
 
-CMD yarn prisma db push && node --import ./scripts/register.js ./dist/index.js
+CMD yarn predeploy && node --import ./scripts/register.js ./dist/index.js
