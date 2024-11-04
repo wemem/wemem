@@ -72,14 +72,41 @@ jobs:
           SELF_HOSTED: true
           MIXPANEL_TOKEN: ${{ secrets.MIXPANEL_TOKEN }}
       - name: Download selfhost fonts
-        run: node ./scripts/download-blocksuite-fonts.mjs
+        run: npx tsx ./scripts/download-blocksuite-fonts.mjs
       - name: Upload web artifact
         uses: actions/upload-artifact@v4
         with:
           name: selfhost-web
-          path: ./packages/frontend/web/dist
+          path: ./packages/frontend/apps/web/dist
           if-no-files-found: error
-
+  build-mobile-selfhost:
+    name: Build @affine/mobile selfhost
+    runs-on: ubuntu-latest
+    environment: ${{ github.event.inputs.flavor }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          submodules: recursive
+      - name: Setup Version
+        id: version
+        uses: ./.github/actions/setup-version
+      - name: Setup Node.js
+        uses: ./.github/actions/setup-node
+      - name: Setup Blocksuite
+        uses: ./.github/actions/setup-blocksuite
+      - name: Build Mobile
+        run: yarn nx build @affine/mobile --skip-nx-cache
+        env:
+          BUILD_TYPE: ${{ github.event.inputs.flavor }}
+          PUBLIC_PATH: '/'
+          SELF_HOSTED: true
+          MIXPANEL_TOKEN: ${{ secrets.MIXPANEL_TOKEN }}
+      - name: Upload mobile artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: selfhost-mobile
+          path: ./packages/frontend/apps/mobile/dist
+          if-no-files-found: error
   build-admin-selfhost:
     name: Build @affine/admin selfhost
     runs-on: ubuntu-latest
@@ -152,6 +179,7 @@ jobs:
       - build-web-selfhost
       - build-admin-selfhost
       - build-server-native
+      - build-mobile-selfhost
     steps:
       - uses: actions/checkout@v4
       - name: Download server dist
@@ -212,8 +240,12 @@ jobs:
         uses: actions/download-artifact@v4
         with:
           name: selfhost-web
-          path: ./packages/frontend/web/dist
-
+          path: ./packages/frontend/apps/web/dist
+      - name: Download selfhost mobile artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: selfhost-mobile
+          path: ./packages/frontend/apps/mobile/dist
       - name: Download selfhost admin artifact
         uses: actions/download-artifact@v4
         with:
@@ -249,13 +281,19 @@ jobs:
     needs:
       - build-web-selfhost
       - build-admin-selfhost
+      - build-mobile-selfhost
     steps:
       - uses: actions/checkout@v4
       - name: Download web artifact
         uses: actions/download-artifact@v4
         with:
           name: selfhost-web
-          path: ./packages/frontend/web/dist
+          path: ./packages/frontend/apps/web/dist
+      - name: Download mobile artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: selfhost-mobile
+          path: ./packages/frontend/apps/mobile/dist
       - name: Download admin artifact
         uses: actions/download-artifact@v4
         with:

@@ -56,7 +56,7 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: web
-          path: ./packages/frontend/web/dist
+          path: ./packages/frontend/apps/web/dist
           if-no-files-found: error
 
   build-admin:
