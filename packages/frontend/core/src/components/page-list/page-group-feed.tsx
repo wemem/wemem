@@ -1,4 +1,4 @@
-import { FeedAvatar } from '@affine/core/components/page-list/feed/avatar';
+import { FeedAvatar } from '@affine/component';
 import {
   listsPropsAtom,
   type RequiredProps,

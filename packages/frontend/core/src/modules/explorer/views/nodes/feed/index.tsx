@@ -8,8 +8,8 @@ import {
   notify,
   RssIcon,
 } from '@affine/component';
+import { FeedAvatar } from '@affine/component';
 import { useAsyncCallback } from '@affine/core/components/hooks/affine-async-hooks';
-import { FeedAvatar } from '@affine/core/components/page-list/feed/avatar';
 import type { FeedNode } from '@affine/core/modules/feeds';
 import { FeedsService } from '@affine/core/modules/feeds/services/feeds';
 import type { AffineDNDData } from '@affine/core/types/dnd';
