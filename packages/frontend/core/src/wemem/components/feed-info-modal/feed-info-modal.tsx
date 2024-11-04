@@ -1,11 +1,10 @@
-import { Modal, Scrollable } from '@affine/component';
+import { FeedAvatar, Modal, Scrollable } from '@affine/component';
 import { FeedsService } from '@affine/core/modules/feeds';
 import { useLiveData, useService } from '@toeverything/infra';
 import clsx from 'clsx';
 
 import * as styles from './feed-info-modal.css';
 import { FeedInfoTable } from './feed-info-table';
-import { FeedAvatar } from '@affine/core/components/page-list/feed/avatar';
 
 export const FeedInfoModal = () => {
   const feedsService = useService(FeedsService);

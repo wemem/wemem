@@ -1,8 +1,6 @@
-import { toast } from '@affine/component';
+import { FeedAvatar, toast } from '@affine/component';
 import { type CommandCategory } from '@affine/core/commands';
 import { useNavigateHelper } from '@affine/core/components/hooks/use-navigate-helper';
-import { useSubscribeToFeed } from '@affine/core/components/page-list';
-import { FeedAvatar } from '@affine/core/components/page-list/feed/avatar';
 import { FeedsService } from '@affine/core/modules/feeds/services/feeds';
 import type { SearchSubscriptionsQuery } from '@affine/graphql';
 import { useI18n } from '@affine/i18n';
@@ -100,4 +98,37 @@ export const useCommandGroups = () => {
     const commands = [...searchedFeedsCommands, ...defaultCommands];
     return filterSortAndGroupCommands(commands, query);
   }, [defaultCommands, searchedFeedsCommands, query]);
+};
+
+export const useSubscribeToFeed = () => {
+  const feedsService = useService(FeedsService);
+  const currentFolder = useLiveData(feedsService.searchModal.currentFolder$);
+  return useCallback(
+    (feedRecord: FeedRecord) => {
+      let folder = feedsService.feedTree.rootFolder;
+      if (currentFolder?.folderId) {
+        const currFolderNode = feedsService.feedTree.folderNodeById(
+          currentFolder?.folderId
+        );
+        if (currFolderNode) {
+          folder = currFolderNode;
+        }
+      }
+
+      // if the feed is already added, do nothing
+      if (feedsService.feedTree.feedNodeByUrl(feedRecord.url)) {
+        return;
+      }
+
+      folder.createFeed(
+        feedRecord.id,
+        feedRecord.name,
+        feedRecord.url,
+        feedRecord.description,
+        feedRecord.icon
+      );
+      return;
+    },
+    [currentFolder, feedsService]
+  );
 };
