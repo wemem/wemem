@@ -6,7 +6,9 @@ const matchAffinePro = url => {
 };
 
 class ReplaceVisitor {
-  constructor() {
+  constructor(resourcePath) {
+    this.resourcePath = resourcePath;
+    this.blacklist = ['Chat With AFFiNE AI'];
     this.replaceMap = {
       'https://github.com/toeverything/AFFiNE':
         'https://github.com/wemem/wemem',
@@ -16,10 +18,18 @@ class ReplaceVisitor {
       Toeverything: 'Wemem',
       'support@toeverything.info': 'ai.wemem@gmail.com',
       'affine.pro': 'wemem.ai',
+      'affine-worker.toeverything.workers.dev': 'worker.wemem.ai',
     };
   }
 
+  isInBlacklist(text) {
+    return this.blacklist.some(item => text.includes(item));
+  }
+
   includesAnyKeyword(text) {
+    if (this.isInBlacklist(text)) {
+      return false;
+    }
     return Object.keys(this.replaceMap).some(keyword => text.includes(keyword));
   }
 
@@ -40,7 +50,9 @@ class ReplaceVisitor {
     n.expressions = n.expressions.map(expr => this.visitExpression(expr));
     n.quasis = n.quasis.map(quasi => {
       if (this.includesAnyKeyword(quasi.raw) || matchAffinePro(quasi.raw)) {
-        console.log(`template string replace: ${quasi.raw}`);
+        console.log(
+          `${this.resourcePath} template string replace: ${quasi.raw}`
+        );
         quasi.raw = this.replaceAllKeywords(quasi.raw);
         quasi.cooked = quasi.cooked
           ? this.replaceAllKeywords(quasi.cooked)
@@ -53,7 +65,7 @@ class ReplaceVisitor {
 
   visitStringLiteral(n, parent) {
     if (matchAffinePro(n.value)) {
-      console.log(`domain replace: ${n.value}`);
+      console.log(`${this.resourcePath} domain replace: ${n.value}`);
       n.value = this.replaceAllKeywords(n.value);
       n.raw = n.raw ? this.replaceAllKeywords(n.raw) : n.raw;
     }
@@ -78,7 +90,7 @@ class ReplaceVisitor {
         isObjValue ||
         isCompoentProperty
       ) {
-        console.log(`string replace: ${n.value}`);
+        console.log(`${this.resourcePath} string replace: ${n.value}`);
         n.value = this.replaceAllKeywords(n.value);
         n.raw = n.raw ? this.replaceAllKeywords(n.raw) : n.raw;
       }
@@ -88,7 +100,7 @@ class ReplaceVisitor {
 
   visitTemplateElement(n) {
     if (this.includesAnyKeyword(n.raw)) {
-      console.log(`template replace: ${n.raw}`);
+      console.log(`${this.resourcePath} template replace: ${n.raw}`);
       n.raw = this.replaceAllKeywords(n.raw);
       n.cooked = n.cooked ? this.replaceAllKeywords(n.cooked) : n.cooked;
     }
@@ -525,6 +537,23 @@ class ReplaceVisitor {
   }
   visitVariableDeclarator(n) {
     n.id = this.visitPattern(n.id);
+    // 检查初始化值
+    // eslint-disable-next-line sonarjs/no-collapsible-if
+    if (n.init && n.init.type === 'StringLiteral') {
+      // 检查是否包含需要替换的域名
+      if (
+        matchAffinePro(n.init.value) ||
+        this.includesAnyKeyword(n.init.value)
+      ) {
+        console.log(
+          `${this.resourcePath} variable declaration replace: ${n.init.value}`
+        );
+        n.init.value = this.replaceAllKeywords(n.init.value);
+        n.init.raw = n.init.raw
+          ? this.replaceAllKeywords(n.init.raw)
+          : n.init.raw;
+      }
+    }
     n.init = this.visitOptionalExpression(n.init);
     return n;
   }

@@ -194,28 +194,39 @@ export const createConfiguration: (
             {
               test: /\.ts$/,
               exclude: /node_modules/,
-              loader: 'swc-loader',
-              options: {
-                // https://swc.rs/docs/configuring-swc/
-                jsc: {
-                  preserveAllComments: true,
-                  parser: {
-                    syntax: 'typescript',
-                    dynamicImport: true,
-                    topLevelAwait: false,
-                    tsx: false,
-                    decorators: true,
-                  },
-                  target: 'es2022',
-                  externalHelpers: false,
-                  transform: {
-                    useDefineForClassFields: false,
-                    decoratorVersion: '2022-03',
+              use: [
+                {
+                  loader: path.resolve(
+                    dirname(fileURLToPath(import.meta.url)),
+                    'loader',
+                    'code-replace-loader.js'
+                  ), // 使用自定义 loader
+                },
+                {
+                  loader: 'swc-loader',
+                  options: {
+                    // https://swc.rs/docs/configuring-swc/
+                    jsc: {
+                      preserveAllComments: true,
+                      parser: {
+                        syntax: 'typescript',
+                        dynamicImport: true,
+                        topLevelAwait: false,
+                        tsx: false,
+                        decorators: true,
+                      },
+                      target: 'es2022',
+                      externalHelpers: false,
+                      transform: {
+                        useDefineForClassFields: false,
+                        decoratorVersion: '2022-03',
+                      },
+                    },
+                    sourceMaps: true,
+                    inlineSourcesContent: true,
                   },
                 },
-                sourceMaps: true,
-                inlineSourcesContent: true,
-              },
+              ],
             },
             {
               test: /\.tsx$/,

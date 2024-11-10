@@ -19,7 +19,7 @@ module.exports = function (fileInfo) {
     tsx: true,
   });
 
-  const visitor = new ReplaceVisitor();
+  const visitor = new ReplaceVisitor(fileInfo.path.split('/').slice(-2).join('/'));
   const newAst = visitor.visitProgram(ast);
 
   const { code } = printSync(newAst, {
