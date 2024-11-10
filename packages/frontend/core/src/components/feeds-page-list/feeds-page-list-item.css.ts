@@ -4,7 +4,7 @@ export const root = style({
   display: 'flex',
   color: cssVar('textPrimaryColor'),
   minHeight: '84px',
-  maxHeight: '104px',
+  maxHeight: '120px',
   // 42 + 12
   flexShrink: 0,
   width: '100%',
@@ -13,6 +13,7 @@ export const root = style({
   ':hover': {
     backgroundColor: cssVar('hoverColor'),
   },
+  margin: '6px 0',
   overflow: 'hidden',
   cursor: 'default',
   willChange: 'opacity',
@@ -188,9 +189,9 @@ export const unreadLabel = style({
 });
 
 export const readColor = style({
-  color: 'var(--affine-icon-primary)',
+  color: cssVar('textSecondaryColor'),
 });
 
 export const unreadColor = style({
-  color: 'var(--affine-primary-color)',
+  color: cssVar('textPrimaryColor'),
 });

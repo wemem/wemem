@@ -342,7 +342,7 @@ type OrganizeItemType =
   | 'feed'
   | 'feedFolder';
 
-type FeedsItemType = 'feed' | 'feedFolder';
+type FeedsItemType = 'feedRss' | 'feedEmail' | 'feedFolder';
 
 type OrganizeItemArgs =
   | {

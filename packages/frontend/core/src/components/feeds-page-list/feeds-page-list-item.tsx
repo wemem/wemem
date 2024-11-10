@@ -38,7 +38,6 @@ const ListTitleCell = ({
   pageId,
   createDate,
   updatedDate,
-  read,
 }: Pick<
   PageListItemProps,
   'title' | 'preview' | 'tags' | 'pageId' | 'createDate' | 'updatedDate'
@@ -57,13 +56,9 @@ const ListTitleCell = ({
     <div data-testid="page-list-item-title" className={styles.titleCell}>
       <div
         data-testid="page-list-item-title-text"
-        className={clsx(
-          styles.titleCellMain,
-          {
-            [styles.titleCellMainForSubcription]: isSubcription,
-          },
-          read ? styles.readColor : styles.unreadColor
-        )}
+        className={clsx(styles.titleCellMain, {
+          [styles.titleCellMainForSubcription]: isSubcription,
+        })}
       >
         {title}
       </div>
@@ -131,11 +126,19 @@ const PageSelectionCell = ({
 export const PageTagsCell = ({ pageId }: Pick<PageListItemProps, 'pageId'>) => {
   const tagList = useService(TagService).tagList;
   const tags = useLiveData(tagList.tagsByPageId$(pageId));
+  const { read } = useDocReadStatus(pageId);
+
   if (tags.length === 0) {
     return null;
   }
   return (
-    <div data-testid="page-list-item-tags" className={styles.tagsCell}>
+    <div
+      data-testid="page-list-item-tags"
+      className={clsx(
+        styles.tagsCell,
+        read ? styles.readColor : styles.unreadColor
+      )}
+    >
       <FeedsPageTags
         tags={tags}
         hoverExpandDirection="left"

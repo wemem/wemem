@@ -2,7 +2,11 @@ import { generateFractionalIndexingKeyBetween } from '@affine/core/utils';
 import { Entity, LiveData } from '@toeverything/infra';
 import { map, switchMap } from 'rxjs';
 
-import type { Feed, FeedNodesStore } from '../stores/feed-node';
+import {
+  type Feed,
+  type FeedNodesStore,
+  FeedNodeType,
+} from '../stores/feed-node';
 
 export class FeedNode extends Entity<{
   id: string | null;
@@ -14,13 +18,25 @@ export class FeedNode extends Entity<{
     null
   );
   type$ = this.info$.map(info =>
-    this.id === null ? 'feedFolder' : (info?.type ?? '')
+    this.id === null ? FeedNodeType.Folder : (info?.type ?? '')
   );
   name$ = this.info$.map(info => info?.name);
   description$ = this.info$.map(info => info?.description);
   icon$ = this.info$.map(info => info?.icon);
   index$ = this.info$.map(info => info?.index ?? '');
-  url$ = this.info$.map(info => info?.url ?? '');
+  source$ = this.info$.map(info => info?.source ?? '');
+  unreadCount$: LiveData<number> = LiveData.computed(get => {
+    const info = get(this.info$);
+    const type = get(this.type$);
+
+    if (type !== FeedNodeType.Folder) {
+      return info?.unreadCount ?? 0;
+    }
+
+    // 如果是文件夹，递归计算所有子节点的未读数总和
+    const children = get(this.sortedChildren$);
+    return children.reduce((sum, child) => sum + get(child.unreadCount$), 0);
+  });
 
   children$ = LiveData.from<FeedNode[]>(
     // watch children if this is a folder, otherwise return empty array
@@ -75,8 +91,8 @@ export class FeedNode extends Entity<{
   filterInvalidChildren(child: { type: string }): boolean {
     if (
       this.id === null &&
-      child.type !== 'feedFolder' &&
-      child.type !== 'feed'
+      child.type !== FeedNodeType.Folder &&
+      child.type !== FeedNodeType.RSS
     ) {
       return false; // root node can only have folders and feeds
     }
@@ -84,7 +100,7 @@ export class FeedNode extends Entity<{
   }
 
   createFolder(name: string, index: string) {
-    if (this.type$.value !== 'feedFolder') {
+    if (this.type$.value !== FeedNodeType.Folder) {
       throw new Error('Cannot create folder on non-folder node');
     }
     return this.nodesStore.createFolder(this.id, name, index);
@@ -93,18 +109,18 @@ export class FeedNode extends Entity<{
   createFeed(
     id: string,
     name: string,
-    url: string,
+    source: string,
     description: string | null,
     icon: string | null
   ) {
-    if (this.type$.value !== 'feedFolder') {
+    if (this.type$.value !== FeedNodeType.Folder) {
       throw new Error('Cannot create link on non-folder node');
     }
-    return this.nodesStore.createFeed(
+    return this.nodesStore.createRSS(
       this.id,
       id,
       name,
-      url,
+      source,
       description,
       icon,
       this.indexAt('before')
@@ -115,7 +131,7 @@ export class FeedNode extends Entity<{
     if (this.id === null) {
       throw new Error('Cannot delete root node');
     }
-    if (this.type$.value === 'feedFolder') {
+    if (this.type$.value === FeedNodeType.Folder) {
       this.nodesStore.removeFolder(this.id);
     } else {
       this.nodesStore.removeFeed(this.id);
@@ -131,6 +147,13 @@ export class FeedNode extends Entity<{
       throw new Error('Cannot rename root node');
     }
     this.nodesStore.renameNode(this.id, name);
+  }
+
+  incrUnreadCount(count: number) {
+    if (this.id === null) {
+      throw new Error('Cannot incr unread count on root node');
+    }
+    this.nodesStore.incrUnreadCount(this.id, count);
   }
 
   indexAt(at: 'before' | 'after', targetId?: string) {

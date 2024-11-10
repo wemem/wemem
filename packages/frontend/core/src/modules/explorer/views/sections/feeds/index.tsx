@@ -5,7 +5,7 @@ import {
   toast,
 } from '@affine/component';
 import { ExplorerTreeRoot } from '@affine/core/modules/explorer/views/tree';
-import type { FeedNode } from '@affine/core/modules/feeds';
+import { type FeedNode, FeedNodeType } from '@affine/core/modules/feeds';
 import { FeedsService } from '@affine/core/modules/feeds/services/feeds';
 import type { AffineDNDData } from '@affine/core/types/dnd';
 import { useI18n } from '@affine/i18n';
@@ -16,7 +16,7 @@ import { useCallback, useEffect, useMemo, useState } from 'react';
 
 import { ExplorerService } from '../../../services/explorer';
 import { CollapsibleSection } from '../../layouts/collapsible-section';
-import { ExplorerFeedsNode } from '../../nodes/feed';
+import { calcLocation, ExplorerFeedsNode } from '../../nodes/feed';
 import { organizeChildrenDropEffect } from './dnd';
 import { RootEmpty } from './empty';
 
@@ -51,7 +51,9 @@ export const ExplorerFeeds = () => {
       rootFolder.indexAt('before')
     );
 
-    track.$.navigationPanel.feeds.createFeedsItem({ type: 'feedFolder' });
+    track.$.navigationPanel.feeds.createFeedsItem({
+      type: FeedNodeType.Folder,
+    });
     setNewFolderId(newFolderId);
     explorerSection.setCollapsed(false);
     return newFolderId;
@@ -69,8 +71,8 @@ export const ExplorerFeeds = () => {
         const at =
           data.treeInstruction?.type === 'reorder-below' ? 'after' : 'before';
         if (
-          data.source.data.entity?.type === 'feedFolder' ||
-          data.source.data.entity?.type === 'feed'
+          data.source.data.entity?.type === FeedNodeType.Folder ||
+          data.source.data.entity?.type === FeedNodeType.RSS
         ) {
           rootFolder.moveHere(
             data.source.data.entity?.id ?? '',
@@ -95,7 +97,9 @@ export const ExplorerFeeds = () => {
     DropTargetOptions<AffineDNDData>['canDrop']
   >(
     () => args =>
-      ['feedFolder', 'feed'].includes(args.source.data.entity?.type ?? ''),
+      [FeedNodeType.Folder, FeedNodeType.RSS].includes(
+        args.source.data.entity?.type as FeedNodeType
+      ),
     []
   );
 
@@ -145,13 +149,7 @@ export const ExplorerFeeds = () => {
             dropEffect={organizeChildrenDropEffect}
             canDrop={handleChildrenCanDrop}
             reorderable
-            location={{
-              at:
-                child.type$.value === 'feedFolder'
-                  ? 'explorer:feeds:feed-folder'
-                  : 'explorer:feeds:feed',
-              nodeId: child.id as string,
-            }}
+            location={calcLocation(child)}
           />
         ))}
       </ExplorerTreeRoot>

@@ -4,8 +4,8 @@ import {
   resolveGlobalLoadingEventAtom,
 } from '@affine/component/global-loading';
 import { SidebarSwitch } from '@affine/core/modules/app-sidebar/views';
-import { FeedSearchContainer } from '../../modules/feeds/views';
 import { useCleanDuplicateOnDocRemove } from '@affine/core/modules/feeds';
+import { usePullFeedInterval } from '@affine/core/modules/feeds/hooks/use-pull-feed-interval';
 import { useI18n } from '@affine/i18n';
 import { type DocMode, ZipTransformer } from '@blocksuite/affine/blocks';
 import {
@@ -36,6 +36,7 @@ import { Map as YMap } from 'yjs';
 import { AIProvider } from '../../blocksuite/presets/ai';
 import { AppTabsHeader } from '../../modules/app-tabs-header';
 import { EditorSettingService } from '../../modules/editor-settting';
+import { FeedSearchContainer } from '../../modules/feeds/views';
 import { NavigationButtons } from '../../modules/navigation';
 import { useRegisterNavigationCommands } from '../../modules/navigation/view/use-register-navigation-commands';
 import { QuickSearchContainer } from '../../modules/quicksearch';
@@ -44,7 +45,6 @@ import { AppContainer } from '../affine/app-container';
 import { SyncAwareness } from '../affine/awareness';
 import { useRegisterFindInPageCommands } from '../hooks/affine/use-register-find-in-page-commands';
 import { useSubscriptionNotifyReader } from '../hooks/affine/use-subscription-notify';
-import { usePullFeedItemsInterval } from '../hooks/use-pull-feed-items-interval';
 import { useRegisterNewFeedCommands } from '../hooks/use-register-new-feed-commands';
 import { useRegisterWorkspaceCommands } from '../hooks/use-register-workspace-commands';
 import { OverCapacityNotification } from '../over-capacity';
@@ -149,7 +149,7 @@ export const WorkspaceLayoutProviders = ({ children }: PropsWithChildren) => {
   useRegisterNavigationCommands();
   useRegisterFindInPageCommands();
   useRegisterNewFeedCommands();
-  usePullFeedItemsInterval();
+  usePullFeedInterval();
   useCleanDuplicateOnDocRemove();
 
   useEffect(() => {

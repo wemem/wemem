@@ -48,8 +48,8 @@ export class FeedTree extends Entity {
     return this.framework.createEntity(FeedNode, feed);
   }
 
-  feedNodeByUrl(feedUrl: string): FeedNode | null {
-    const feed = this.folderStore.feedByUrl(feedUrl);
+  rssNodeBySource(feedSource: string): FeedNode | null {
+    const feed = this.folderStore.rssNodeBySource(feedSource);
     if (!feed) {
       return null;
     }

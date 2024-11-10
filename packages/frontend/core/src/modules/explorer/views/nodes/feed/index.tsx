@@ -10,7 +10,11 @@ import {
 } from '@affine/component';
 import { FeedAvatar } from '@affine/component';
 import { useAsyncCallback } from '@affine/core/components/hooks/affine-async-hooks';
-import type { FeedNode } from '@affine/core/modules/feeds';
+import {
+  FeedExplorerType,
+  type FeedNode,
+  FeedNodeType,
+} from '@affine/core/modules/feeds';
 import { FeedsService } from '@affine/core/modules/feeds/services/feeds';
 import type { AffineDNDData } from '@affine/core/types/dnd';
 import { useI18n } from '@affine/i18n';
@@ -37,9 +41,25 @@ import type { GenericExplorerNode } from '../types';
 import { FolderEmpty } from './empty';
 import {
   FavoriteFolderOperation,
-  useExplorerFeedNodeOperations,
+  useExplorerRSSNodeOperations,
 } from './operations';
 import * as styles from './styles.css';
+import { UnreadBadge } from './unread-bedge';
+
+export const calcLocation = (node: FeedNode) => {
+  let at: FeedExplorerType | undefined;
+  if (node.type$.value === FeedNodeType.Folder) {
+    at = FeedExplorerType.Folder;
+  } else if (node.type$.value === FeedNodeType.RSS) {
+    at = FeedExplorerType.RSS;
+  } else {
+    throw new Error('Invalid node type');
+  }
+  return {
+    at,
+    nodeId: node.id as string,
+  };
+};
 
 export const ExplorerFeedsNode = ({
   nodeId,
@@ -86,7 +106,7 @@ export const ExplorerFeedsNode = ({
     return;
   }
 
-  if (type === 'feedFolder') {
+  if (type === FeedNodeType.Folder) {
     return (
       <ExplorerFeedFolderNode
         nodeId={nodeId}
@@ -98,10 +118,10 @@ export const ExplorerFeedsNode = ({
         canDrop={canDrop}
       />
     );
-  } else if (type === 'feed') {
+  } else if (type === FeedNodeType.RSS) {
     return (
       node && (
-        <ExplorerFeedNode
+        <ExplorerFeedRSSNode
           nodeId={nodeId}
           location={location}
           onDrop={handleDrop}
@@ -183,13 +203,13 @@ export const ExplorerFeedFolderNode = ({
     return {
       draggable: {
         entity: {
-          type: 'feedFolder',
+          type: FeedNodeType.Folder,
           id: node.id as string,
         },
         from: location,
       },
       dropTarget: {
-        at: 'explorer:feeds:feed-folder',
+        at: FeedExplorerType.Folder,
       },
     } satisfies AffineDNDData;
   }, [location, node]);
@@ -211,7 +231,7 @@ export const ExplorerFeedFolderNode = ({
         return;
       }
       if (data.treeInstruction?.type === 'make-child') {
-        if (data.source.data.entity?.type === 'feedFolder') {
+        if (data.source.data.entity?.type === FeedNodeType.Folder) {
           if (
             node.id === data.source.data.entity.id ||
             node.beChildOf(data.source.data.entity.id)
@@ -219,11 +239,15 @@ export const ExplorerFeedFolderNode = ({
             return;
           }
           node.moveHere(data.source.data.entity.id, node.indexAt('before'));
-          track.$.navigationPanel.feeds.moveFeedNode({ type: 'feedFolder' });
-        } else if (data.source.data.entity?.type === 'feed') {
+          track.$.navigationPanel.feeds.moveFeedNode({
+            type: FeedNodeType.Folder,
+          });
+        } else if (data.source.data.entity?.type === FeedNodeType.RSS) {
           node.moveHere(data.source.data.entity.id, node.indexAt('before'));
-          track.$.navigationPanel.feeds.moveFeedNode({ type: 'feed' });
-        } else if (data.source.data.from?.at === 'explorer:feeds:feed-folder') {
+          track.$.navigationPanel.feeds.moveFeedNode({
+            type: FeedNodeType.RSS,
+          });
+        } else if (data.source.data.from?.at === FeedExplorerType.Folder) {
           node.moveHere(data.source.data.from.nodeId, node.indexAt('before'));
         }
       } else {
@@ -239,7 +263,7 @@ export const ExplorerFeedFolderNode = ({
         return;
       }
       if (data.treeInstruction?.type === 'make-child') {
-        if (data.source.data.entity?.type === 'feedFolder') {
+        if (data.source.data.entity?.type === FeedNodeType.Folder) {
           if (
             node.id === data.source.data.entity.id ||
             node.beChildOf(data.source.data.entity.id)
@@ -247,9 +271,9 @@ export const ExplorerFeedFolderNode = ({
             return;
           }
           return 'move';
-        } else if (data.source.data.from?.at === 'explorer:feeds:feed-folder') {
+        } else if (data.source.data.from?.at === FeedExplorerType.Folder) {
           return 'move';
-        } else if (data.source.data.entity?.type === 'feed') {
+        } else if (data.source.data.entity?.type === FeedNodeType.RSS) {
           return 'move';
         }
       } else {
@@ -271,7 +295,7 @@ export const ExplorerFeedFolderNode = ({
       ) {
         const at =
           data.treeInstruction?.type === 'reorder-below' ? 'after' : 'before';
-        if (data.source.data.entity?.type === 'feedFolder') {
+        if (data.source.data.entity?.type === FeedNodeType.Folder) {
           if (
             node.id === data.source.data.entity.id ||
             node.beChildOf(data.source.data.entity.id)
@@ -282,8 +306,10 @@ export const ExplorerFeedFolderNode = ({
             data.source.data.entity.id,
             node.indexAt(at, dropAtNode.id)
           );
-          track.$.navigationPanel.organize.moveOrganizeItem({ type: 'folder' });
-        } else if (data.source.data.entity?.type === 'feed') {
+          track.$.navigationPanel.organize.moveOrganizeItem({
+            type: FeedNodeType.Folder,
+          });
+        } else if (data.source.data.entity?.type === FeedNodeType.RSS) {
           node.moveHere(
             data.source.data.entity.id,
             node.indexAt(at, dropAtNode.id)
@@ -328,7 +354,7 @@ export const ExplorerFeedFolderNode = ({
         data.treeInstruction?.type === 'reorder-above' ||
         data.treeInstruction?.type === 'reorder-below'
       ) {
-        if (data.source.data.entity?.type === 'feedFolder') {
+        if (data.source.data.entity?.type === FeedNodeType.Folder) {
           if (
             node.id === data.source.data.entity.id ||
             node.beChildOf(data.source.data.entity.id)
@@ -336,9 +362,9 @@ export const ExplorerFeedFolderNode = ({
             return;
           }
           return 'move';
-        } else if (data.source.data.from?.at === 'explorer:feeds:feed-folder') {
+        } else if (data.source.data.from?.at === FeedExplorerType.Folder) {
           return 'move';
-        } else if (data.source.data.entity?.type === 'feed') {
+        } else if (data.source.data.entity?.type === FeedNodeType.RSS) {
           return 'move';
         }
       } else if (data.treeInstruction?.type === 'reparent') {
@@ -381,7 +407,7 @@ export const ExplorerFeedFolderNode = ({
         );
       }
 
-      if (args.source.data.entity?.type === 'feedFolder') {
+      if (args.source.data.entity?.type === FeedNodeType.Folder) {
         if (
           node.id === args.source.data.entity.id ||
           node.beChildOf(args.source.data.entity.id)
@@ -389,9 +415,9 @@ export const ExplorerFeedFolderNode = ({
           return false;
         }
         return true;
-      } else if (args.source.data.from?.at === 'explorer:feeds:feed-folder') {
+      } else if (args.source.data.from?.at === FeedExplorerType.Folder) {
         return true;
-      } else if (entityType === 'feed') {
+      } else if (entityType === FeedNodeType.RSS) {
         return true;
       }
       return false;
@@ -408,7 +434,7 @@ export const ExplorerFeedFolderNode = ({
       }
       const entityType = args.source.data.entity?.type;
 
-      if (args.source.data.entity?.type === 'feedFolder') {
+      if (args.source.data.entity?.type === FeedNodeType.Folder) {
         if (
           node.id === args.source.data.entity.id ||
           node.beChildOf(args.source.data.entity.id)
@@ -416,9 +442,9 @@ export const ExplorerFeedFolderNode = ({
           return false;
         }
         return true;
-      } else if (args.source.data.from?.at === 'explorer:feeds:feed-folder') {
+      } else if (args.source.data.from?.at === FeedExplorerType.Folder) {
         return true;
-      } else if (entityType === 'feed') {
+      } else if (entityType === FeedNodeType.RSS) {
         return true;
       }
       return false;
@@ -444,7 +470,9 @@ export const ExplorerFeedFolderNode = ({
       t['com.affine.rootAppSidebar.organize.new-folders'](),
       node.indexAt('before')
     );
-    track.$.navigationPanel.organize.createOrganizeItem({ type: 'folder' });
+    track.$.navigationPanel.feeds.createFeedsItem({
+      type: FeedNodeType.Folder,
+    });
     setCollapsed(false);
     setNewFolderId(newFolderId);
   }, [node, t]);
@@ -568,6 +596,7 @@ export const ExplorerFeedFolderNode = ({
       childrenPlaceholder={<FolderEmpty canDrop={handleCanDrop} />}
       dropEffect={handleDropEffect}
       data-testid={`explorer-folder-${node?.id}`}
+      postfix={<UnreadBadge node={node} />}
     >
       {children?.map(child => (
         <ExplorerFeedsNode
@@ -579,20 +608,14 @@ export const ExplorerFeedFolderNode = ({
           dropEffect={handleDropEffectOnChildren}
           canDrop={handleChildrenCanDrop}
           reorderable
-          location={{
-            at:
-              child.type$.value === 'feedFolder'
-                ? 'explorer:feeds:feed-folder'
-                : 'explorer:feeds:feed',
-            nodeId: child.id as string,
-          }}
+          location={calcLocation(child)}
         />
       ))}
     </ExplorerTreeNode>
   );
 };
 
-export const ExplorerFeedNode = ({
+export const ExplorerFeedRSSNode = ({
   nodeId,
   location,
   reorderable,
@@ -642,13 +665,13 @@ export const ExplorerFeedNode = ({
     return {
       draggable: {
         entity: {
-          type: 'feed',
+          type: FeedNodeType.RSS,
           id: nodeId as string,
         },
         from: location,
       },
       dropTarget: {
-        at: 'explorer:feeds:feed',
+        at: FeedExplorerType.RSS,
       },
     } satisfies AffineDNDData;
   }, [nodeId, location]);
@@ -664,7 +687,7 @@ export const ExplorerFeedNode = ({
     [node]
   );
 
-  const operations = useExplorerFeedNodeOperations(
+  const operations = useExplorerRSSNodeOperations(
     node,
     useMemo(
       () => ({
@@ -702,6 +725,7 @@ export const ExplorerFeedNode = ({
       onRename={handleRename}
       operations={finalOperations}
       data-testid={`explorer-feed-${node.id}`}
+      postfix={<UnreadBadge node={node} />}
     />
   );
 };

@@ -16,11 +16,12 @@ export const AFFiNE_WORKSPACE_DB_SCHEMA = {
     type: f.string(),
     name: f.string(),
     description: f.string().optional(),
-    url: f.string().optional(),
+    source: f.string().optional(),
     icon: f.string().optional(),
     index: f.string(),
     createdAt: f.number(),
     updatedAt: f.number().optional(),
+    unreadCount: f.number().optional(),
   },
   docProperties: t.document({
     // { [`custom:{customPropertyId}`]: any }

@@ -13,6 +13,7 @@ import {
   FavoriteService,
   isFavoriteSupportType,
 } from '@affine/core/modules/favorite';
+import { FeedNodeType } from '@affine/core/modules/feeds';
 import { WorkbenchService } from '@affine/core/modules/workbench';
 import type { AffineDNDData } from '@affine/core/types/dnd';
 import { isNewTabTrigger } from '@affine/core/utils';
@@ -30,7 +31,7 @@ import { ExplorerService } from '../../../services/explorer';
 import { CollapsibleSection } from '../../layouts/collapsible-section';
 import { ExplorerCollectionNode } from '../../nodes/collection';
 import { ExplorerDocNode } from '../../nodes/doc';
-import { ExplorerFeedFolderNode, ExplorerFeedNode } from '../../nodes/feed';
+import { ExplorerFeedFolderNode, ExplorerFeedRSSNode } from '../../nodes/feed';
 import { ExplorerFolderNode } from '../../nodes/folder';
 import { ExplorerTagNode } from '../../nodes/tag';
 import {
@@ -275,7 +276,7 @@ const ExplorerFavoriteNode = ({
       dropEffect={favoriteChildrenDropEffect}
       canDrop={favoriteChildrenCanDrop}
     />
-  ) : favorite.type === 'feedFolder' ? (
+  ) : favorite.type === FeedNodeType.Folder ? (
     <ExplorerFeedFolderNode
       key={favorite.id}
       nodeId={favorite.id}
@@ -284,8 +285,8 @@ const ExplorerFavoriteNode = ({
       dropEffect={favoriteChildrenDropEffect}
       canDrop={favoriteChildrenCanDrop}
     />
-  ) : favorite.type === 'feed' ? (
-    <ExplorerFeedNode
+  ) : favorite.type === FeedNodeType.RSS ? (
+    <ExplorerFeedRSSNode
       key={favorite.id}
       nodeId={favorite.id}
       location={childLocation}

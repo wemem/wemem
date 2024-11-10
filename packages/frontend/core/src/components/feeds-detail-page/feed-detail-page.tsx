@@ -1,7 +1,7 @@
 import { notify, Scrollable, useHasScrollTop } from '@affine/component';
 import type { ChatPanel } from '@affine/core/blocksuite/presets/ai';
 import { AIProvider } from '@affine/core/blocksuite/presets/ai';
-import { PageAIOnboarding } from '@affine/core/components/affine/ai-onboarding';
+// import { PageAIOnboarding } from '@affine/core/components/affine/ai-onboarding';
 import { EditorOutlineViewer } from '@affine/core/components/blocksuite/outline-viewer';
 import { useAppSettingHelper } from '@affine/core/components/hooks/affine/use-app-setting-helper';
 import { useDocMetaHelper } from '@affine/core/components/hooks/use-block-suite-page-meta';
@@ -270,7 +270,7 @@ export const FeedDetailPage = memo(function DetailPageImpl() {
       </ViewSidebarTab>
 
       <GlobalPageHistoryModal />
-      <PageAIOnboarding />
+      {/* <PageAIOnboarding /> */}
     </FrameworkScope>
   );
 });

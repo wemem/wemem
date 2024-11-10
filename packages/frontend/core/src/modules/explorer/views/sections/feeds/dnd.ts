@@ -1,4 +1,5 @@
 import type { DropTargetOptions } from '@affine/component';
+import { FeedNodeType } from '@affine/core/modules/feeds';
 import { isOrganizeSupportType } from '@affine/core/modules/organize/constants';
 import type { AffineDNDData } from '@affine/core/types/dnd';
 
@@ -10,8 +11,8 @@ export const organizeChildrenDropEffect: ExplorerTreeNodeDropEffect = data => {
     data.treeInstruction?.type === 'reorder-below'
   ) {
     if (
-      data.source.data.entity?.type === 'feedFolder' ||
-      data.source.data.entity?.type === 'feed'
+      data.source.data.entity?.type === FeedNodeType.Folder ||
+      data.source.data.entity?.type === FeedNodeType.RSS
     ) {
       return 'move';
     }

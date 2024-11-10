@@ -4,6 +4,7 @@ import { FeedsFilterContainer } from '@affine/core/components/feeds-page-list/fe
 import { FeedsPageList } from '@affine/core/components/feeds-page-list/feeds-page-list';
 import { useBlockSuiteDocMeta } from '@affine/core/components/hooks/use-block-suite-page-meta';
 import { useFilteredPageMetas } from '@affine/core/components/page-list';
+import type { FeedNode } from '@affine/core/modules/feeds';
 import { FeedsService } from '@affine/core/modules/feeds/services/feeds';
 import { ReadStatus } from '@affine/core/modules/feeds/types';
 import { ViewBody, ViewHeader } from '@affine/core/modules/workbench';
@@ -55,17 +56,17 @@ const AllFeedPage = memo(() => {
     switch (params.status) {
       case ReadStatus.READ:
         return {
-          feedUrl: feed.url as string,
+          source: feed.source as string,
           read: true,
         };
       case ReadStatus.UNREAD:
         return {
-          feedUrl: feed.url as string,
+          source: feed.source as string,
           read: false,
         };
       default:
         return {
-          feedUrl: feed.url as string,
+          source: feed.source as string,
         };
     }
   }, [feed, params.status]);
@@ -134,6 +135,7 @@ const AllFeedPage = memo(() => {
                 currentFilters={currentFilters}
                 onChangeCurrentFilters={setCurrentFilters}
                 wrapTo={to => `/feed/${feedId}/${params.status}${to}`}
+                feedNode={feedNode as FeedNode}
               />
             </div>
           </ResizePanel>

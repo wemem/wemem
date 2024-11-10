@@ -1,18 +1,30 @@
 import type { WorkspaceDBService } from '@toeverything/infra';
 import { Store } from '@toeverything/infra';
 
+export enum FeedNodeType {
+  Folder = 'feedFolder',
+  RSS = 'feedRss',
+  Email = 'feedEmail',
+}
+
+export enum FeedExplorerType {
+  Folder = 'explorer:feeds:folder',
+  RSS = 'explorer:feeds:rss',
+}
+
 export type Feed = {
   name: string; // for feed folder is the folder name, for feed is the feed name
   // eslint-disable-next-line @typescript-eslint/ban-types
-  type: (string & {}) | 'feedFolder' | 'feed';
+  type: (string & {}) | FeedNodeType;
   index: string;
   id: string;
-  url?: string | null; // only for feed type
+  source?: string | null; // only for feed type
   description?: string | null; // for feed type
   icon?: string | null; // for feed type
   parentId?: string | null;
   createdAt: number;
   updatedAt?: number | null;
+  unreadCount?: number | null;
 };
 
 export class FeedNodesStore extends Store {
@@ -34,10 +46,10 @@ export class FeedNodesStore extends Store {
     return this.dbService.db.feedNodes.isLoading$;
   }
 
-  feedByUrl(feedUrl: string) {
+  rssNodeBySource(feedSource: string) {
     const [feed] = this.dbService.db.feedNodes.find({
-      url: feedUrl,
-      type: 'feed',
+      source: feedSource,
+      type: FeedNodeType.RSS,
     });
     return feed || null;
   }
@@ -45,7 +57,7 @@ export class FeedNodesStore extends Store {
   folderById(folderId: string) {
     const [feed] = this.dbService.db.feedNodes.find({
       id: folderId,
-      type: 'feedFolder',
+      type: FeedNodeType.Folder,
     });
     return feed || null;
   }
@@ -53,7 +65,7 @@ export class FeedNodesStore extends Store {
   feedById(feedId: string) {
     const [feed] = this.dbService.db.feedNodes.find({
       id: feedId,
-      type: 'feed',
+      type: FeedNodeType.RSS,
     });
     return feed || null;
   }
@@ -86,7 +98,7 @@ export class FeedNodesStore extends Store {
     if (node === null) {
       throw new Error('Node not found');
     }
-    if (node.type !== 'feedFolder' && node.type !== 'feed') {
+    if (node.type !== FeedNodeType.Folder && node.type !== FeedNodeType.RSS) {
       throw new Error('Cannot rename non-feed or non-folder node');
     }
     this.dbService.db.feedNodes.update(nodeId, {
@@ -95,55 +107,67 @@ export class FeedNodesStore extends Store {
     });
   }
 
+  incrUnreadCount(nodeId: string, count: number) {
+    const node = this.dbService.db.feedNodes.get(nodeId);
+    if (node === null) {
+      throw new Error('Node not found');
+    }
+    this.dbService.db.feedNodes.update(nodeId, {
+      unreadCount: Math.max(0, (node.unreadCount || 0) + count),
+      updatedAt: Date.now(),
+    });
+  }
+
   createFolder(parentId: string | null, name: string, index: string) {
     if (parentId) {
       const parent = this.dbService.db.feedNodes.get(parentId);
-      if (parent === null || parent.type !== 'feedFolder') {
+      if (parent === null || parent.type !== FeedNodeType.Folder) {
         throw new Error('Parent folder not found');
       }
     }
 
     return this.dbService.db.feedNodes.create({
       parentId: parentId,
-      type: 'feedFolder',
+      type: FeedNodeType.Folder,
       name: name,
       index: index,
       createdAt: Date.now(),
     }).id;
   }
 
-  createFeed(
+  createRSS(
     parentId: string | null,
     feedId: string,
     name: string,
-    url: string,
+    source: string,
     description: string | null,
     icon: string | null,
     index: string
   ) {
     if (parentId) {
       const parent = this.dbService.db.feedNodes.get(parentId);
-      if (parent === null || parent.type !== 'feedFolder') {
+      if (parent === null || parent.type !== FeedNodeType.Folder) {
         throw new Error('Parent folder not found');
       }
     }
 
     return this.dbService.db.feedNodes.create({
       parentId: parentId,
-      type: 'feed',
+      type: FeedNodeType.RSS,
       name: name,
-      url: url,
+      source: source,
       description: description ?? undefined,
       icon: icon ?? undefined,
       index: index,
       createdAt: Date.now(),
       id: feedId,
+      unreadCount: 0,
     }).id;
   }
 
   removeFolder(folderId: string) {
     const info = this.dbService.db.feedNodes.get(folderId);
-    if (info === null || info.type !== 'feedFolder') {
+    if (info === null || info.type !== FeedNodeType.Folder) {
       throw new Error('Folder not found');
     }
     const stack = [info];
@@ -152,7 +176,7 @@ export class FeedNodesStore extends Store {
       if (!current) {
         continue;
       }
-      if (current.type !== 'feedFolder') {
+      if (current.type !== FeedNodeType.Folder) {
         this.dbService.db.feedNodes.delete(current.id);
       } else {
         const children = this.dbService.db.feedNodes.find({
@@ -166,7 +190,7 @@ export class FeedNodesStore extends Store {
 
   removeFeed(feedId: string) {
     const feed = this.dbService.db.feedNodes.get(feedId);
-    if (feed === null || feed.type !== 'feed') {
+    if (feed === null || feed.type !== FeedNodeType.RSS) {
       throw new Error('Feed not found');
     }
     this.dbService.db.feedNodes.delete(feedId);
@@ -186,11 +210,11 @@ export class FeedNodesStore extends Store {
         throw new Error('Cannot move a node to its descendant');
       }
       const parent = this.dbService.db.feedNodes.get(parentId);
-      if (parent === null || parent.type !== 'feedFolder') {
+      if (parent === null || parent.type !== FeedNodeType.Folder) {
         throw new Error('Parent folder not found');
       }
     } else {
-      if (node.type !== 'feedFolder' && node.type !== 'feed') {
+      if (node.type !== FeedNodeType.Folder && node.type !== FeedNodeType.RSS) {
         throw new Error('Root node can only have folders');
       }
     }

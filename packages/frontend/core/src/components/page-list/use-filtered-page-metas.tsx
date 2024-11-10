@@ -15,7 +15,7 @@ export const useFilteredPageMetas = (
     filters?: Filter[];
     collection?: Collection;
     feedFilter?: {
-      feedUrl: string;
+      source: string;
       read?: boolean;
     };
   } = {}
@@ -71,9 +71,9 @@ export const useFilteredPageMetas = (
 
         // Add feed filter logic
         if (options.feedFilter) {
-          const { feedUrl, read } = options.feedFilter;
+          const { source, read } = options.feedFilter;
           // Check if page has matching feed URL
-          if (pageMeta.feedUrl !== feedUrl) {
+          if (pageMeta.feedSource !== source) {
             return false;
           }
           // If read status is specified, filter by it

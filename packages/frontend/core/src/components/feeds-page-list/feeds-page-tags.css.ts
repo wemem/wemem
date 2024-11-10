@@ -77,7 +77,6 @@ export const tagInnerWrapper = style({
   alignItems: 'center',
   justifyContent: 'space-between',
   padding: '0 8px',
-  color: cssVar('textPrimaryColor'),
   borderColor: cssVar('borderColor'),
   selectors: {
     '&[data-focused=true]': {

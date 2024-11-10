@@ -68,9 +68,10 @@ export class DocRecord extends Entity<{ id: string }> {
 
   markAsRead() {
     if (this.read$.value) {
-      return;
+      return false;
     }
-    return this.setMeta({ read: true, readDate: Date.now() });
+    this.setMeta({ read: true, readDate: Date.now() });
+    return true;
   }
 
   title$ = this.meta$.map(meta => meta.title ?? '');
@@ -78,4 +79,6 @@ export class DocRecord extends Entity<{ id: string }> {
   trash$ = this.meta$.map(meta => meta.trash ?? false);
 
   read$ = this.meta$.map(meta => meta.read ?? false);
+
+  feedSource$ = this.meta$.map(meta => meta.feedSource ?? null);
 }

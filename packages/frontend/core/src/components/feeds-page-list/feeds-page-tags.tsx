@@ -1,6 +1,7 @@
 import { Menu } from '@affine/component';
 import type { Tag } from '@affine/core/modules/tag';
 import { useTagI18n } from '@affine/core/modules/tag/entities/internal-tag';
+import { stopPropagation } from '@affine/core/utils';
 import { CloseIcon, MoreHorizontalIcon } from '@blocksuite/icons/rc';
 import { LiveData, useLiveData } from '@toeverything/infra';
 import { assignInlineVars } from '@vanilla-extract/dynamic';
@@ -9,7 +10,6 @@ import type { MouseEventHandler } from 'react';
 import { useCallback, useMemo } from 'react';
 
 import * as styles from './feeds-page-tags.css';
-import { stopPropagation } from '@affine/core/utils';
 
 export interface PageTagsProps {
   tags: Tag[];

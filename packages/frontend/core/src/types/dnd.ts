@@ -1,5 +1,7 @@
 import type { DNDData } from '@affine/component';
 
+import type { FeedExplorerType, FeedNodeType } from '../modules/feeds';
+
 export interface AffineDNDData extends DNDData {
   draggable: {
     entity?:
@@ -20,11 +22,11 @@ export interface AffineDNDData extends DNDData {
           id: string;
         }
       | {
-          type: 'feedFolder';
+          type: FeedNodeType.Folder;
           id: string;
         }
       | {
-          type: 'feed';
+          type: FeedNodeType.RSS;
           id: string;
         };
     from?:
@@ -68,11 +70,11 @@ export interface AffineDNDData extends DNDData {
           at: 'explorer:tags:docs';
         }
       | {
-          at: 'explorer:feeds:feed-folder';
+          at: FeedExplorerType.Folder;
           nodeId: string;
         }
       | {
-          at: 'explorer:feeds:feed';
+          at: FeedExplorerType.RSS;
           nodeId: string;
         }
       | {

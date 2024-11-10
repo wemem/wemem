@@ -1,10 +1,12 @@
+import { FeedNodeType } from '../feeds';
+
 export const FavoriteSupportType = [
   'collection',
   'doc',
   'tag',
   'folder',
-  'feed',
-  'feedFolder',
+  FeedNodeType.RSS,
+  FeedNodeType.Folder,
 ] as const;
 export type FavoriteSupportType = (typeof FavoriteSupportType)[number];
 export const isFavoriteSupportType = (

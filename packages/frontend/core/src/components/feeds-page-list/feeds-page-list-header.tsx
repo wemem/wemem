@@ -12,6 +12,7 @@ import { useParams } from 'react-router-dom';
 import { useNavigateHelper } from '../hooks/use-navigate-helper';
 // import { FeedsPageListDisplayMenu } from './feeds-page-list-display-menu';
 import * as styles from './feeds-page-list-header.css';
+import type { FeedNode } from '@affine/core/modules/feeds';
 // import { FeedsPageListHeaderOperationsMenu } from './feeds-page-list-header-operations-menu';
 
 export const getOptions = (t: ReturnType<typeof useI18n>) =>
@@ -36,11 +37,13 @@ export const getOptions = (t: ReturnType<typeof useI18n>) =>
 export const FeedsDocsPageListHeader = ({
   workspaceId,
   filteredPageMetas,
+  feedNode,
 }: {
   workspaceId: string;
   filteredPageMetas: DocMeta[];
   currentFilters: Filter[];
   onChangeCurrentFilters: (filters: Filter[]) => void;
+  feedNode: FeedNode;
 }) => {
   const t = useI18n();
   const params = useParams();
@@ -71,10 +74,12 @@ export const FeedsDocsPageListHeader = ({
       if (!record) {
         return;
       }
-      record.markAsRead();
+      if (record.markAsRead()) {
+        feedNode.incrUnreadCount(-1);
+      }
     });
     setMarking(false);
-  }, [docRecordList, filteredPageMetas]);
+  }, [docRecordList, feedNode, filteredPageMetas]);
 
   const radioItems = useMemo<RadioItem[]>(() => getOptions(t), [t]);
 

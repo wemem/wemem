@@ -52,7 +52,7 @@ export const useTagI18n = () => {
   );
 };
 
-export const InternalTags = [FeedTag, WeChatTag, RSSTag];
+export const InternalTags = [FeedTag, RSSTag];
 
 export const isGhostTag = (tagId: string) => {
   return tagId.includes(InternalGhostTagPrefix);

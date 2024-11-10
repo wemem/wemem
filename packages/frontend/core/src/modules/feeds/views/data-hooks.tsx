@@ -116,7 +116,7 @@ export const useSubscribeToFeed = () => {
       }
 
       // if the feed is already added, do nothing
-      if (feedsService.feedTree.feedNodeByUrl(feedRecord.url)) {
+      if (feedsService.feedTree.rssNodeBySource(feedRecord.url)) {
         return;
       }
 

@@ -29,8 +29,8 @@ declare module '@blocksuite/affine/store' {
     trash?: boolean;
     trashDate?: number;
 
-    // feed url
-    feedUrl?: string;
+    // feed source
+    feedSource?: string;
     // read status
     read?: boolean;
     // read date

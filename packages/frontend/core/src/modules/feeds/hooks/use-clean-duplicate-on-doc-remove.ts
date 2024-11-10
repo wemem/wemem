@@ -1,9 +1,16 @@
 import { useWorkspace } from '@affine/core/components/hooks/use-workspace';
-import { useService, WorkspaceDBService } from '@toeverything/infra';
 
 export function useCleanDuplicateOnDocRemove() {
   const workspace = useWorkspace();
-  const dbService = useService(WorkspaceDBService);
+
+  workspace?.docCollection.slots.docAdded.on(docId => {
+    const doc = workspace.docCollection.docs.get(docId);
+    if (!doc) {
+      return;
+    }
+
+    console.log('doc.meta?.feedSource', doc.meta?.feedSource);
+  });
 
   // const docs = dbService.db.feedDocs.find();
   // docs.forEach(doc => {
@@ -11,6 +18,11 @@ export function useCleanDuplicateOnDocRemove() {
   // });
   // Listen for document removal events
   workspace?.docCollection.slots.docRemoved.on(docId => {
-    dbService.db.feedDocs.delete(docId);
+    const doc = workspace.docCollection.docs.get(docId);
+    if (!doc) {
+      return;
+    }
+
+    console.log('doc.meta?.feedSource', doc.meta?.feedSource);
   });
 }

@@ -1,3 +1,4 @@
+import { FeedsService } from '@affine/core/modules/feeds';
 import {
   DocsService,
   useLiveData,
@@ -30,16 +31,35 @@ export const useDeepReading = (docId: string) => {
 
 export const useDocReadStatus = (docId: string) => {
   const docRecordList = useService(DocsService).list;
+  const feedsService = useService(FeedsService);
 
   const record = useMemo(
     () => docRecordList.doc$(docId).value,
     [docRecordList, docId]
   );
   const read = useLiveData(record?.read$);
+  const feedSource = useLiveData(record?.feedSource$);
 
   const toggleRead = useCallback(() => {
-    record?.toggleRead();
-  }, [record]);
+    if (!record) {
+      return;
+    }
+    if (!feedSource) {
+      return;
+    }
+
+    const rssNode = feedsService.feedTree.rssNodeBySource(feedSource);
+    if (!rssNode) {
+      return;
+    }
+
+    if (!read) {
+      rssNode.incrUnreadCount(-1);
+    } else {
+      rssNode.incrUnreadCount(1);
+    }
+    record.toggleRead();
+  }, [feedSource, feedsService.feedTree, read, record]);
 
   return {
     read: Boolean(read),

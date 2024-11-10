@@ -63,11 +63,11 @@ export const FeedInfoTable = ({
             value={feed.description}
           />
         )}
-        {feed.url && (
+        {feed.source && (
           <RowComponent
             icon={<LinkIcon />}
             name={t['ai.wemem.rootAppSidebar.feeds.info-modal.url']()}
-            value={feed.url}
+            value={feed.source}
           />
         )}
         {feed.createdAt && (
@@ -86,7 +86,7 @@ export const FeedInfoTable = ({
         )}
       </>
     );
-  }, [feed.createdAt, feed.description, feed.url, feed.updatedAt, t]);
+  }, [feed.createdAt, feed.description, feed.source, feed.updatedAt, t]);
 
   const dElement = useDebouncedValue(element, 500);
 

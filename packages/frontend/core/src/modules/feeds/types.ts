@@ -1,7 +1,9 @@
+import type { FeedNodeType } from './stores/feed-node';
+
 export interface NodeInfo {
   id: string;
   parentId: string | null;
-  type: 'feedFolder' | 'doc' | 'tag' | 'collection';
+  type: FeedNodeType;
   data: string;
   index: string;
 }
