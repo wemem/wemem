@@ -8,8 +8,8 @@
     "run-test": "./scripts/run-test.ts"
   },
   "scripts": {
-    "build": "tsc",
-    "jscodeshift": "jscodeshift --run-in-band -t scripts/transform.cjs dist/",
+    "build": "tsc && yarn transform",
+    "transform": "jscodeshift --run-in-band -t ./scripts/transform.cjs dist/",
     "start": "node --loader ts-node/esm/transpile-only.mjs ./src/index.ts",
     "dev": "nodemon ./src/index.ts",
     "test": "ava --concurrency 1 --serial",
@@ -106,7 +106,7 @@
     "@affine-test/kit": "workspace:*",
     "@affine/server-native": "workspace:*",
     "@nestjs/testing": "^10.3.7",
-    "@swc/core": "^1.7.26",
+    "@swc/core": "^1.9.1",
     "@types/cookie-parser": "^1.4.7",
     "@types/express": "^4.17.21",
     "@types/graphql-upload": "^16.0.7",
