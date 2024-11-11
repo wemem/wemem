@@ -103,6 +103,8 @@ jobs:
       MIXPANEL_TOKEN: ${{ secrets.MIXPANEL_TOKEN }}
     steps:
       - uses: actions/checkout@v4
+        with:
+          submodules: recursive
       - name: Setup Version
         id: version
         uses: ./.github/actions/setup-version
@@ -114,6 +116,8 @@ jobs:
           hard-link-nm: false
           nmHoistingLimits: workspaces
           enableScripts: false
+      - name: Setup Blocksuite
+        uses: ./.github/actions/setup-blocksuite
       - name: Build AFFiNE native
         uses: ./.github/actions/build-rust
         with:
@@ -206,6 +210,8 @@ jobs:
       MIXPANEL_TOKEN: ${{ secrets.MIXPANEL_TOKEN }}
     steps:
       - uses: actions/checkout@v4
+        with:
+          submodules: recursive
       - name: Setup Version
         id: version
         uses: ./.github/actions/setup-version
@@ -216,6 +222,8 @@ jobs:
           extra-flags: workspaces focus @affine/electron @affine/monorepo
           hard-link-nm: false
           nmHoistingLimits: workspaces
+      - name: Setup Blocksuite
+        uses: ./.github/actions/setup-blocksuite
       - name: Build AFFiNE native
         uses: ./.github/actions/build-rust
         with:
@@ -275,6 +283,8 @@ jobs:
       FILES_TO_BE_SIGNED: ${{ steps.get_files_to_be_signed.outputs.FILES_TO_BE_SIGNED }}
     steps:
       - uses: actions/checkout@v4
+        with:
+          submodules: recursive
       - name: Setup Version
         id: version
         uses: ./.github/actions/setup-version
@@ -285,6 +295,8 @@ jobs:
           extra-flags: workspaces focus @affine/electron @affine/monorepo
           hard-link-nm: false
           nmHoistingLimits: workspaces
+      - name: Setup Blocksuite
+        uses: ./.github/actions/setup-blocksuite
       - name: Download and overwrite packaged artifacts
         uses: actions/download-artifact@v4
         with:
