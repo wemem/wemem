@@ -12,6 +12,8 @@ class ReplaceVisitor {
     this.replaceMap = {
       'https://github.com/toeverything/AFFiNE':
         'https://github.com/wemem/wemem',
+      'https://github.com/toeverything/affine':
+        'https://github.com/wemem/wemem',
       'https://twitter.com/AffineOfficial': 'https://twitter.com/wememai',
       AFFiNE: 'Wemem',
       AFFINE: 'Wemem',
