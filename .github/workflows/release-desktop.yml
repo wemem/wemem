@@ -44,11 +44,15 @@ jobs:
       RELEASE_VERSION: ${{ steps.version.outputs.APP_VERSION }}
     steps:
       - uses: actions/checkout@v4
+        with:
+          submodules: recursive
       - name: Setup Version
         id: version
         uses: ./.github/actions/setup-version
       - name: Setup Node.js
         uses: ./.github/actions/setup-node
+      - name: Setup Blocksuite
+        uses: ./.github/actions/setup-blocksuite
       - name: Setup @sentry/cli
         uses: ./.github/actions/setup-sentry
       - name: generate-assets
