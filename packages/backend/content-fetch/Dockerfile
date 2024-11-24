@@ -28,10 +28,8 @@ COPY . .
 
 RUN npm install -g typescript
 
-RUN yarn install \
-    --logLevel verbose \
-    --inline-stdout \
-    --report-telemetry=none
+RUN yarn workspaces focus @wemem/content-fetch --production
+
 RUN rm -rf packages/backend/content-handler/dist
 RUN rm -rf packages/backend/content-fetch/dist
 
