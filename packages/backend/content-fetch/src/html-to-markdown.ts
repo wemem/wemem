@@ -1,6 +1,6 @@
 import TurndownService from 'turndown';
 // @ts-ignore
-import { gfm as turndownPluginGfm } from 'joplin-turndown-plugin-gfm';
+import { gfm } from 'joplin-turndown-plugin-gfm';
 
 export async function parseMarkdown(
   html: string | null | undefined
@@ -26,7 +26,6 @@ export async function parseMarkdown(
       return '[' + content.trim() + '](' + href + title + ')\n';
     },
   });
-  var gfm = turndownPluginGfm.gfm;
   turndownService.use(gfm);
 
   try {
