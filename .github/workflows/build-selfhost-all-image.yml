@@ -376,7 +376,7 @@ jobs:
         run: |
           yarn config set --json supportedArchitectures.cpu '["x64", "arm64", "arm"]'
           yarn config set --json supportedArchitectures.libc '["glibc"]'
-          yarn workspaces focus @wemem/content-fetch --production
+          yarn workspaces focus @wemem/content-fetch @wemem/content-handler --production
 
       - name: Setup Version
         id: version
