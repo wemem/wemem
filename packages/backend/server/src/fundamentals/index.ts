@@ -33,6 +33,7 @@ export type { PrismaTransaction } from './prisma';
 export * from './storage';
 export { type StorageProvider, StorageProviderFactory } from './storage';
 export { CloudThrottlerGuard, SkipThrottle, Throttle } from './throttler';
+export * from './trace';
 export {
   getRequestFromHost,
   getRequestResponseFromContext,

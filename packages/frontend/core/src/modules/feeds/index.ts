@@ -26,7 +26,7 @@ export function configureFeedsModule(framework: Framework) {
     .scope(WorkspaceScope)
     .service(FeedsService, [WorkspaceService])
     .entity(FeedTree, [FeedNodesStore])
-    .entity(FeedNode, [FeedNodesStore])
+    .entity(FeedNode, [FeedNodesStore, GraphQLService, WorkspaceService])
     .entity(FeedInfoModal)
     .entity(FeedSearchModal, [GraphQLService])
     .store(FeedNodesStore, [WorkspaceDBService]);

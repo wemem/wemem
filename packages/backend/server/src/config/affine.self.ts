@@ -90,3 +90,11 @@ if (AFFiNE.deploy) {
 
   AFFiNE.use('gcloud');
 }
+
+if (env.FEEDS_CONTENT_FETCH_URL) {
+  AFFiNE.use('feeds', {
+    enabled: true,
+    contentFetchUrl: env.FEEDS_CONTENT_FETCH_URL,
+    contentFetchToken: env.FEEDS_CONTENT_FETCH_TOKEN,
+  });
+}

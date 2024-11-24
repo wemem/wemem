@@ -1,0 +1,124 @@
+{
+  "name": "@wemem/content-fetch",
+  "private": true,
+  "version": "0.17.0",
+  "description": "Wemem content fetch",
+  "type": "module",
+  "bin": {
+    "run-test": "./scripts/run-test.ts"
+  },
+  "scripts": {
+    "build": "tsc",
+    "start": "node --loader ts-node/esm/transpile-only.mjs ./src/index.ts",
+    "dev": "nodemon ./src/index.ts",
+    "test": "ava --concurrency 1 --serial",
+    "test:coverage": "c8 ava --concurrency 1 --serial"
+  },
+  "dependencies": {
+    "@aws-sdk/client-s3": "^3.609.0",
+    "@sentry/serverless": "^7.77.0",
+    "@wemem/content-handler": "workspace:*",
+    "@wemem/readability": "workspace:*",
+    "axios": "^1.4.0",
+    "bullmq": "^5.1.1",
+    "crypto": "^1.0.1",
+    "dompurify": "^2.4.1",
+    "dotenv": "^8.2.0",
+    "express": "^4.17.1",
+    "joplin-turndown-plugin-gfm": "^1.0.12",
+    "linkedom": "^0.14.9",
+    "posthog-node": "^3.6.3",
+    "puppeteer-core": "^22.8.0",
+    "puppeteer-extra": "^3.3.4",
+    "puppeteer-extra-plugin-adblocker": "^2.13.5",
+    "puppeteer-extra-plugin-stealth": "^2.11.1",
+    "turndown": "^7.2.0",
+    "turndown-plugin-gfm": "^1.0.2",
+    "urlsafe-base64": "^1.0.0"
+  },
+  "devDependencies": {
+    "@types/dompurify": "^3.0.5",
+    "@types/turndown": "^5.0.5",
+    "@types/urlsafe-base64": "^1.0.31",
+    "chai": "^4.3.6",
+    "mocha": "^10.0.0",
+    "nodemon": "^3.1.7"
+  },
+  "ava": {
+    "timeout": "1m",
+    "extensions": {
+      "ts": "module"
+    },
+    "workerThreads": false,
+    "nodeArguments": [
+      "--trace-sigint",
+      "--loader",
+      "ts-node/esm/transpile-only.mjs",
+      "--es-module-specifier-resolution=node"
+    ],
+    "watchMode": {
+      "ignoreChanges": [
+        "static/**",
+        "**/*.gen.*"
+      ]
+    },
+    "files": [
+      "**/__tests__/**/*.spec.ts",
+      "tests/**/*.spec.ts",
+      "tests/**/*.e2e.ts"
+    ],
+    "require": [
+      "./src/prelude.ts"
+    ],
+    "environmentVariables": {
+      "TS_NODE_PROJECT": "./tests/tsconfig.json",
+      "NODE_ENV": "test",
+      "MAILER_HOST": "0.0.0.0",
+      "MAILER_PORT": "1025",
+      "MAILER_USER": "noreply@toeverything.info",
+      "MAILER_PASSWORD": "affine",
+      "MAILER_SENDER": "noreply@toeverything.info",
+      "FEATURES_EARLY_ACCESS_PREVIEW": "false",
+      "DEPLOYMENT_TYPE": "affine"
+    }
+  },
+  "nodemonConfig": {
+    "exec": "node",
+    "script": "./src/index.ts",
+    "nodeArgs": [
+      "--loader",
+      "ts-node/esm.mjs",
+      "--es-module-specifier-resolution=node"
+    ],
+    "ignore": [
+      "**/__tests__/**",
+      "**/dist/**",
+      "*.gen.*"
+    ],
+    "env": {
+      "TS_NODE_TRANSPILE_ONLY": true,
+      "TS_NODE_PROJECT": "./tsconfig.json",
+      "DEBUG": "wemem:*",
+      "FORCE_COLOR": true,
+      "DEBUG_COLORS": true
+    },
+    "delay": 1000
+  },
+  "c8": {
+    "reporter": [
+      "text",
+      "lcov"
+    ],
+    "report-dir": ".coverage",
+    "exclude": [
+      "scripts",
+      "node_modules",
+      "**/*.spec.ts",
+      "**/*.e2e.ts"
+    ]
+  },
+  "stableVersion": "0.5.3",
+  "installConfig": {
+    "hoistingLimits": "workspaces"
+  }
+}

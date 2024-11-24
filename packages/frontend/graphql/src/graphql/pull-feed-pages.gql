@@ -1,0 +1,28 @@
+query pullFeedPages($after: String, $first: Int, $workspaceId: String) {
+  pullFeedPages(first: $first, after: $after, workspaceId: $workspaceId) {
+    edges {
+      cursor
+      node {
+        id
+        title
+        aiSummary
+        originalUrl
+        content
+        type
+        createdAt
+        publishedAt
+        author
+        description
+        language
+        feedUrl
+      }
+    }
+    pageInfo {
+      hasNextPage
+      hasPreviousPage
+      startCursor
+      endCursor
+      totalCount
+    }
+  }
+}

@@ -37,6 +37,8 @@
   "ai.wemem.rootAppSidebar.feeds.root-folder-and-feeds-only": "只有文件夹和订阅可以移动到根文件夹",
   "ai.wemem.rootAppSidebar.feeds.info-modal.description": "描述",
   "ai.wemem.rootAppSidebar.feeds.info-modal.url": "URL",
+  "ai.wemem.notification.message.feed-added": "订阅源已添加",
+  "ai.wemem.notification.message.feed-added-failed": "订阅源添加失败",
   "ai.wemem.feeds.deep-reading": "精读",
   "ai.wemem.workspaceCard.enableCloud": "启用 Wemem 云同步",
   "ai.wemem.workspaceSubPath.archive": "归档",

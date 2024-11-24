@@ -48,7 +48,7 @@ export class FeedNodesStore extends Store {
 
   rssNodeBySource(feedSource: string) {
     const [feed] = this.dbService.db.feedNodes.find({
-      source: feedSource,
+      feedUrl: feedSource,
       type: FeedNodeType.RSS,
     });
     return feed || null;
@@ -139,7 +139,7 @@ export class FeedNodesStore extends Store {
     parentId: string | null,
     feedId: string,
     name: string,
-    source: string,
+    feedUrl: string,
     description: string | null,
     icon: string | null,
     index: string
@@ -155,7 +155,7 @@ export class FeedNodesStore extends Store {
       parentId: parentId,
       type: FeedNodeType.RSS,
       name: name,
-      source: source,
+      feedUrl,
       description: description ?? undefined,
       icon: icon ?? undefined,
       index: index,
@@ -188,7 +188,7 @@ export class FeedNodesStore extends Store {
     }
   }
 
-  removeFeed(feedId: string) {
+  removeRSS(feedId: string) {
     const feed = this.dbService.db.feedNodes.get(feedId);
     if (feed === null || feed.type !== FeedNodeType.RSS) {
       throw new Error('Feed not found');

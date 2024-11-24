@@ -245,6 +245,7 @@ enum ErrorNames {
   INTERNAL_SERVER_ERROR
   INVALID_EMAIL
   INVALID_EMAIL_TOKEN
+  INVALID_FEED_URL
   INVALID_HISTORY_TIMESTAMP
   INVALID_OAUTH_CALLBACK_STATE
   INVALID_PASSWORD_LENGTH
@@ -290,6 +291,62 @@ enum FeatureType {
   EarlyAccess
   UnlimitedCopilot
   UnlimitedWorkspace
+}
+
+type Feed {
+  createdAt: DateTime!
+  description: String
+  icon: String
+  id: ID!
+  name: String!
+  url: String!
+}
+
+"""The type of fetch content"""
+enum FeedFetchContentType {
+  ALWAYS
+  NEVER
+  WHEN_EMPTY
+}
+
+type FeedPage {
+  aiSummary: String
+  author: String
+  content: String!
+  createdAt: DateTime!
+  description: String
+  feedUrl: String
+  id: ID!
+  language: String
+  originalUrl: String!
+  publishedAt: DateTime
+  title: String!
+  type: FeedPageType!
+}
+
+type FeedPageEdge {
+  cursor: String!
+  node: FeedPage!
+}
+
+"""The type of feed page"""
+enum FeedPageType {
+  ARTICLE
+  BOOK
+  FILE
+  HIGHLIGHTS
+  IMAGE
+  PROFILE
+  TWEET
+  UNKNOWN
+  VIDEO
+  WEBSITE
+}
+
+"""The type of feed source"""
+enum FeedType {
+  NEWSLETTER
+  RSS
 }
 
 input ForkChatSessionInput {
@@ -482,6 +539,8 @@ type Mutation {
   setBlob(blob: Upload!, workspaceId: String!): String!
   setWorkspaceExperimentalFeature(enable: Boolean!, feature: FeatureType!, workspaceId: String!): Boolean!
   sharePage(pageId: String!, workspaceId: String!): Boolean! @deprecated(reason: "renamed to publishPage")
+  subscribeFeed(input: SubscribeFeedInput!): UserFeed!
+  unsubscribeFeed(userFeedId: String!, workspaceId: String!): String!
 
   """Update a copilot prompt"""
   updateCopilotPrompt(messages: [CopilotPromptMessageInput!]!, name: String!): CopilotPromptType!
@@ -518,6 +577,14 @@ enum OAuthProviderType {
   OIDC
 }
 
+type PageInfo {
+  endCursor: String
+  hasNextPage: Boolean!
+  hasPreviousPage: Boolean!
+  startCursor: String
+  totalCount: Int
+}
+
 type PasswordLimitsType {
   maxLength: Int!
   minLength: Int!
@@ -535,6 +602,11 @@ enum Permission {
 enum PublicPageMode {
   Edgeless
   Page
+}
+
+type PullFeedPagesOutput {
+  edges: [FeedPageEdge!]!
+  pageInfo: PageInfo!
 }
 
 type Query {
@@ -558,6 +630,8 @@ type Query {
   listCopilotPrompts: [CopilotPromptType!]!
   listWorkspaceFeatures(feature: FeatureType!): [WorkspaceType!]!
   prices: [SubscriptionPrice!]!
+  pullFeedPages(after: String, first: Int, workspaceId: String): PullFeedPagesOutput!
+  searchFeeds(keyword: String!): [Feed!]!
 
   """server config"""
   serverConfig: ServerConfigType!
@@ -715,6 +789,13 @@ type SpaceOwnerNotFoundDataType {
   spaceId: String!
 }
 
+input SubscribeFeedInput {
+  feedId: ID!
+  isPrivate: Boolean
+  type: FeedType!
+  workspaceId: String!
+}
+
 type SubscriptionAlreadyExistsDataType {
   plan: String!
 }
@@ -783,6 +864,32 @@ input UpdateWorkspaceInput {
 
 """The `Upload` scalar type represents a file upload."""
 scalar Upload
+
+type UserFeed {
+  count: Int!
+  createdAt: DateTime!
+  description: String
+  fetchContentType: FeedFetchContentType!
+  icon: String
+  id: ID!
+  isPrivate: Boolean
+  mostRecentItemDate: DateTime
+  name: String!
+  newsletterEmailId: String
+  status: UserFeedStatus!
+  type: FeedType!
+  updatedAt: DateTime!
+  url: String
+  userId: String!
+  workspaceId: String
+}
+
+"""The status of feed source"""
+enum UserFeedStatus {
+  ACTIVE
+  DELETED
+  UNSUBSCRIBED
+}
 
 type UserInvoice {
   amount: Int!

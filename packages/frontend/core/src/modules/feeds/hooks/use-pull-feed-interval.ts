@@ -10,7 +10,8 @@ import { FeedsService } from '@affine/core/modules/feeds/services/feeds';
 import { TagService } from '@affine/core/modules/tag';
 import { FeedTag } from '@affine/core/modules/tag/entities/internal-tag';
 import { DebugLogger } from '@affine/debug';
-import { searchQuery, type SearchSuccess } from '@affine/graphql';
+import { WorkspaceFlavour } from '@affine/env/workspace';
+import { type PullFeedPagesQuery, pullFeedPagesQuery } from '@affine/graphql';
 import { importMarkDown } from '@blocksuite/affine/blocks';
 import type { JobMiddleware } from '@blocksuite/affine/store';
 import { useService, WorkspaceService } from '@toeverything/infra';
@@ -18,7 +19,7 @@ import { useEffect, useState } from 'react';
 
 const initIntervalDuration = 1000 * 3; // Initial interval duration is 3 seconds
 const maxIntervalDuration = 1000 * 60 * 30; // Maximum interval duration is 30 minutes
-const logger = new DebugLogger('wemem:pull-feed');
+const logger = new DebugLogger('wemem:pull-articles');
 
 let timer: NodeJS.Timeout | null = null;
 let isRunning = false;
@@ -45,6 +46,9 @@ export const usePullFeedInterval = () => {
   const adapter = useCurrentWorkspacePropertiesAdapter();
   const metaManager = usePagePropertiesMetaManager();
 
+  const isCloudWorkspace =
+    currentWorkspace.meta.flavour === WorkspaceFlavour.AFFINE_CLOUD;
+
   const [intervalDuration, setIntervalDuration] =
     useState(initIntervalDuration);
 
@@ -60,6 +64,10 @@ export const usePullFeedInterval = () => {
 
   // Main pulling logic
   useEffect(() => {
+    if (!isCloudWorkspace) {
+      return;
+    }
+
     // Clear old timer
     if (timer) {
       clearInterval(timer);
@@ -78,31 +86,22 @@ export const usePullFeedInterval = () => {
 
       try {
         // Execute query
-        const response = await graphQLService.exec({
-          query: searchQuery,
+        const response = await graphQLService.gql({
+          query: pullFeedPagesQuery,
           variables: {
             after: feedsService.cursor,
             first: 10,
-            query: 'in:sucess',
-            includeContent: true,
+            workspaceId: currentWorkspace.id,
           },
         });
 
-        if (response.search.__typename === 'SearchError') {
-          logger.error('Search error', response.search.errorCodes);
-          setIntervalDuration(prevDuration =>
-            Math.min(prevDuration * 2, maxIntervalDuration)
-          );
-          return;
-        }
-
-        const searchSuccess = response.search as SearchSuccess;
-        logger.debug('Pulled feed items count', searchSuccess.edges.length);
+        const pullPages = response.pullFeedPages;
+        logger.debug('Pulled feed items count', pullPages.edges.length);
 
         // Dynamically adjust polling interval based on query results:
         // - If no more data, double the interval (up to max duration)
         // - If more data exists, reset to initial interval
-        if (!searchSuccess.pageInfo.hasNextPage) {
+        if (!pullPages.pageInfo.hasNextPage) {
           setIntervalDuration(prevDuration =>
             Math.min(prevDuration * 2, maxIntervalDuration)
           );
@@ -111,27 +110,27 @@ export const usePullFeedInterval = () => {
         }
 
         // Process each feed item
-        for (const item of searchSuccess.edges || []) {
-          const libraryItem = item.node;
-          if (!libraryItem.subscription) {
+        for (const item of pullPages.edges || []) {
+          const article = item.node;
+          if (!article.feedUrl) {
             continue;
           }
 
           const rssNode = feedsService.feedTree.rssNodeBySource(
-            libraryItem.subscription
+            article.feedUrl
           );
           if (!rssNode) {
             logger.debug('RSS node not subscribed', {
-              source: libraryItem.subscription,
+              source: article.feedUrl,
             });
             continue;
           }
 
           // Check if document already exists
-          if (!currentWorkspace.docCollection.getDoc(libraryItem.id)) {
-            await importFeedItem(libraryItem);
+          if (!currentWorkspace.docCollection.getDoc(article.id)) {
+            await importArticle(article);
           } else {
-            logger.info('Document already exists', { id: libraryItem.id });
+            logger.info('Document already exists', { id: article.id });
           }
 
           rssNode.incrUnreadCount(1);
@@ -148,60 +147,56 @@ export const usePullFeedInterval = () => {
     };
 
     // Import feed item to document
-    const importFeedItem = async (libraryItem: any) => {
+    const importArticle = async (
+      article: PullFeedPagesQuery['pullFeedPages']['edges'][number]['node']
+    ) => {
       const jobMiddleware: JobMiddleware = ({ slots }) => {
         slots.beforeImport.on(payload => {
           if (payload.type !== 'page') return;
 
-          payload.snapshot.meta.id = libraryItem.id;
+          payload.snapshot.meta.id = article.id;
           payload.snapshot.meta.tags = [FeedTag.id];
-          payload.snapshot.meta.feedSource =
-            libraryItem.subscription ?? undefined;
+          payload.snapshot.meta.feedSource = article.feedUrl ?? undefined;
           payload.snapshot.meta.createDate = new Date(
-            libraryItem.publishedAt ||
-              libraryItem.createdAt ||
-              new Date().toISOString()
+            article.publishedAt || article.createdAt || new Date().toISOString()
           ).getTime();
         });
       };
 
-      logger.info('Start importing feed item', {
-        title: libraryItem.title,
-        url: libraryItem.url,
-        subscription: libraryItem.subscription,
+      logger.info('Start importing article', {
+        title: article.title,
+        url: article.originalUrl,
+        subscription: article.feedUrl,
       });
 
       const importStartTime = Date.now();
 
       const docId = (await importMarkDown(
         currentWorkspace.docCollection,
-        libraryItem.readableContent,
-        libraryItem.title,
+        article.content,
+        article.title,
         jobMiddleware
       )) as string;
 
       // Add custom properties
       const propertiesManager = new PagePropertiesManager(adapter, docId);
 
-      if (libraryItem.author) {
-        propertiesManager.addCustomProperty(
-          AuthorProperty.id,
-          libraryItem.author
-        );
+      if (article.author) {
+        propertiesManager.addCustomProperty(AuthorProperty.id, article.author);
       }
 
-      if (libraryItem.url) {
+      if (article.originalUrl) {
         propertiesManager.addCustomProperty(
           OriginalProperty.id,
-          libraryItem.url
+          article.originalUrl
         );
       }
 
       logger.debug('Feed item import completed', {
         docId,
-        title: libraryItem.title,
-        url: libraryItem.url,
-        source: libraryItem.subscription,
+        title: article.title,
+        url: article.originalUrl,
+        source: article.feedUrl,
         importDuration: `${Date.now() - importStartTime}ms`,
       });
     };
@@ -218,5 +213,5 @@ export const usePullFeedInterval = () => {
         clearInterval(timer);
       }
     };
-  }, [intervalDuration]);
+  }, [intervalDuration, isCloudWorkspace]);
 };

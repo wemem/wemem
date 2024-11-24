@@ -172,6 +172,12 @@ export class EmailVerificationRequired extends UserFriendlyError {
     super('action_forbidden', 'email_verification_required', message);
   }
 }
+
+export class InvalidFeedUrl extends UserFriendlyError {
+  constructor(message?: string) {
+    super('invalid_input', 'invalid_feed_url', message);
+  }
+}
 @ObjectType()
 class SpaceNotFoundDataType {
   @Field() spaceId!: string
@@ -566,6 +572,7 @@ export enum ErrorNames {
   ACTION_FORBIDDEN,
   ACCESS_DENIED,
   EMAIL_VERIFICATION_REQUIRED,
+  INVALID_FEED_URL,
   SPACE_NOT_FOUND,
   NOT_IN_SPACE,
   ALREADY_IN_SPACE,

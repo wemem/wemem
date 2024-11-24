@@ -51,3 +51,8 @@ export interface FileUpload {
   encoding: string;
   createReadStream: () => Readable;
 }
+
+export type Merge<
+  Target extends Record<string, any>,
+  Part extends Record<string, any>,
+> = Omit<Target, keyof Part> & Part;

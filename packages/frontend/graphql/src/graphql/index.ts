@@ -833,6 +833,42 @@ mutation publishPage($workspaceId: String!, $pageId: String!, $mode: PublicPageM
 }`,
 };
 
+export const pullFeedPagesQuery = {
+  id: 'pullFeedPagesQuery' as const,
+  operationName: 'pullFeedPages',
+  definitionName: 'pullFeedPages',
+  containsFile: false,
+  query: `
+query pullFeedPages($after: String, $first: Int, $workspaceId: String) {
+  pullFeedPages(first: $first, after: $after, workspaceId: $workspaceId) {
+    edges {
+      cursor
+      node {
+        id
+        title
+        aiSummary
+        originalUrl
+        content
+        type
+        createdAt
+        publishedAt
+        author
+        description
+        language
+        feedUrl
+      }
+    }
+    pageInfo {
+      hasNextPage
+      hasPreviousPage
+      startCursor
+      endCursor
+      totalCount
+    }
+  }
+}`,
+};
+
 export const quotaQuery = {
   id: 'quotaQuery' as const,
   operationName: 'quota',
@@ -930,85 +966,20 @@ mutation revokePublicPage($workspaceId: String!, $pageId: String!) {
 }`,
 };
 
-export const searchSubscriptionsQuery = {
-  id: 'searchSubscriptionsQuery' as const,
-  operationName: 'searchSubscriptions',
-  definitionName: 'searchSubscriptions',
+export const searchFeedsQuery = {
+  id: 'searchFeedsQuery' as const,
+  operationName: 'searchFeeds',
+  definitionName: 'searchFeeds',
   containsFile: false,
   query: `
-query searchSubscriptions($keyword: String!) {
-  searchSubscriptions(keyword: $keyword) {
+query searchFeeds($keyword: String!) {
+  searchFeeds(keyword: $keyword) {
     id
     name
     url
     icon
     description
     createdAt
-  }
-}`,
-};
-
-export const searchQuery = {
-  id: 'searchQuery' as const,
-  operationName: 'Search',
-  definitionName: 'search',
-  containsFile: false,
-  query: `
-query Search($after: String, $first: Int, $query: String, $includeContent: Boolean) {
-  search(
-    first: $first
-    after: $after
-    query: $query
-    includeContent: $includeContent
-  ) {
-    ... on SearchSuccess {
-      edges {
-        cursor
-        node {
-          id
-          title
-          slug
-          url
-          pageType
-          contentReader
-          readableContent
-          createdAt
-          isArchived
-          readingProgressPercent
-          readingProgressTopPercent
-          readingProgressAnchorIndex
-          author
-          image
-          description
-          publishedAt
-          ownedByViewer
-          originalArticleUrl
-          uploadFileId
-          labels {
-            id
-            name
-            color
-          }
-          pageId
-          shortId
-          quote
-          annotation
-          siteName
-          subscription
-          readAt
-        }
-      }
-      pageInfo {
-        hasNextPage
-        hasPreviousPage
-        startCursor
-        endCursor
-        totalCount
-      }
-    }
-    ... on SearchError {
-      errorCodes
-    }
   }
 }`,
 };
@@ -1102,6 +1073,34 @@ mutation setWorkspacePublicById($id: ID!, $public: Boolean!) {
 }`,
 };
 
+export const subscribeFeedMutation = {
+  id: 'subscribeFeedMutation' as const,
+  operationName: 'subscribeFeed',
+  definitionName: 'subscribeFeed',
+  containsFile: false,
+  query: `
+mutation subscribeFeed($input: SubscribeFeedInput!) {
+  subscribeFeed(input: $input) {
+    id
+    userId
+    name
+    status
+    newsletterEmailId
+    description
+    url
+    icon
+    type
+    count
+    mostRecentItemDate
+    createdAt
+    updatedAt
+    isPrivate
+    fetchContentType
+    workspaceId
+  }
+}`,
+};
+
 export const subscriptionQuery = {
   id: 'subscriptionQuery' as const,
   operationName: 'subscription',
@@ -1122,6 +1121,17 @@ query subscription {
       canceledAt
     }
   }
+}`,
+};
+
+export const unsubscribeFeedMutation = {
+  id: 'unsubscribeFeedMutation' as const,
+  operationName: 'unsubscribeFeed',
+  definitionName: 'unsubscribeFeed',
+  containsFile: false,
+  query: `
+mutation unsubscribeFeed($userFeedId: String!, $workspaceId: String!) {
+  unsubscribeFeed(userFeedId: $userFeedId, workspaceId: $workspaceId)
 }`,
 };
 

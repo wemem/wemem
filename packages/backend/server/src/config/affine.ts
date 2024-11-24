@@ -131,6 +131,11 @@ if (process.env.R2_OBJECT_STORAGE_ACCOUNT_ID) {
     AFFiNE.affine.canary ? 'canary' : 'prod'
   }`;
 
+  AFFiNE.storages.pageContent.provider = 'cloudflare-r2';
+  AFFiNE.storages.pageContent.bucket = `page-content-${
+    AFFiNE.affine.canary ? 'canary' : 'prod'
+  }`;
+
   AFFiNE.use('copilot', {
     storage: {
       provider: 'cloudflare-r2',

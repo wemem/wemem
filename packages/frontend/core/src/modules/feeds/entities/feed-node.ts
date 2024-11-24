@@ -1,7 +1,14 @@
 import { generateFractionalIndexingKeyBetween } from '@affine/core/utils';
+import {
+  FeedType,
+  subscribeFeedMutation,
+  unsubscribeFeedMutation,
+} from '@affine/graphql';
+import type { WorkspaceService } from '@toeverything/infra';
 import { Entity, LiveData } from '@toeverything/infra';
 import { map, switchMap } from 'rxjs';
 
+import type { GraphQLService } from '../../cloud';
 import {
   type Feed,
   type FeedNodesStore,
@@ -64,7 +71,11 @@ export class FeedNode extends Entity<{
       .map(([node]) => node);
   });
 
-  constructor(readonly nodesStore: FeedNodesStore) {
+  constructor(
+    readonly nodesStore: FeedNodesStore,
+    readonly graphQLService: GraphQLService,
+    readonly workspaceService: WorkspaceService
+  ) {
     super();
   }
 
@@ -106,21 +117,34 @@ export class FeedNode extends Entity<{
     return this.nodesStore.createFolder(this.id, name, index);
   }
 
-  createFeed(
-    id: string,
+  async createRSS(
+    feedSourceId: string,
     name: string,
-    source: string,
+    feedUrl: string,
     description: string | null,
     icon: string | null
   ) {
     if (this.type$.value !== FeedNodeType.Folder) {
       throw new Error('Cannot create link on non-folder node');
     }
+
+    const { subscribeFeed } = await this.graphQLService.gql({
+      query: subscribeFeedMutation,
+      variables: {
+        input: {
+          workspaceId: this.workspaceService.workspace.id,
+          feedId: feedSourceId,
+          type: FeedType.RSS,
+          isPrivate: false,
+        },
+      },
+    });
+
     return this.nodesStore.createRSS(
       this.id,
-      id,
+      subscribeFeed.id,
       name,
-      source,
+      feedUrl,
       description,
       icon,
       this.indexAt('before')
@@ -134,7 +158,20 @@ export class FeedNode extends Entity<{
     if (this.type$.value === FeedNodeType.Folder) {
       this.nodesStore.removeFolder(this.id);
     } else {
-      this.nodesStore.removeFeed(this.id);
+      this.graphQLService
+        .gql({
+          query: unsubscribeFeedMutation,
+          variables: {
+            userFeedId: this.id,
+            workspaceId: this.workspaceService.workspace.id,
+          },
+        })
+        .then(() => {
+          this.nodesStore.removeRSS(this.id as string);
+        })
+        .catch(error => {
+          throw error;
+        });
     }
   }
 

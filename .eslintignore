@@ -14,3 +14,6 @@ public
 packages/frontend/i18n/src/i18n-generated.ts
 packages/frontend/templates/*.gen.ts
 submodules
+packages/backend/readabilityjs
+packages/backend/content-handler
+packages/backend/server/src/plugins/feeds

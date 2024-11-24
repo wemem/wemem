@@ -62,6 +62,7 @@
   "ai.wemem.internal-tags.wechat": "WeChat",
   "ai.wemem.notification.action.feed-added": "Read newest items",
   "ai.wemem.notification.message.feed-added": "Feed added",
+  "ai.wemem.notification.message.feed-added-failed": "Failed to add feed",
   "ai.wemem.rootAppSidebar.feeds": "Feeds",
   "ai.wemem.rootAppSidebar.feeds.all": "All",
   "ai.wemem.rootAppSidebar.feeds.manage-feeds": "Manage",

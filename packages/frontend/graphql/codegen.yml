@@ -21,7 +21,6 @@ config:
 overwrite: true
 schema:
   - ../../backend/server/src/schema.gql
-  - ../../backend/server/src/schema-omnivore.gql
 documents: ./src/**/*.gql
 generates:
   ./src/schema.ts:

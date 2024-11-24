@@ -1,0 +1,10 @@
+query searchFeeds($keyword: String!) {
+  searchFeeds(keyword: $keyword) {
+    id
+    name
+    url
+    icon
+    description
+    createdAt
+  }
+}

@@ -2,9 +2,15 @@ import { FeedAvatar, toast } from '@affine/component';
 import { type CommandCategory } from '@affine/core/commands';
 import { useNavigateHelper } from '@affine/core/components/hooks/use-navigate-helper';
 import { FeedsService } from '@affine/core/modules/feeds/services/feeds';
-import type { SearchSubscriptionsQuery } from '@affine/graphql';
+import { DebugLogger } from '@affine/debug';
+import { type SearchFeedSourcesQuery } from '@affine/graphql';
 import { useI18n } from '@affine/i18n';
-import { useLiveData, useService, WorkspaceService } from '@toeverything/infra';
+import {
+  useLiveData,
+  useService,
+  useServices,
+  WorkspaceService,
+} from '@toeverything/infra';
 import { atom } from 'jotai';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 
@@ -12,14 +18,14 @@ import { FeedSearchCommandRegistry } from '../commands';
 import { filterSortAndGroupCommands } from './filter-commands';
 import type { FeedSearchCommand } from './types';
 
-export type FeedRecord = NonNullable<
-  SearchSubscriptionsQuery['searchSubscriptions']
+export type FeedSourceRecord = NonNullable<
+  SearchFeedSourcesQuery['searchFeedSources']
 >[number];
 export const cmdkValueAtom = atom('');
 
 const feedRecordToCommand = (
   category: CommandCategory,
-  feedRecord: FeedRecord,
+  feedRecord: FeedSourceRecord,
   run: () => void
 ): FeedSearchCommand => {
   const commandLabel = {
@@ -39,7 +45,7 @@ const feedRecordToCommand = (
   };
 };
 
-function useSearchedFeedCommands(onSelect: (record: FeedRecord) => void) {
+function useSearchedFeedCommands(onSelect: (record: FeedSourceRecord) => void) {
   const subscribeFeed = useService(FeedsService).searchModal;
   const query = useLiveData(subscribeFeed.query$);
   const [cmds, setCmds] = useState<FeedSearchCommand[]>([]);
@@ -63,6 +69,8 @@ function useSearchedFeedCommands(onSelect: (record: FeedRecord) => void) {
   return cmds;
 }
 
+const logger = new DebugLogger('wemem:subscribe-feed');
+
 export const useSearchedFeedsCommands = () => {
   const workspace = useService(WorkspaceService).workspace;
   const navigationHelper = useNavigateHelper();
@@ -70,15 +78,21 @@ export const useSearchedFeedsCommands = () => {
   const t = useI18n();
 
   const onSelectPage = useCallback(
-    (record: FeedRecord) => {
+    (record: FeedSourceRecord) => {
       if (!workspace) {
         console.error('current workspace not found');
         return;
       }
 
-      subscribe(record);
-      toast(t['ai.wemem.notification.message.feed-added']());
-      navigationHelper.jumpToFeedsDocs(workspace.id, 'all', record.id);
+      subscribe(record)
+        .then(feedId => {
+          toast(t['ai.wemem.notification.message.feed-added']());
+          navigationHelper.jumpToFeedsDocs(workspace.id, 'all', feedId);
+        })
+        .catch(err => {
+          toast(t['ai.wemem.notification.message.feed-added-failed']());
+          logger.error('Failed to subscribe feed', err);
+        });
     },
     [subscribe, navigationHelper, t, workspace]
   );
@@ -101,10 +115,13 @@ export const useCommandGroups = () => {
 };
 
 export const useSubscribeToFeed = () => {
-  const feedsService = useService(FeedsService);
+  const { feedsService } = useServices({
+    FeedsService,
+  });
+
   const currentFolder = useLiveData(feedsService.searchModal.currentFolder$);
   return useCallback(
-    (feedRecord: FeedRecord) => {
+    async (feedRecord: FeedSourceRecord): Promise<string> => {
       let folder = feedsService.feedTree.rootFolder;
       if (currentFolder?.folderId) {
         const currFolderNode = feedsService.feedTree.folderNodeById(
@@ -115,19 +132,20 @@ export const useSubscribeToFeed = () => {
         }
       }
 
+      const rssNode = feedsService.feedTree.rssNodeBySource(feedRecord.url);
       // if the feed is already added, do nothing
-      if (feedsService.feedTree.rssNodeBySource(feedRecord.url)) {
-        return;
+      if (rssNode) {
+        return rssNode.id as string;
       }
 
-      folder.createFeed(
+      const rssNodeId = folder.createRSS(
         feedRecord.id,
         feedRecord.name,
         feedRecord.url,
         feedRecord.description,
         feedRecord.icon
       );
-      return;
+      return rssNodeId;
     },
     [currentFolder, feedsService]
   );

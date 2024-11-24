@@ -108,13 +108,13 @@ export const Quotas: Quota[] = [
       // NOTE: this is a product decision, may change in future
       businessBlobLimit: 100 * OneMB,
       // total blob limit 10GB
-      storageQuota: 10 * OneGB,
+      storageQuota: 1 * OneGB,
       // history period of validity 7 days
       historyPeriod: 7 * OneDay,
       // member limit 3
       memberLimit: 3,
       // copilot action limit 10
-      copilotActionLimit: 10,
+      copilotActionLimit: 50,
     },
   },
   {

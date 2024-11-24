@@ -5,6 +5,7 @@ import './oauth';
 import './payment';
 import './redis';
 import './storage';
+import './feeds';
 
 export {
   enablePlugin,

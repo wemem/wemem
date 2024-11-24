@@ -1,0 +1,3 @@
+mutation unsubscribeFeed($userFeedId: String!, $workspaceId: String!) {
+  unsubscribeFeed(userFeedId: $userFeedId, workspaceId: $workspaceId)
+}

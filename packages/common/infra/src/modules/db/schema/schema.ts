@@ -16,7 +16,7 @@ export const AFFiNE_WORKSPACE_DB_SCHEMA = {
     type: f.string(),
     name: f.string(),
     description: f.string().optional(),
-    source: f.string().optional(),
+    feedUrl: f.string().optional(),
     icon: f.string().optional(),
     index: f.string(),
     createdAt: f.number(),

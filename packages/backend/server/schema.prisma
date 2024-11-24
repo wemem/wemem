@@ -37,6 +37,8 @@ model User {
   updatedSnapshot       Snapshot[]                    @relation("updatedSnapshot")
   createdUpdate         Update[]                      @relation("createdUpdate")
   createdHistory        SnapshotHistory[]             @relation("createdHistory")
+  feeds                 UserFeed[]
+  feedPages             UserFeedPage[]
 
   @@index([email])
   @@map("users")
@@ -496,4 +498,129 @@ model RuntimeConfig {
 
   @@unique([module, key])
   @@map("app_runtime_settings")
+}
+
+model Feed {
+  id          String   @id @default(uuid()) @db.VarChar
+  name        String   @db.Text
+  description String?  @db.Text
+  url         String   @db.Text
+  icon        String?  @db.Text
+  createdAt   DateTime @default(now()) @map("created_at") @db.Timestamptz(3)
+
+  @@unique([name, url])
+  @@map("wemem_feeds")
+}
+
+enum UserFeedStatus {
+  ACTIVE
+  DELETED
+  UNSUBSCRIBED
+}
+
+enum FeedType {
+  NEWSLETTER
+  RSS
+}
+
+enum FeedFetchContentType {
+  ALWAYS
+  NEVER
+  WHEN_EMPTY
+}
+
+enum FeedPageType {
+  ARTICLE
+  BOOK
+  FILE
+  HIGHLIGHTS
+  IMAGE
+  PROFILE
+  TWEET
+  UNKNOWN
+  VIDEO
+  WEBSITE
+}
+
+model UserFeed {
+  id                  String               @id @default(uuid()) @db.VarChar
+  userId              String               @map("user_id") @db.VarChar
+  name                String               @db.Text
+  status              UserFeedStatus           @default(ACTIVE)
+  newsletterEmailId   String?              @unique @map("newsletter_email_id") @db.VarChar
+  description         String?              @db.Text
+  url                 String?              @db.Text
+  icon                String?              @db.Text
+  type                FeedType
+  count               Int                  @default(0)
+  mostRecentItemDate  DateTime?            @map("most_recent_item_date") @db.Timestamptz(3)
+  lastFetchedChecksum String?              @map("last_fetched_checksum") @db.Text
+  createdAt           DateTime             @default(now()) @map("created_at") @db.Timestamptz(3)
+  updatedAt           DateTime             @updatedAt @map("updated_at") @db.Timestamptz(3)
+  scheduledAt         DateTime?            @map("scheduled_at") @db.Timestamptz(3)
+  refreshedAt         DateTime?            @map("refreshed_at") @db.Timestamptz(3)
+  failedAt            DateTime?            @map("failed_at") @db.Timestamptz(3)
+  isPrivate           Boolean?             @map("is_private")
+  workspaceId         String               @map("workspace_id") @db.VarChar
+  fetchContentType    FeedFetchContentType @default(ALWAYS)
+  user                User                 @relation(fields: [userId], references: [id])
+
+  @@unique([userId, workspaceId, url])
+  @@map("wemem_user_feeds")
+}
+
+model UserFeedPage {
+  id              String             @id @default(uuid()) @db.VarChar
+  userId          String             @map("user_id") @db.VarChar
+  workspaceId     String             @map("workspace_id") @db.VarChar
+  state           FeedPageState      @default(SUCCEEDED)
+  originalUrl     String             @db.Text
+  downloadUrl     String?            @db.Text
+  title           String             @db.Text
+  author          String?            @db.Text
+  description     String?            @db.Text
+  savedAt         DateTime           @db.Timestamptz(3)
+  createdAt       DateTime           @default(now()) @map("created_at") @db.Timestamptz(3)
+  publishedAt     DateTime?          @db.Timestamptz(3)
+  archivedAt      DateTime?          @db.Timestamptz(3)
+  deletedAt       DateTime?          @db.Timestamptz(3)
+  readAt          DateTime?          @db.Timestamptz(3)
+  updatedAt       DateTime           @updatedAt @map("updated_at") @db.Timestamptz(3)
+  itemLanguage    String?            @db.Text
+  wordCount       Int?               @db.Integer
+  thumbnail       String?            @db.Text
+  type            FeedPageType       @default(UNKNOWN)
+  uploadFileId    String?            @db.Uuid
+  contentChecksum String             @db.Text
+  feedUrl         String?            @db.Text
+  directionality  DirectionalityType @default(LTR)
+
+  user    User            @relation(fields: [userId], references: [id], onDelete: Cascade)
+  content FeedPageContent @relation(fields: [contentChecksum], references: [id])
+
+  @@map("wemem_user_feed_pages")
+}
+
+enum FeedPageState {
+  FAILED
+  PROCESSING
+  SUCCEEDED
+  DELETED
+  ARCHIVED
+  CONTENT_NOT_FETCHED
+}
+
+enum DirectionalityType {
+  LTR
+  RTL
+}
+
+model FeedPageContent {
+  id          String         @id @db.Text
+  originalUrl String?        @map("original_url") @db.Text
+  aiSummary   String?        @db.Text
+  createdAt   DateTime       @default(now()) @map("created_at") @db.Timestamptz(3)
+  pages       UserFeedPage[]
+
+  @@map("wemem_feed_page_contents")
 }

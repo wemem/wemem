@@ -56,7 +56,7 @@ export class AuthService implements OnApplicationBootstrap {
   async onApplicationBootstrap() {
     if (this.config.node.dev) {
       try {
-        const [email, name, password] = ['dev@affine.pro', 'Dev User', 'dev'];
+        const [email, name, password] = ['dev@wemem.ai', 'Dev User', 'dev'];
         let devUser = await this.user.findUserByEmail(email);
         if (!devUser) {
           devUser = await this.user.createUser_without_verification({
@@ -68,8 +68,8 @@ export class AuthService implements OnApplicationBootstrap {
         await this.quota.switchUserQuota(devUser.id, QuotaType.ProPlanV1);
         await this.feature.addAdmin(devUser.id);
         await this.feature.addCopilot(devUser.id);
-      } catch {
-        // ignore
+      } catch (err) {
+        console.error('Failed to create dev user:', err);
       }
     }
   }

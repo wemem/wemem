@@ -1,0 +1,20 @@
+mutation subscribeFeed($input: SubscribeFeedInput!) {
+  subscribeFeed(input: $input) {
+    id
+    userId
+    name
+    status
+    newsletterEmailId
+    description
+    url
+    icon
+    type
+    count
+    mostRecentItemDate
+    createdAt
+    updatedAt
+    isPrivate
+    fetchContentType
+    workspaceId
+  }
+}

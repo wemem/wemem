@@ -317,6 +317,12 @@ export const USER_FRIENDLY_ERRORS = {
     message: 'You must verify your email before accessing this resource.',
   },
 
+  // Feeds errors
+  invalid_feed_url: {
+    type: 'invalid_input',
+    message: 'Invalid feed URL.',
+  },
+
   // Workspace & Userspace & Doc & Sync errors
   space_not_found: {
     type: 'resource_not_found',

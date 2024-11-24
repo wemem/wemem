@@ -12,6 +12,7 @@ export interface StorageStartupConfigurations {
     keyInPublicLink: (link: string) => string;
   }>;
   blob: StorageConfig;
+  pageContent: StorageConfig;
 }
 
 declare module '../../fundamentals/config' {
@@ -30,5 +31,9 @@ defineStartupConfig('storages', {
   blob: {
     provider: 'fs',
     bucket: 'blobs',
+  },
+  pageContent: {
+    provider: 'fs',
+    bucket: 'originalContent',
   },
 });
