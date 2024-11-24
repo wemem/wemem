@@ -47,27 +47,6 @@ jobs:
           name: server-dist
           path: ./packages/backend/server/dist
           if-no-files-found: error
-  build-content-fetch:
-    name: Build Content Fetch
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-      - name: Setup Version
-        id: version
-        uses: ./.github/actions/setup-version
-      - name: Setup Node.js
-        uses: ./.github/actions/setup-node
-        with:
-          electron-install: false
-          extra-flags: workspaces focus @wemem/content-fetch
-      - name: Build Content Fetch
-        run: yarn workspace @wemem/content-fetch build
-      - name: Upload content-fetch dist
-        uses: actions/upload-artifact@v4
-        with:
-          name: content-fetch-dist
-          path: ./packages/backend/content-fetch/dist
-          if-no-files-found: error
   build-content-handler:
     name: Build Content Handler
     runs-on: ubuntu-latest
@@ -88,6 +67,34 @@ jobs:
         with:
           name: content-handler-dist
           path: ./packages/backend/content-handler/dist
+          if-no-files-found: error
+  build-content-fetch:
+    name: Build Content Fetch
+    runs-on: ubuntu-latest
+    needs:
+      - build-content-handler
+    steps:
+      - uses: actions/checkout@v4
+      - name: Setup Version
+        id: version
+        uses: ./.github/actions/setup-version
+      - name: Download content-handler dist
+        uses: actions/download-artifact@v4
+        with:
+          name: content-handler-dist
+          path: ./packages/backend/content-handler/dist
+      - name: Setup Node.js
+        uses: ./.github/actions/setup-node
+        with:
+          electron-install: false
+          extra-flags: workspaces focus @wemem/content-fetch
+      - name: Build Content Fetch
+        run: yarn workspace @wemem/content-fetch build
+      - name: Upload content-fetch dist
+        uses: actions/upload-artifact@v4
+        with:
+          name: content-fetch-dist
+          path: ./packages/backend/content-fetch/dist
           if-no-files-found: error
   build-web-selfhost:
     name: Build @affine/web selfhost
@@ -323,7 +330,6 @@ jobs:
     runs-on: ubuntu-latest
     needs:
       - build-content-fetch
-      - build-content-handler
     steps:
       - uses: actions/checkout@v4
       - name: Download content-fetch dist
