@@ -8,7 +8,6 @@ import {
   GetObjectCommand,
 } from '@aws-sdk/client-s3';
 import { urlToSha256 } from './uitl/url_to_sha265';
-import { RedisDataSource } from './uitl/redis_data_source';
 import { parseMarkdown } from './html-to-markdown';
 
 interface UserConfig {
@@ -215,18 +214,6 @@ export const contentFetchRequestHandler: RequestHandler = async (req, res) => {
   const locale = body.locale;
   const timezone = body.timezone;
 
-  // create redis source
-  const redisDataSource = new RedisDataSource({
-    cache: {
-      url: process.env.REDIS_URL,
-      cert: process.env.REDIS_CERT,
-    },
-    mq: {
-      url: process.env.MQ_REDIS_URL,
-      cert: process.env.MQ_REDIS_CERT,
-    },
-  });
-
   try {
     let metadata = await getOriginalContentMetadata(pageUrl);
     if (!metadata) {
@@ -292,6 +279,5 @@ export const contentFetchRequestHandler: RequestHandler = async (req, res) => {
   } finally {
     const totalTime = Date.now() - functionStartTime;
     console.log('fetch content request completed', totalTime);
-    await redisDataSource.shutdown();
   }
 };
