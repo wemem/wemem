@@ -10,6 +10,7 @@ export async function parseMarkdown(
   }
 
   const turndownService = new TurndownService();
+  turndownService.remove(['script', 'style', 'noscript']);
   turndownService.addRule('inlineLink', {
     filter: function (node, options) {
       return !!(

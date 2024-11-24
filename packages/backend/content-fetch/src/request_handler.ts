@@ -28,14 +28,13 @@ export interface FetchContentRequestBody {
   savedAt?: string;
   publishedAt?: string;
   users: UserConfig[];
-  priority: 'high' | 'low';
 }
 
 interface FetchContentResult {
   finalPageUrl: string;
   title: string;
   contentType: string;
-  contentFilePath: string;
+  originalFilePath: string;
   metadataFilePath: string;
   markdownFilePath: string;
 }
@@ -44,7 +43,7 @@ interface OriginalContentMetadata {
   url: string;
   title?: string;
   finalUrl: string;
-  contentFilePath: string;
+  originalFilePath: string;
   metadataFilePath: string;
   markdownFilePath: string;
   contentType?: string;
@@ -94,14 +93,14 @@ const uploadOriginalContentToBucket = async (
   contentType: string | undefined
 ) => {
   const filePath = await urlToSha256(url);
-  const contentFilePath = `${filePath}.content`;
+  const originalFilePath = `${filePath}.original`;
   const metadataFilePath = `${filePath}.metadata`;
   const markdownFilePath = `${filePath}.markdown`;
   const metadata: OriginalContentMetadata = {
     url,
     title,
     finalUrl,
-    contentFilePath,
+    originalFilePath,
     metadataFilePath,
     markdownFilePath,
     contentType,
@@ -122,7 +121,7 @@ const uploadOriginalContentToBucket = async (
     // content
     new PutObjectCommand({
       Bucket: bucketName,
-      Key: contentFilePath,
+      Key: originalFilePath,
       Body: content,
       ACL: 'private',
     }),
@@ -149,7 +148,7 @@ const uploadOriginalContentToBucket = async (
           Delete: {
             Objects: [
               { Key: metadataFilePath },
-              { Key: contentFilePath },
+              { Key: originalFilePath },
               { Key: markdownFilePath },
             ],
             Quiet: true,
@@ -245,36 +244,11 @@ export const contentFetchRequestHandler: RequestHandler = async (req, res) => {
       }
     }
 
-    // const savePageJobs: SavePageJob[] = users.map((user) => ({
-    //   userId: user.userId,
-    //   data: {
-    //     userId: user.userId,
-    //     pageUrl,
-    //     finalPageUrl: originalContentMetadata.finalUrl,
-    //     pageId: user.pageId,
-    //     state,
-    //     source,
-    //     feedUrl,
-    //     savedAt: savedAt ? new Date(savedAt).toISOString() : new Date().toISOString(),
-    //     publishedAt,
-    //     taskId,
-    //     title: originalContentMetadata.title,
-    //     contentType: originalContentMetadata.contentType,
-    //     contentFilePath: originalContentMetadata.contentFilePath,
-    //     metadataFilePath: originalContentMetadata.metadataFilePath,
-    //   } as SavePageJobData,
-    //   isRss: !!feedUrl,
-    //   isImport: !!taskId,
-    //   priority,
-    // }))
-
-    // const jobs = await queueSavePageJob(redisDataSource, savePageJobs)
-    // console.log('save-page jobs queued', jobs.length)
     return res.status(200).json({
       finalPageUrl: metadata.finalUrl,
       title: metadata.title,
       contentType: metadata.contentType,
-      contentFilePath: metadata.contentFilePath,
+      originalFilePath: metadata.originalFilePath,
       metadataFilePath: metadata.metadataFilePath,
       markdownFilePath: metadata.markdownFilePath,
     } as FetchContentResult);
