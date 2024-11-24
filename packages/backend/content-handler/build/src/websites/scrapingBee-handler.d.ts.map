@@ -1,1 +1,0 @@
-{"version":3,"file":"scrapingBee-handler.d.ts","sourceRoot":"","sources":["../../../src/websites/scrapingBee-handler.ts"],"names":[],"mappings":"AAAA,OAAO,EAAE,cAAc,EAAE,KAAK,eAAe,EAAE,MAAM,oBAAoB,CAAA;AAIzE,qBAAa,kBAAmB,SAAQ,cAAc;;IAM3C,eAAe,CAAC,GAAG,EAAE,MAAM,GAAG,OAAO;IAO/B,SAAS,CAAC,GAAG,EAAE,MAAM,GAAG,OAAO,CAAC,eAAe,CAAC;CAoBhE"}

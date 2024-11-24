@@ -1,1 +1,0 @@
-{"version":3,"file":"pdf-handler.d.ts","sourceRoot":"","sources":["../../../src/websites/pdf-handler.ts"],"names":[],"mappings":"AAAA,OAAO,EAAE,cAAc,EAAE,KAAK,eAAe,EAAE,MAAM,oBAAoB,CAAA;AAEzE,qBAAa,UAAW,SAAQ,cAAc;;IAMnC,eAAe,CAAC,GAAG,EAAE,MAAM,GAAG,OAAO;IAM/B,SAAS,CAAC,IAAI,EAAE,MAAM,GAAG,OAAO,CAAC,eAAe,CAAC;CAGjE"}

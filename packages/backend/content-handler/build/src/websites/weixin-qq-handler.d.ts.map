@@ -1,1 +1,0 @@
-{"version":3,"file":"weixin-qq-handler.d.ts","sourceRoot":"","sources":["../../../src/websites/weixin-qq-handler.ts"],"names":[],"mappings":"AACA,OAAO,EAAE,cAAc,EAAE,MAAM,oBAAoB,CAAA;AAEnD,qBAAa,eAAgB,SAAQ,cAAc;;IAMxC,cAAc,CAAC,GAAG,EAAE,MAAM,EAAE,IAAI,EAAE,QAAQ,GAAG,OAAO;IAI9C,QAAQ,CAAC,IAAI,EAAE,MAAM,EAAE,GAAG,EAAE,QAAQ,GAAG,OAAO,CAAC,QAAQ,CAAC;CAkCxE"}

@@ -1,1 +1,0 @@
-{"version":3,"file":"apple-news-handler.d.ts","sourceRoot":"","sources":["../../../src/websites/apple-news-handler.ts"],"names":[],"mappings":"AAEA,OAAO,EAAE,cAAc,EAAE,KAAK,eAAe,EAAE,MAAM,oBAAoB,CAAA;AAEzE,qBAAa,gBAAiB,SAAQ,cAAc;;IAMzC,eAAe,CAAC,GAAG,EAAE,MAAM,GAAG,OAAO;IAK/B,SAAS,CAAC,GAAG,EAAE,MAAM,GAAG,OAAO,CAAC,eAAe,CAAC;CAehE"}

@@ -2,10 +2,10 @@
   "name": "@wemem/content-handler",
   "version": "1.0.0",
   "description": "A standalone version of content handler to parse and format each type of content",
-  "main": "build/src/index.js",
-  "types": "build/src/index.d.ts",
+  "main": "dist/src/index.js",
+  "types": "dist/src/index.d.ts",
   "files": [
-    "build/src"
+    "dist/src"
   ],
   "license": "Apache-2.0",
   "scripts": {
