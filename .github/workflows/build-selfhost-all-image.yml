@@ -68,6 +68,12 @@ jobs:
           name: content-handler-dist
           path: ./packages/backend/content-handler/dist
           if-no-files-found: error
+      - name: Upload content-handler node_modules
+        uses: actions/upload-artifact@v4
+        with:
+          name: content-handler-node_modules
+          path: ./packages/backend/content-handler/node_modules
+          if-no-files-found: error
   build-content-fetch:
     name: Build Content Fetch
     runs-on: ubuntu-latest
@@ -342,6 +348,11 @@ jobs:
         with:
           name: content-handler-dist
           path: ./packages/backend/content-handler/dist
+      - name: Download content-handler node_modules
+        uses: actions/download-artifact@v4
+        with:
+          name: content-handler-node_modules
+          path: ./packages/backend/content-handler/node_modules
       - name: Setup env
         run: |
           echo "GIT_SHORT_HASH=$(git rev-parse --short HEAD)" >> "$GITHUB_ENV"
@@ -374,13 +385,9 @@ jobs:
 
       - name: Install Node.js dependencies
         run: |
-          ls -l ./packages/backend/content-fetch/
-          ls -l ./packages/backend/content-handler/
           yarn config set --json supportedArchitectures.cpu '["x64", "arm64", "arm"]'
           yarn config set --json supportedArchitectures.libc '["glibc"]'
-          yarn workspaces focus @wemem/content-fetch @wemem/content-handler --production
-          ls -l ./packages/backend/content-fetch/
-          ls -l ./packages/backend/content-handler/
+          yarn workspaces focus @wemem/content-fetch --production
 
       - name: Setup Version
         id: version
