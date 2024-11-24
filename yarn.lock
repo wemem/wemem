@@ -17756,6 +17756,7 @@ __metadata:
     ts-node: "npm:^10.9.2"
     turndown: "npm:^7.2.0"
     turndown-plugin-gfm: "npm:^1.0.2"
+    typescript: "npm:^5.4.5"
     urlsafe-base64: "npm:^1.0.0"
   bin:
     run-test: ./scripts/run-test.ts
