@@ -374,18 +374,13 @@ jobs:
 
       - name: Install Node.js dependencies
         run: |
+          ls -l ./packages/backend/content-fetch/
+          ls -l ./packages/backend/content-handler/
           yarn config set --json supportedArchitectures.cpu '["x64", "arm64", "arm"]'
           yarn config set --json supportedArchitectures.libc '["glibc"]'
           yarn workspaces focus @wemem/content-fetch @wemem/content-handler --production
-
-      - name: Check directory structure
-        run: |
-          echo "=== Checking content-handler directory ==="
-          ls -la ./packages/backend/content-handler/
-          echo "\n=== Checking content-handler node_modules ==="
-          ls -la ./packages/backend/content-handler/node_modules/ || echo "node_modules not found"
-          echo "\n=== Checking root node_modules ==="
-          ls -la ./node_modules/ | grep linkedom || echo "linkedom not found in root node_modules"
+          ls -l ./packages/backend/content-fetch/
+          ls -l ./packages/backend/content-handler/
 
       - name: Setup Version
         id: version
