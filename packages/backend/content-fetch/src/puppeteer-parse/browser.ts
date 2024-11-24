@@ -46,6 +46,7 @@ export const getBrowser = async (): Promise<Browser> => {
       '--window-size=1920,1080',
       '--disable-extensions',
       '--disable-dev-shm-usage',
+      '--disable-dbus',
       '--no-first-run',
       '--disable-background-networking',
       // if open this, the browser will get error:

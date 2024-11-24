@@ -37,6 +37,7 @@ interface FetchContentResult {
   contentType: string;
   contentFilePath: string;
   metadataFilePath: string;
+  markdownFilePath: string;
 }
 
 interface OriginalContentMetadata {
@@ -275,6 +276,7 @@ export const contentFetchRequestHandler: RequestHandler = async (req, res) => {
       contentType: metadata.contentType,
       contentFilePath: metadata.contentFilePath,
       metadataFilePath: metadata.metadataFilePath,
+      markdownFilePath: metadata.markdownFilePath,
     } as FetchContentResult);
   } catch (error) {
     console.error(
