@@ -28,7 +28,7 @@ COPY . .
 
 RUN npm install -g typescript
 
-RUN yarn workspaces focus @wemem/content-fetch --production
+RUN yarn workspaces focus @wemem/content-fetch
 
 RUN rm -rf packages/backend/content-handler/dist
 RUN rm -rf packages/backend/content-fetch/dist

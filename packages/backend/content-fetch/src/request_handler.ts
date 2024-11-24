@@ -185,8 +185,14 @@ const getOriginalContentMetadata = async (
       return null;
     }
 
+    const chunks = [];
+    for await (const chunk of response.Body as any) {
+      chunks.push(chunk);
+    }
+    const bodyContent = Buffer.concat(chunks).toString('utf-8');
+
     // Parse metadata from object
-    const metadata = JSON.parse(response.Body.toString());
+    const metadata = JSON.parse(bodyContent);
     console.log(`Retrieved original content metadata for: ${url}`);
     return metadata as OriginalContentMetadata;
   } catch (err) {
