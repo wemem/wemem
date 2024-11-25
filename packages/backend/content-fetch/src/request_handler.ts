@@ -55,7 +55,7 @@ type OriginalContentMetadata = {
   'documentElement' | 'content' | 'textContent'
 >;
 
-// 添加环境变量验证
+// check env variables
 const validateEnvVariables = () => {
   const required = [
     'CF_R2_ENDPOINT',
@@ -70,7 +70,7 @@ const validateEnvVariables = () => {
   }
 };
 
-// 初始化 S3 客户端
+// init s3 client
 const initS3Client = () => {
   validateEnvVariables();
 
@@ -125,21 +125,21 @@ const uploadOriginalContentToBucket = async (
 
   const markdown = await parseMarkdown(cleanContent);
 
-  // 创建原始内容zip
+  // create original content zip
   const originalZip = new JSZip();
   originalZip.file('content.html', content);
   const originalZipContent = await originalZip.generateAsync({
     type: 'nodebuffer',
   });
 
-  // 创建markdown内容zip
+  // create markdown content zip
   const markdownZip = new JSZip();
   markdownZip.file('content.md', markdown);
   const markdownZipContent = await markdownZip.generateAsync({
     type: 'nodebuffer',
   });
 
-  // 更新metadata
+  // @ts-ignore
   const metadata: OriginalContentMetadata = {
     url,
     finalUrl,
@@ -210,7 +210,7 @@ const getOriginalContentMetadata = async (
   const filePathSha256 = await urlToSha256(url);
   const metadataFilePath = `${filePathSha256}.metadata`;
   try {
-    // 验证 S3 客户端状态
+    // check s3 client status
     if (!S3) {
       throw new Error('S3 client not properly initialized');
     }
@@ -237,7 +237,7 @@ const getOriginalContentMetadata = async (
     console.log(`Retrieved original content metadata for: ${url}`);
     return metadata as OriginalContentMetadata;
   } catch (err) {
-    // 改进错误处理
+    // improve error handling
     if (err instanceof Error) {
       if (err.name === 'NoSuchKey') {
         return null;
