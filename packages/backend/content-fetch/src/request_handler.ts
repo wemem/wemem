@@ -9,6 +9,8 @@ import {
 } from '@aws-sdk/client-s3';
 import { urlToSha256 } from './uitl/url_to_sha265';
 import { parseMarkdown } from './html-to-markdown';
+import { parsePreparedContent } from './readability';
+import { Readability } from '@wemem/readability';
 
 interface UserConfig {
   userId: string;
@@ -39,7 +41,7 @@ interface FetchContentResult {
   markdownFilePath: string;
 }
 
-interface OriginalContentMetadata {
+type OriginalContentMetadata = {
   url: string;
   title?: string;
   finalUrl: string;
@@ -47,7 +49,10 @@ interface OriginalContentMetadata {
   metadataFilePath: string;
   markdownFilePath: string;
   contentType?: string;
-}
+} & Omit<
+  Readability.ParseResult,
+  'documentElement' | 'content' | 'textContent'
+>;
 
 // 添加环境变量验证
 const validateEnvVariables = () => {
@@ -96,19 +101,39 @@ const uploadOriginalContentToBucket = async (
   const originalFilePath = `${filePath}.original`;
   const metadataFilePath = `${filePath}.metadata`;
   const markdownFilePath = `${filePath}.markdown`;
+
+  console.log(`Original content from ${url} uploading to ${filePath}`);
+
+  const parsedContent = await parsePreparedContent(url, {
+    content,
+    pageInfo: {
+      canonicalUrl: finalUrl,
+      title,
+      contentType,
+    },
+  });
+
+  const {
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars content too large not save to storage
+    documentElement,
+    content: cleanContent,
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars textContent too large not save to storage
+    textContent,
+    ...rest
+  } = parsedContent.parsedContent || {};
+
+  // @ts-ignore
   const metadata: OriginalContentMetadata = {
     url,
-    title,
     finalUrl,
     originalFilePath,
     metadataFilePath,
     markdownFilePath,
     contentType,
+    ...rest,
   };
 
-  console.log(`Original content from ${url} uploading to ${filePath}`);
-
-  const markdown = await parseMarkdown(content);
+  const markdown = await parseMarkdown(cleanContent);
 
   const uploadCommands = [
     // metadata

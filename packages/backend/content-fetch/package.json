@@ -25,6 +25,7 @@
     "dompurify": "^2.4.1",
     "dotenv": "^8.2.0",
     "express": "^4.17.1",
+    "highlightjs": "^9.16.2",
     "joplin-turndown-plugin-gfm": "^1.0.12",
     "linkedom": "^0.14.9",
     "posthog-node": "^3.6.3",
@@ -40,6 +41,7 @@
   },
   "devDependencies": {
     "@types/dompurify": "^3.0.5",
+    "@types/highlightjs": "^9",
     "@types/turndown": "^5.0.5",
     "@types/urlsafe-base64": "^1.0.31",
     "chai": "^4.3.6",
