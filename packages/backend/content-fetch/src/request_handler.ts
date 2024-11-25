@@ -7,7 +7,7 @@ import {
   DeleteObjectsCommand,
   GetObjectCommand,
 } from '@aws-sdk/client-s3';
-import { urlToSha256 } from './uitl/url_to_sha265';
+import { md5 } from './uitl/md5';
 import { parseMarkdown } from './html-to-markdown';
 import { parsePreparedContent } from './readability';
 import { Readability } from '@wemem/readability';
@@ -33,16 +33,7 @@ export interface FetchContentRequestBody {
   users: UserConfig[];
 }
 
-interface FetchContentResult {
-  finalPageUrl: string;
-  title: string;
-  contentType: string;
-  originalZipPath: string;
-  metadataFilePath: string;
-  markdownZipPath: string;
-}
-
-type OriginalContentMetadata = {
+export type ContentMetadata = {
   url: string;
   title?: string;
   finalUrl: string;
@@ -98,10 +89,10 @@ const uploadOriginalContentToBucket = async (
   title: string | undefined,
   contentType: string | undefined
 ) => {
-  const filePath = await urlToSha256(url);
-  const originalZipPath = `${filePath}_original.zip`;
-  const markdownZipPath = `${filePath}_markdown.zip`;
-  const metadataFilePath = `${filePath}.json`;
+  const checksum = await md5(url);
+  const originalZipPath = `${checksum}_original.zip`;
+  const markdownZipPath = `${checksum}_markdown.zip`;
+  const metadataFilePath = `${checksum}_metadata.json`;
 
   console.log(`Creating zip files for content from ${url}`);
 
@@ -130,6 +121,10 @@ const uploadOriginalContentToBucket = async (
   originalZip.file('content.html', content);
   const originalZipContent = await originalZip.generateAsync({
     type: 'nodebuffer',
+    compression: 'DEFLATE',
+    compressionOptions: {
+      level: 9,
+    },
   });
 
   // create markdown content zip
@@ -137,10 +132,14 @@ const uploadOriginalContentToBucket = async (
   markdownZip.file('content.md', markdown);
   const markdownZipContent = await markdownZip.generateAsync({
     type: 'nodebuffer',
+    compression: 'DEFLATE',
+    compressionOptions: {
+      level: 9,
+    },
   });
 
   // @ts-ignore
-  const metadata: OriginalContentMetadata = {
+  const metadata: ContentMetadata = {
     url,
     finalUrl,
     originalZipPath,
@@ -206,9 +205,9 @@ const uploadOriginalContentToBucket = async (
 
 const getOriginalContentMetadata = async (
   url: string
-): Promise<OriginalContentMetadata | null> => {
-  const filePathSha256 = await urlToSha256(url);
-  const metadataFilePath = `${filePathSha256}.metadata`;
+): Promise<ContentMetadata | null> => {
+  const checksum = await md5(url);
+  const metadataFilePath = `${checksum}_metadata.json`;
   try {
     // check s3 client status
     if (!S3) {
@@ -235,7 +234,7 @@ const getOriginalContentMetadata = async (
     // Parse metadata from object
     const metadata = JSON.parse(bodyContent);
     console.log(`Retrieved original content metadata for: ${url}`);
-    return metadata as OriginalContentMetadata;
+    return metadata as ContentMetadata;
   } catch (err) {
     // improve error handling
     if (err instanceof Error) {
@@ -285,14 +284,7 @@ export const contentFetchRequestHandler: RequestHandler = async (req, res) => {
       }
     }
 
-    return res.status(200).json({
-      finalPageUrl: metadata.finalUrl,
-      title: metadata.title,
-      contentType: metadata.contentType,
-      originalZipPath: metadata.originalZipPath,
-      metadataFilePath: metadata.metadataFilePath,
-      markdownZipPath: metadata.markdownZipPath,
-    } as FetchContentResult);
+    return res.status(200).json(metadata);
   } catch (error) {
     console.error(
       'error fetching content',
@@ -301,6 +293,6 @@ export const contentFetchRequestHandler: RequestHandler = async (req, res) => {
     return res.sendStatus(500);
   } finally {
     const totalTime = Date.now() - functionStartTime;
-    console.log('fetch content request completed', totalTime);
+    console.log(`fetch content request completed in ${totalTime} ms`);
   }
 };
