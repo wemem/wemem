@@ -87,7 +87,7 @@ jobs:
         uses: ./.github/actions/setup-node
         with:
           electron-install: false
-          extra-flags: workspaces focus @wemem/content-fetch
+          extra-flags: workspaces focus @wemem/content-fetch @wemem/readability
       - name: Build Content Fetch
         run: yarn workspace @wemem/content-fetch build
       - name: Upload content-fetch dist
@@ -376,7 +376,7 @@ jobs:
         run: |
           yarn config set --json supportedArchitectures.cpu '["x64", "arm64", "arm"]'
           yarn config set --json supportedArchitectures.libc '["glibc"]'
-          yarn workspaces focus @wemem/content-fetch @wemem/content-handler --production
+          yarn workspaces focus @wemem/content-fetch @wemem/content-handler @wemem/readability --production
 
       - name: Setup Version
         id: version

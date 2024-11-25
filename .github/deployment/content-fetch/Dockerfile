@@ -6,6 +6,7 @@ ENV LAUNCH_HEADLESS=true
 COPY ./node_modules /app/node_modules
 COPY ./packages/backend/content-fetch /app/packages/backend/content-fetch
 COPY ./packages/backend/content-handler /app/packages/backend/content-handler
+COPY ./packages/backend/readabilityjs /app/packages/backend/readabilityjs
 
 RUN apt-get update && \
   apt-get install -y --no-install-recommends openssl \
