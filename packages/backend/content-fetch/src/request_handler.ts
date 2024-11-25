@@ -98,9 +98,9 @@ const uploadOriginalContentToBucket = async (
   contentType: string | undefined
 ) => {
   const filePath = await urlToSha256(url);
-  const originalFilePath = `${filePath}.original`;
-  const metadataFilePath = `${filePath}.metadata`;
-  const markdownFilePath = `${filePath}.markdown`;
+  const originalFilePath = `${filePath}`;
+  const metadataFilePath = `${filePath}.json`;
+  const markdownFilePath = `${filePath}.md`;
 
   console.log(`Original content from ${url} uploading to ${filePath}`);
 
@@ -141,6 +141,7 @@ const uploadOriginalContentToBucket = async (
       Bucket: bucketName,
       Key: metadataFilePath,
       Body: JSON.stringify(metadata),
+      ContentType: 'application/json',
       ACL: 'private',
     }),
     // content
@@ -148,6 +149,7 @@ const uploadOriginalContentToBucket = async (
       Bucket: bucketName,
       Key: originalFilePath,
       Body: content,
+      ContentType: 'text/html',
       ACL: 'private',
     }),
     // markdown
@@ -155,6 +157,7 @@ const uploadOriginalContentToBucket = async (
       Bucket: bucketName,
       Key: markdownFilePath,
       Body: markdown,
+      ContentType: 'text/markdown',
       ACL: 'private',
     }),
   ];
