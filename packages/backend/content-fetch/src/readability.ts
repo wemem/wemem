@@ -5,7 +5,8 @@
 
 import { preParseContent } from '@wemem/content-handler';
 import createDOMPurify, { SanitizeElementHookEvent } from 'dompurify';
-import * as hljs from 'highlightjs';
+import hljs from 'highlight.js';
+
 import { parseHTML } from 'linkedom';
 import { Readability } from '@wemem/readability';
 
@@ -289,8 +290,8 @@ export const parsePreparedContent = async (
       const code = document.createElement('code');
       const langClass =
         `hljs language-${att.language}` +
-        (att.second_best?.language
-          ? ` language-${att.second_best?.language}`
+        (att.secondBest?.language
+          ? ` language-${att.secondBest?.language}`
           : '');
       code.setAttribute('class', langClass);
       code.innerHTML = att.value;

@@ -17745,6 +17745,7 @@ __metadata:
     dompurify: "npm:^2.4.1"
     dotenv: "npm:^8.2.0"
     express: "npm:^4.17.1"
+    highlight.js: "npm:^11.10.0"
     highlightjs: "npm:^9.16.2"
     joplin-turndown-plugin-gfm: "npm:^1.0.12"
     linkedom: "npm:^0.14.9"
@@ -25703,6 +25704,13 @@ __metadata:
   version: 1.0.0
   resolution: "hexoid@npm:1.0.0"
   checksum: 10/f2271b8b6b0e13fb5a1eccf740f53ce8bae689c80b9498b854c447f9dc94f75f44e0de064c0e4660ecdbfa8942bb2b69973fdcb080187b45bbb409a3c71f19d4
+  languageName: node
+  linkType: hard
+
+"highlight.js@npm:^11.10.0":
+  version: 11.10.0
+  resolution: "highlight.js@npm:11.10.0"
+  checksum: 10/fc8747bcd4a491fc6a47ff80536881dcc9ea9b36cdc2a22a7be5670b89d76ca6c26df9d749017a23bbb2eb708331097a5ecbcee6330fb9064512d80cc3369d99
   languageName: node
   linkType: hard
 
