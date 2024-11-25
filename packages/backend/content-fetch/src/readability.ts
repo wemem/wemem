@@ -279,7 +279,7 @@ export const parsePreparedContent = async (
     );
     codeBlocks.forEach(e => {
       if (!e.textContent) {
-        return e.parentNode?.removeChild(e);
+        return void e.parentNode?.removeChild(e);
       }
 
       // replace <br> or <p> or </p> with \n
