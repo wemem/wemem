@@ -17748,6 +17748,7 @@ __metadata:
     highlight.js: "npm:^11.10.0"
     highlightjs: "npm:^9.16.2"
     joplin-turndown-plugin-gfm: "npm:^1.0.12"
+    jszip: "npm:^3.10.1"
     linkedom: "npm:^0.14.9"
     mocha: "npm:^10.0.0"
     nodemon: "npm:^3.1.7"

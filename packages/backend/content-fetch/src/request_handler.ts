@@ -143,9 +143,9 @@ const uploadOriginalContentToBucket = async (
   const metadata: OriginalContentMetadata = {
     url,
     finalUrl,
-    originalFilePath: originalZipPath,
+    originalZipPath,
     metadataFilePath,
-    markdownFilePath: markdownZipPath,
+    markdownZipPath,
     contentType,
     ...rest,
   };
