@@ -106,7 +106,7 @@ export const fetchContent = async (
         content = result.content;
       }
       if (result && result.contentType) {
-        contentType = result.contentType;
+        contentType = result.contentType?.split(';')[0];
       }
     } catch (e) {
       console.info('error with handler: ', e);
@@ -130,7 +130,7 @@ export const fetchContent = async (
         url = result.finalUrl;
       }
       if (result && result.contentType) {
-        contentType = result.contentType;
+        contentType = result.contentType?.split(';')[0];
       }
     }
 
