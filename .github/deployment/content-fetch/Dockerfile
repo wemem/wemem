@@ -25,7 +25,7 @@ COPY ./node_modules /app/node_modules
 #  }
 # was compiled against a different cpu architecture.
 # case 1: github action build source in x86_64 and run in mac arm64
-RUN  cd node_modules/cld && npm rebuild --build-from-source
+RUN cd /app/node_modules/cld && npm rebuild --build-from-source
 
 COPY ./packages/backend/content-fetch /app/packages/backend/content-fetch
 COPY ./packages/backend/content-handler /app/packages/backend/content-handler
