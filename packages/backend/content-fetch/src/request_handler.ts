@@ -11,6 +11,7 @@ import { urlToSha256 } from './uitl/url_to_sha265';
 import { parseMarkdown } from './html-to-markdown';
 import { parsePreparedContent } from './readability';
 import { Readability } from '@wemem/readability';
+import JSZip from 'jszip';
 
 interface UserConfig {
   userId: string;
@@ -36,18 +37,18 @@ interface FetchContentResult {
   finalPageUrl: string;
   title: string;
   contentType: string;
-  originalFilePath: string;
+  originalZipPath: string;
   metadataFilePath: string;
-  markdownFilePath: string;
+  markdownZipPath: string;
 }
 
 type OriginalContentMetadata = {
   url: string;
   title?: string;
   finalUrl: string;
-  originalFilePath: string;
+  originalZipPath: string;
   metadataFilePath: string;
-  markdownFilePath: string;
+  markdownZipPath: string;
   contentType?: string;
 } & Omit<
   Readability.ParseResult,
@@ -98,11 +99,11 @@ const uploadOriginalContentToBucket = async (
   contentType: string | undefined
 ) => {
   const filePath = await urlToSha256(url);
-  const originalFilePath = `${filePath}`;
+  const originalZipPath = `${filePath}_original.zip`;
+  const markdownZipPath = `${filePath}_markdown.zip`;
   const metadataFilePath = `${filePath}.json`;
-  const markdownFilePath = `${filePath}.md`;
 
-  console.log(`Original content from ${url} uploading to ${filePath}`);
+  console.log(`Creating zip files for content from ${url}`);
 
   const parsedContent = await parsePreparedContent(url, {
     content,
@@ -122,18 +123,32 @@ const uploadOriginalContentToBucket = async (
     ...rest
   } = parsedContent.parsedContent || {};
 
-  // @ts-ignore
+  const markdown = await parseMarkdown(cleanContent);
+
+  // 创建原始内容zip
+  const originalZip = new JSZip();
+  originalZip.file('content.html', content);
+  const originalZipContent = await originalZip.generateAsync({
+    type: 'nodebuffer',
+  });
+
+  // 创建markdown内容zip
+  const markdownZip = new JSZip();
+  markdownZip.file('content.md', markdown);
+  const markdownZipContent = await markdownZip.generateAsync({
+    type: 'nodebuffer',
+  });
+
+  // 更新metadata
   const metadata: OriginalContentMetadata = {
     url,
     finalUrl,
-    originalFilePath,
+    originalFilePath: originalZipPath,
     metadataFilePath,
-    markdownFilePath,
+    markdownFilePath: markdownZipPath,
     contentType,
     ...rest,
   };
-
-  const markdown = await parseMarkdown(cleanContent);
 
   const uploadCommands = [
     // metadata
@@ -144,28 +159,27 @@ const uploadOriginalContentToBucket = async (
       ContentType: 'application/json',
       ACL: 'private',
     }),
-    // content
+    // original content zip
     new PutObjectCommand({
       Bucket: bucketName,
-      Key: originalFilePath,
-      Body: content,
-      ContentType: 'text/html',
+      Key: originalZipPath,
+      Body: originalZipContent,
+      ContentType: 'application/zip',
       ACL: 'private',
     }),
-    // markdown
+    // markdown content zip
     new PutObjectCommand({
       Bucket: bucketName,
-      Key: markdownFilePath,
-      Body: markdown,
-      ContentType: 'text/markdown',
+      Key: markdownZipPath,
+      Body: markdownZipContent,
+      ContentType: 'application/zip',
       ACL: 'private',
     }),
   ];
 
   try {
     await Promise.all(uploadCommands.map(command => S3.send(command)));
-
-    console.log(`Original content uploaded successfully`);
+    console.log(`Content uploaded successfully`);
     return metadata;
   } catch (error) {
     console.error('Upload failed:', error);
@@ -176,8 +190,8 @@ const uploadOriginalContentToBucket = async (
           Delete: {
             Objects: [
               { Key: metadataFilePath },
-              { Key: originalFilePath },
-              { Key: markdownFilePath },
+              { Key: originalZipPath },
+              { Key: markdownZipPath },
             ],
             Quiet: true,
           },
@@ -186,7 +200,6 @@ const uploadOriginalContentToBucket = async (
     } catch (cleanupError) {
       console.error('Cleanup failed:', cleanupError);
     }
-
     throw error;
   }
 };
@@ -276,9 +289,9 @@ export const contentFetchRequestHandler: RequestHandler = async (req, res) => {
       finalPageUrl: metadata.finalUrl,
       title: metadata.title,
       contentType: metadata.contentType,
-      originalFilePath: metadata.originalFilePath,
+      originalZipPath: metadata.originalZipPath,
       metadataFilePath: metadata.metadataFilePath,
-      markdownFilePath: metadata.markdownFilePath,
+      markdownZipPath: metadata.markdownZipPath,
     } as FetchContentResult);
   } catch (error) {
     console.error(
