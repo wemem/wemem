@@ -4,10 +4,10 @@
 /* eslint-disable @typescript-eslint/no-base-to-string */
 
 import { preParseContent } from '@wemem/content-handler';
-import { Readability } from '@wemem/readability';
 import createDOMPurify, { SanitizeElementHookEvent } from 'dompurify';
 import * as hljs from 'highlightjs';
 import { parseHTML } from 'linkedom';
+import { Readability } from '@wemem/readability';
 
 export enum PageType {
   Article = 'ARTICLE',

@@ -20,8 +20,10 @@
  * available at: http://code.google.com/p/arc90labs-readability
  */
 
-import { get } from 'axios';
-import { detect } from 'cld';
+import axiosPkg from 'axios';
+const { get } = axiosPkg;
+import cldPkg from 'cld';
+const { detect } = cldPkg;
 import { decode } from 'html-entities';
 import parseSrcset from 'parse-srcset';
 
@@ -3700,6 +3702,4 @@ Readability.prototype = {
   },
 };
 
-if (typeof module === 'object') {
-  module.exports = Readability;
-}
+export { Readability };

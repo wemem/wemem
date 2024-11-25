@@ -20,7 +20,7 @@
  * available at: http://code.google.com/p/arc90labs-readability
  */
 
-var REGEXPS = {
+const REGEXPS = {
   // NOTE: These two regular expressions are duplicated in
   // Readability.js. Please keep both copies in sync.
   articleNegativeLookBehindCandidates:
@@ -126,6 +126,4 @@ function isProbablyReaderable(doc, options = {}) {
   });
 }
 
-if (typeof module === 'object') {
-  module.exports = isProbablyReaderable;
-}
+export { isProbablyReaderable };
