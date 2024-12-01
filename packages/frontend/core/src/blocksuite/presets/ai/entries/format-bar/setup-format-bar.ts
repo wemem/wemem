@@ -7,7 +7,8 @@ import {
 } from '@blocksuite/affine/blocks';
 import { html, type TemplateResult } from 'lit';
 
-import { getDocAIActionGroups } from '../../_common/readease-ai-action-config';
+// import { getDocAIActionGroups } from '../../_common/readease-ai-action-config';
+import { AIItemGroups } from '../../_common/config';
 
 export function setupFormatBarAIEntry(formatBar: AffineFormatBarWidget) {
   toolbarDefaultConfig(formatBar);
@@ -19,7 +20,7 @@ export function setupFormatBarAIEntry(formatBar: AffineFormatBarWidget) {
           return html` <ask-ai-button
             .buttonText=${I18n['ai.wemem.ask-ai']()}
             .host=${formatBar.host}
-            .actionGroups=${getDocAIActionGroups(I18n)}
+            .actionGroups=${AIItemGroups}
             .toggleType=${'hover'}
           ></ask-ai-button>`;
         },
